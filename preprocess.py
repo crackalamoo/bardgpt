@@ -3,10 +3,12 @@ import re
 TITLE = "*** "
 NEWLINE = " \n"
 
-def dickinson():
-    file = open("data/dickinson-raw.txt", "r")
+def getContents(fname):
+    file = open(fname, "r")
     text = file.read()
     file.close()
+    return text
+def removeBrackets(text):
     while text.find('[') != -1:
         begin = text.find('[')
         end = text.find(']', begin+1)
@@ -14,10 +16,15 @@ def dickinson():
             break
         else:
             text = text[:begin] + text[end+1:]
-    index = open("data/dickinson-index.txt", "r").read()
-    index = index.split('\n')
+    return text
+
+
+def dickinson():
+    text = getContents("data/dickinson-raw.txt")
+    text = removeBrackets(text)
+    index = getContents("data/dickinson-index.txt").split('\n')
     out = open("data/dickinson.txt", "w+")
-    for i in range(len(index)-1):
+    for i in range(len(index)):
         this = text.find(index[i])
         next = text.find('\n'*6, this+1)
         if this == -1 or next == -1:
@@ -31,8 +38,38 @@ def dickinson():
         poem = poem.replace('\n', NEWLINE)
         poem = poem.replace("  ", "")
         poem = TITLE + title + NEWLINE + poem + NEWLINE
+        poem = poem.lower()
         out.write(poem)
         print(poem)
     out.close()
+def frost():
+    text = getContents("data/frost-raw.txt")
+    text = removeBrackets(text)
+    index = getContents("data/frost-index.txt").split('\n')
+    print(index)
+    out = open("data/frost.txt", "w+")
+    skipindex = text.find("CONTENTS")
+    skipindex = text.find("SELECTED POEMS", skipindex+1)
+    for i in range(len(index)):
+        this = text.find(index[i], skipindex)
+        next = text.find('\n'*4, this+1)
+        if this == -1 or next == -1:
+            continue
+        title = text[this:this+len(index[i])]
+        poem = text[text.find('\n\n',this)+2:next]
+        poem = poem.replace('\n', NEWLINE)
+        poem = TITLE + title + poem + NEWLINE
+        poem = poem.lower()
+        out.write(poem)
+        print(poem)
+    out.close()
+def join():
+    text = ''
+    for author in ['dickinson', 'frost']:
+        text += getContents("data/"+author+".txt")
+    out = open("data/join.txt", "w+")
+    out.write(text)
+    out.close()
 
-dickinson()
+#frost()
+join()
