@@ -63,13 +63,36 @@ def frost():
         out.write(poem)
         print(poem)
     out.close()
+def whitman():
+    text = getContents("data/whitman-raw.txt")
+    text = text.replace("’","'").replace('“','"').replace('”','"')
+    text = removeBrackets(text)
+    index = getContents("data/whitman-index.txt").replace("’","'").replace('“','"').replace('”','"').split('\n')
+    print(index)
+    out = open("data/whitman.txt", "w+")
+    for i in range(len(index)):
+        this = text.find(index[i])
+        next = text.find('\n'*4, this+1)
+        if this == -1 or next == -1:
+            continue
+        title = text[this:this+len(index[i])]
+        endtitle = this+len(index[i])
+        while text[endtitle] == '\n':
+            endtitle += 1
+        poem = text[endtitle:next]
+        poem = poem.replace('\n', NEWLINE).replace("    ","").replace("   ","").replace("  ", "")
+        poem = TITLE + title + NEWLINE + poem + NEWLINE
+        poem = poem.lower()
+        out.write(poem)
+        print(poem)
+    out.close()
 def join():
     text = ''
-    for author in ['dickinson', 'frost']:
+    for author in ['dickinson', 'frost', 'whitman']:
         text += getContents("data/"+author+".txt")
     out = open("data/join.txt", "w+")
     out.write(text)
     out.close()
 
-#frost()
+#whitman()
 join()
