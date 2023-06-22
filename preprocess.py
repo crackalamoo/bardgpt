@@ -17,7 +17,8 @@ def removeBrackets(text):
         else:
             text = text[:begin] + text[end+1:]
     return text
-
+def isRomanNumeral(s):
+    return s != '' and bool(re.search(r"^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$", s))
 
 def dickinson():
     text = getContents("data/dickinson-raw.txt")
@@ -32,7 +33,7 @@ def dickinson():
         prev = text.rfind('\n', 0, this-3)
         prev2 = text.find('\n', prev+1)
         title = text[prev+1:prev2-1]
-        if bool(re.search(r"^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$", title)):
+        if isRomanNumeral(title):
             title = ''
         poem = text[this:next]
         poem = poem.replace('\n', NEWLINE)
@@ -63,36 +64,84 @@ def frost():
         out.write(poem)
         print(poem)
     out.close()
-def whitman():
-    text = getContents("data/whitman-raw.txt")
-    text = text.replace("’","'").replace('“','"').replace('”','"')
+def keats():
+    text = getContents("data/keats-raw.txt")
     text = removeBrackets(text)
-    index = getContents("data/whitman-index.txt").replace("’","'").replace('“','"').replace('”','"').split('\n')
+    index = getContents("data/keats-index.txt").split('\n')
     print(index)
-    out = open("data/whitman.txt", "w+")
-    for i in range(len(index)):
-        this = text.find(index[i])
+    out = open("data/keats.txt", "w+")
+    for heading in index:
+        this = text.find(heading+".")
         next = text.find('\n'*4, this+1)
         if this == -1 or next == -1:
             continue
-        title = text[this:this+len(index[i])]
-        endtitle = this+len(index[i])
+        title = text[this:this+len(heading)]
+        endtitle = this+len(heading+".")
         while text[endtitle] == '\n':
             endtitle += 1
         poem = text[endtitle:next]
-        poem = poem.replace('\n', NEWLINE).replace("    ","").replace("   ","").replace("  ", "")
+        poem = poem.split('\n')
+        for i in reversed(range(len(poem))):
+            while poem[i].startswith(" "):
+                poem[i] = poem[i][1:]
+            while poem[i].endswith(" "):
+                poem[i] = poem[i][:-1]
+            if isRomanNumeral(poem[i][:-1]):
+                if i+1 < len(poem) and poem[i+1] == '':
+                    poem.pop(i+1)
+                poem.pop(i)
+                continue
+            else:
+                skipText = poem[i].rfind("     ")
+                if skipText == -1:
+                    skipText = 0
+                try:
+                    float(poem[i][skipText:])
+                    poem[i] = poem[i][:skipText]
+                    if i > 0 and poem[i-1] == '':
+                        poem.pop(i+1)
+                    if poem[i] == '':
+                        poem.pop(i)
+                except ValueError:
+                    pass
+            poem[i] = poem[i].replace("    ","").replace("   ","").replace("  ", "")
+            if poem[i].endswith("10"):
+                poem[i] = poem[i][:-2]
+        if poem[0] == '':
+            poem.pop(0)
+        while poem[len(poem)-1] == '' or poem[len(poem)-1] == ' ':
+            poem.pop()
+        poem = '\n'.join(poem)
+        if heading == "BOOK I" and poem.find("BOOK II") != -1:
+            poem = poem[:poem.find("BOOK II")]
+            while poem.endswith('\n'):
+                poem = poem[:-1]
+        elif heading == "BOOK II" and poem.find("BOOK III") != -1:
+            poem = poem[:poem.find("BOOK III")]
+            while poem.endswith('\n'):
+                poem = poem[:-1]
+        elif heading == "PART I" and poem.find("PART II") != -1:
+            poem = poem[:poem.find("PART II")]
+            while poem.endswith('\n'):
+                poem = poem[:-1]
+        elif heading == "BOOK III" and poem.find(" *****") != -1:
+            poem = poem[:poem.find(" *****")]
         poem = TITLE + title + NEWLINE + poem + NEWLINE
         poem = poem.lower()
+        poem = poem.replace('\n', NEWLINE)
+        if poem.rfind("footnotes:") != -1:
+            poem = poem[:poem.rfind("footnotes:")]
         out.write(poem)
-        print(poem)
+        print(title)
+        #print(poem)
     out.close()
 def join():
     text = ''
-    for author in ['dickinson', 'frost', 'whitman']:
+    for author in ['dickinson', 'frost', 'keats']:
         text += getContents("data/"+author+".txt")
     out = open("data/join.txt", "w+")
     out.write(text)
     out.close()
 
-#whitman()
-join()
+keats()
+#join()
