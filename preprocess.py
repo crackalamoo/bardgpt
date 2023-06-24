@@ -17,6 +17,12 @@ def removeBrackets(text):
         else:
             text = text[:begin] + text[end+1:]
     return text
+def isNumeral(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 def isRomanNumeral(s):
     return s != '' and bool(re.search(r"^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$", s))
 
@@ -95,15 +101,12 @@ def keats():
                 skipText = poem[i].rfind("     ")
                 if skipText == -1:
                     skipText = 0
-                try:
-                    float(poem[i][skipText:])
+                if isNumeral(poem[i][skipText:]):
                     poem[i] = poem[i][:skipText]
                     if i > 0 and poem[i-1] == '':
                         poem.pop(i+1)
                     if poem[i] == '':
                         poem.pop(i)
-                except ValueError:
-                    pass
             poem[i] = poem[i].replace("    ","").replace("   ","").replace("  ", "")
             if poem[i].endswith("10"):
                 poem[i] = poem[i][:-2]
@@ -135,13 +138,67 @@ def keats():
         print(title)
         #print(poem)
     out.close()
+def poe():
+    text = getContents("data/poe-raw.txt")
+    text = text.replace('\n[', '[')
+    text = text.replace('\n[', '[')
+    text = text.replace('\n[Illustration:', '[Illustration:')
+    text = text.replace('\n[Illustration:', '[Illustration:')
+    text = removeBrackets(text)
+    index = getContents("data/poe-index.txt").upper().split('\n')
+    print(index)
+    out = open("data/poe.txt", "w+")
+    for i in range(len(index)):
+        this = text.find(index[i])
+        next = text.find('\n'*4, this+1)
+        if this == -1 or next == -1:
+            continue
+        title = text[this+1:this+len(index[i])-1]
+        endtitle = this+len(index[i])
+        while text[endtitle] == '\n':
+            endtitle += 1
+        poem = text[endtitle:next]
+        poem = poem.replace("    ", "").replace('_', '')
+        poem = poem.split('\n')
+        if i == 0:
+            print(poem)
+        j = len(poem)-1
+        while j >= 0:
+            while poem[j].startswith(" "):
+                poem[j] = poem[j][1:]
+            if isRomanNumeral(poem[j][:-1]) or isNumeral(poem[j]):
+                if j+1 < len(poem) and poem[j+1] == '':
+                    poem.pop(j+1)
+                poem.pop(j)
+                if j-1 >= 0 and poem[j-1] == '':
+                    poem.pop(j-1)
+                    j -= 1
+                if j-2 >= 0 and poem[j-2] == '':
+                    poem.pop(j-2)
+                    j -= 1
+                j -= 1
+                continue
+            if poem[j] == 'PART I.' or poem[j] == 'PART II.':
+                poem.pop(j)
+                if j+1 < len(poem) and poem[j+1] == '':
+                    poem.pop(j+1)
+            j -= 1
+        while poem[0] == '\n':
+            poem.pop(0)
+        poem = '\n'.join(poem)
+        poem = TITLE + title + NEWLINE + poem + NEWLINE
+        poem = poem.lower()
+        poem = poem.replace('\n', NEWLINE)
+        out.write(poem)
+        print(poem)
+    out.close()
 def join():
     text = ''
-    for author in ['dickinson', 'frost', 'keats']:
+    for author in ['dickinson', 'frost', 'keats', 'poe']:
         text += getContents("data/"+author+".txt")
     out = open("data/join.txt", "w+")
     out.write(text)
     out.close()
 
-keats()
+poe()
 #join()
