@@ -43,7 +43,7 @@ def dickinson():
             title = ''
         poem = text[this:next]
         poem = poem.replace('\n', NEWLINE)
-        poem = poem.replace("  ", "")
+        poem = poem.replace("  ", "").replace('_','')
         poem = TITLE + title + NEWLINE + poem + NEWLINE
         poem = poem.lower()
         out.write(poem)
@@ -64,7 +64,7 @@ def frost():
             continue
         title = text[this:this+len(index[i])]
         poem = text[text.find('\n\n',this)+2:next]
-        poem = poem.replace('\n', NEWLINE)
+        poem = poem.replace('\n', NEWLINE).replace('_','')
         poem = TITLE + title + poem + NEWLINE
         poem = poem.lower()
         out.write(poem)
@@ -145,6 +145,7 @@ def poe():
     text = text.replace('\n[Illustration:', '[Illustration:')
     text = text.replace('\n[Illustration:', '[Illustration:')
     text = removeBrackets(text)
+    text = text.replace("TAMERLANE", "_TAMERLANE_")
     index = getContents("data/poe-index.txt").upper().split('\n')
     print(index)
     out = open("data/poe.txt", "w+")
@@ -186,19 +187,91 @@ def poe():
         while poem[0] == '\n':
             poem.pop(0)
         poem = '\n'.join(poem)
+        if title == "THE RAVEN":
+            poem = poem.replace('\ncraven',' craven').replace(',\nfearing', ', fearing')
+            poem = poem.replace('flown\nbefore','flown before').replace('and\ndoor','and door')
+            poem = poem.replace('hath\nsent','hath sent').replace('bird or\ndevil','bird or devil')
+            poem = poem.replace(',\nupstarting',', upstarting')
         poem = TITLE + title + NEWLINE + poem + NEWLINE
         poem = poem.lower()
         poem = poem.replace('\n', NEWLINE)
         out.write(poem)
         print(poem)
     out.close()
+def shelley():
+    text = getContents("data/shelley-raw.txt")
+    text = removeBrackets(text)
+    index = getContents("data/shelley-index.txt").split('\n')
+    print(index)
+    out = open("data/shelley.txt", "w+")
+    for heading in index:
+        this = text.find(heading)
+        this = text.find(heading,this+1)
+        next = text.find('\n***\n\n', this+1)
+        if this == -1 or next == -1:
+            continue
+        title = text[this:this+len(heading)]
+        endtitle = this+len(heading+".")
+        while text[endtitle] == '\n':
+            endtitle += 1
+        poem = text[endtitle:next]
+        poem = poem.replace('_','')
+        poem = poem.split('\n')
+        for i in reversed(range(len(poem))):
+            while poem[i].startswith(" "):
+                poem[i] = poem[i][1:]
+            while poem[i].endswith(" "):
+                poem[i] = poem[i][:-1]
+            if isRomanNumeral(poem[i][:-1]):
+                if i+1 < len(poem) and poem[i+1] == '':
+                    poem.pop(i+1)
+                poem.pop(i)
+                continue
+            else:
+                skipText = poem[i].rfind("     ")
+                if skipText == -1:
+                    skipText = 0
+                if isNumeral(poem[i][skipText:]) or isNumeral(poem[i][:-4]):
+                    if isNumeral(poem[i][:-4]):
+                        skipText = -4
+                    elif isNumeral(poem[i][:-3]):
+                        skipText = -3
+                    elif isNumeral(poem[i][:-2]):
+                        skipText = -2
+                    poem[i] = poem[i][:skipText]
+                    if i > 0 and poem[i-1] == '':
+                        poem.pop(i+1)
+                    if poem[i] == '':
+                        poem.pop(i)
+            poem[i] = poem[i].replace("    ","").replace("   ","").replace("  ", "")
+        if poem[0] == '':
+            poem.pop(0)
+        while poem[len(poem)-1] == '' or poem[len(poem)-1] == ' ':
+            poem.pop()
+        poem = '\n'.join(poem)
+        poem = TITLE + title + NEWLINE + poem + NEWLINE
+        poem = poem.lower()
+        poem = poem.replace('\n', NEWLINE)
+        if poem.rfind("notes;") != -1:
+            poem = poem[:poem.rfind("notes;")]
+        if poem.rfind("notes:") != -1:
+            poem = poem[:poem.rfind("notes:")]
+        if poem.rfind("\nnote:") != -1:
+            poem = poem[:poem.rfind("\nnote:")]
+        out.write(poem)
+        print(title)
+        #print(poem)
+    out.close()
 def join():
     text = ''
-    for author in ['dickinson', 'frost', 'keats', 'poe']:
+    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley']:
         text += getContents("data/"+author+".txt")
+    text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through")
+    text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
+    text = text.replace("'tis", "it is").replace("'twould", "it would").replace("it 's", "it's")
+    text = text.replace("—-", "--")
     out = open("data/join.txt", "w+")
     out.write(text)
     out.close()
-
-poe()
-#join()
+shelley()
+join()
