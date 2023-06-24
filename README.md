@@ -6,3 +6,4 @@ Data sources:
 * John Keats ([Plain Text with Index](https://www.gutenberg.org/cache/epub/23684/pg23684.txt))
 * Edgar Allan Poe ([Plain Text with Index](https://www.gutenberg.org/files/50852/50852-0.txt))
 * Percy Bysshe Shelley ([Plain Text with Index](https://www.gutenberg.org/cache/epub/4800/pg4800.txt))
+* Lord Byron ([Plain Text with Index](https://www.gutenberg.org/cache/epub/8861/pg8861.txt))

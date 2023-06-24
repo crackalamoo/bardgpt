@@ -262,9 +262,72 @@ def shelley():
         print(title)
         #print(poem)
     out.close()
+def byron():
+    text = getContents("data/byron-raw.txt")
+    text = text.replace(' [', '[')
+    text = text.replace('\n[', '[')
+    text = text.replace('\n[', '[')
+    text = text.replace('\n[', '[')
+    text = text.replace('\n[', '[')
+    text = text.replace('\n[', '[')
+    text = removeBrackets(text)
+    index = getContents("data/byron-index.txt").upper().split('\n')
+    print(index)
+    out = open("data/byron.txt", "w+")
+    for heading in index:
+        this = text.find(heading+'.')
+        next = text.find('\n'*4, this+1)
+        if this == -1 or next == -1:
+            continue
+        title = text[this:this+len(heading)]
+        endtitle = this+len(heading+'.')
+        while text[endtitle] == '\n' or text[endtitle] == ' ':
+            endtitle += 1
+        poem = text[endtitle:next]
+        poem = poem.replace('_','')
+        poem = poem.split('\n')
+        for i in reversed(range(len(poem))):
+            while poem[i].startswith(" "):
+                poem[i] = poem[i][1:]
+            while poem[i].endswith(" "):
+                poem[i] = poem[i][:-1]
+            if (isNumeral(poem[i]) or isNumeral(poem[i][:-1]) or isRomanNumeral(poem[i][:-1]))\
+                    and not poem[i].startswith('1.') and not poem[i].startswith('i.')\
+                    and not poem[i] == '':
+                if i+1 < len(poem) and poem[i+1] == '':
+                    poem.pop(i+1)
+                poem.pop(i)
+                continue
+            poem[i] = poem[i].replace("    ","").replace("   ","").replace("  ", "")
+        while poem[0] == '' or poem[0] == ' ':
+            poem.pop(0)
+        poem.pop()
+        poem.pop()
+        while poem[len(poem)-1] == '' or poem[len(poem)-1] == ' ' or poem[len(poem)-1].endswith(']'):
+            poem.pop()
+        poem = '\n'.join(poem)
+        if poem.find('1.\n') != -1:
+            poem = poem[poem.find('1.\n')+3:]
+        elif poem.find('i.\n') != -1:
+            poem = poem[poem.find('i.\n')+3:]
+        poem = TITLE + title + NEWLINE + poem + NEWLINE
+        poem = poem.lower()
+        poem = poem.replace('\n\n\n','\n\n')
+        poem = poem.replace('\n', NEWLINE)
+        poem = poem.replace("'d", "ed")
+        if poem.rfind("notes;") != -1:
+            poem = poem[:poem.rfind("notes;")]
+        if poem.rfind("notes:") != -1:
+            poem = poem[:poem.rfind("notes:")]
+        if poem.rfind("\nnote:") != -1:
+            poem = poem[:poem.rfind("\nnote:")]
+        out.write(poem)
+        print(title)
+        #print(poem)
+    out.close()
 def join():
     text = ''
-    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley']:
+    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron']:
         text += getContents("data/"+author+".txt")
     text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through")
     text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
@@ -273,5 +336,5 @@ def join():
     out = open("data/join.txt", "w+")
     out.write(text)
     out.close()
-shelley()
+byron()
 join()
