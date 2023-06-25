@@ -1,7 +1,6 @@
-import eng_to_ipa as ipa
 import re
-TITLE = "*** "
-NEWLINE = " \n"
+TITLE = " <TITLE> "
+NEWLINE = " <NEWLINE> "
 
 def getContents(fname):
     file = open(fname, "r")
@@ -130,8 +129,8 @@ def keats():
         elif heading == "BOOK III" and poem.find(" *****") != -1:
             poem = poem[:poem.find(" *****")]
         poem = TITLE + title + NEWLINE + poem + NEWLINE
-        poem = poem.lower()
         poem = poem.replace('\n', NEWLINE)
+        poem = poem.lower()
         if poem.rfind("footnotes:") != -1:
             poem = poem[:poem.rfind("footnotes:")]
         out.write(poem)
@@ -193,8 +192,8 @@ def poe():
             poem = poem.replace('hath\nsent','hath sent').replace('bird or\ndevil','bird or devil')
             poem = poem.replace(',\nupstarting',', upstarting')
         poem = TITLE + title + NEWLINE + poem + NEWLINE
-        poem = poem.lower()
         poem = poem.replace('\n', NEWLINE)
+        poem = poem.lower()
         out.write(poem)
         print(poem)
     out.close()
@@ -250,8 +249,8 @@ def shelley():
             poem.pop()
         poem = '\n'.join(poem)
         poem = TITLE + title + NEWLINE + poem + NEWLINE
-        poem = poem.lower()
         poem = poem.replace('\n', NEWLINE)
+        poem = poem.lower()
         if poem.rfind("notes;") != -1:
             poem = poem[:poem.rfind("notes;")]
         if poem.rfind("notes:") != -1:
@@ -311,10 +310,10 @@ def byron():
         elif poem.find('i.\n') != -1:
             poem = poem[poem.find('i.\n')+3:]
         poem = TITLE + title + NEWLINE + poem + NEWLINE
-        poem = poem.lower()
         poem = poem.replace('\n\n\n','\n\n')
         poem = poem.replace('\n', NEWLINE)
         poem = poem.replace("'d", "ed")
+        poem = poem.lower()
         if poem.rfind("notes;") != -1:
             poem = poem[:poem.rfind("notes;")]
         if poem.rfind("notes:") != -1:
@@ -329,12 +328,73 @@ def join():
     text = ''
     for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron']:
         text += getContents("data/"+author+".txt")
-    text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through")
+    text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through").replace("e'en","even")
     text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
     text = text.replace("'tis", "it is").replace("'twould", "it would").replace("it 's", "it's")
+    text = text.replace("'twas", "it was").replace("'twere", "it were").replace("'twould","it would")
+    text = text.replace(" twas "," it was ").replace(" twere "," it were ").replace(" twould "," it would ").replace(" twill "," it will ")
     text = text.replace("—-", "--")
+    text = text.replace(" .",".").replace(" ,",",").replace("."," .").replace(","," ,")
+    text = text.replace(" :",":").replace(" ;",";").replace(":"," :").replace(";"," ;")
+    text = text.replace(" !","!").replace(" ?","?").replace("!"," !").replace("?"," ?")
+    text = text.replace(NEWLINE+NEWLINE, NEWLINE+" "+NEWLINE)
+    text = text.replace("><", "> <")
+    text = text.replace("  ", " ")
+    text = text.replace(" -","-").replace("- ","-").replace("-"," - ")
+    text = text.replace(' "','"').replace('" ','"').replace('"',' " ')
+    text = text.replace(" i'd "," ID ").replace(" we'd "," WED ").replace(" he'd "," HED ").replace(" she'd "," SHED ")
+    text = text.replace("don't", "DONT").replace("wouldn't","WOULDNT").replace("isn't", "ISNT").replace("aren't","ARENT")
+    text = text.replace("doesn't","DOESNT").replace("won't","WONT").replace("shouldn't","SHOULDNT").replace("couldn't","COULDNT")
+    text = text.replace("can't","CANT").replace("shan't","SHANT").replace("didn't","DIDNT")
+    text = text.replace("'s", " S").replace("'m"," M").replace("'ve"," VE").replace("'re"," RE")
+    text = text.replace("'d", "ed")
+    text = text.replace(" '","'").replace("' ","'").replace("'"," ' ")
+    text = text.replace("ID","i 'd").replace("WED","we 'd").replace("HED","he 'd").replace("SHED","she 'd")
+    text = text.replace("DONT","do n't").replace("WOULDNT", "would n't").replace("ISNT", "is n't").replace("ARENT", "are n't")
+    text = text.replace("DOESNT","does n't").replace("WONT","wo n't").replace("SHOULDNT","should n't").replace("COULDNT","could n't")
+    text = text.replace("CANT","can n't").replace("SHANT","sha n't").replace("DIDNT","did n't")
+    text = text.replace("S", "'s").replace("M","'m").replace("VE","'ve").replace("RE","'re")
+    text = text.replace("(","").replace(")","")
+    text = text.replace("coming", "come ing").replace("living","live ing").replace("dying","die ing")
+    text = text.replace("trembling","tremble ing").replace("sitting","sit ing").replace("getting","get ing")
+    text = text.replace("breathing","breathe ing").replace("making","make ing").replace("leaving","leave ing")
+    for root in ["go", "be", "burn", "pass", "look", "dream", "sleep", "wander", "think", "part", "say"]:
+        text = text.replace(root+"ing",root+" ing")
+    text = text.replace("dropped","drop ed")
+    for root in ["pass", "seem", "look", "turn", "call", "ask", "touch", "wander", "roll", "depart", "stay", "perish", "fail", "want"]:
+        text = text.replace(" "+root+"ed "," "+root+" ed ")
+    for root in ["use", "die", "love", "live", "breathe", "smile",  "move", "cease", "save"]:
+        text = text.replace(" "+root+"d "," "+root+" ed ")
+    text = text.replace(" skies "," sky s ").replace(" memories "," memory s ").replace(" mysteries "," mystery s ")
+    text = text.replace(" ings "," ing s ")
+    for root in ["eye","flower","bell","thing","star","day","hour","tree","word","year","wing","angel","come","hand",
+                 "bird","dream","hill","cloud","finger","sound","seem","make","lie","mountain","wave","look","time",
+                 "heart","field","friend","say","know","water","sigh","sea","soul","arm","think","smile","shadow",
+                 "thought","door","hope","head","forest","window","wall","stone","creature","lock","street","fear",
+                 "float","rock","want","cheek","rock","stand","region","lover","voice","gale","pleasure","lamp",
+                 "need","hall","pearl","horse","see","son","grief","bear","robin","nest","call","lead",
+                 "like","love","night","heaven","light","way","tell","die","sun","sleep","air","own","live",
+                 "spirit","summer","face","back","morning","take","hear","wind","turn","find","name",
+                 "home","mine","place","put","pain","get","breast","keep","house","rest","fire","nothing",
+                 "ask","mind","feel","bed","save","side","rose","right","breathe","art","breath","drop","joy",
+                 "noon","ear","grave","snow","form","slow","sit","woe","forget","speak","morn","power","song",
+                 "room","sorrow","bee","wander","fall","meet","part","land","storm","care","brain","warm",
+                 "give","throne","spring","sight","truth","passion","play","shore","set","burn","delight",
+                 "chamber","move","father","read","town","bring","close","bosom","shade","grace","cease",
+                 "open","lake","work","break","shut","mortal","roll","river","weep","thousand","ring","kind",
+                 "boy","calm","garden","brook","step","tongue","sing","glow","despair","use","brow","road",
+                 "seek","view","run","moment","free","shape","please","tomb","prayer","tone","thunder",
+                 "spread","stir","wait","king","doubt","fail","brother","eve"]:
+        text = text.replace(" "+root+"s "," "+root+" s ")
     out = open("data/join.txt", "w+")
     out.write(text)
     out.close()
+
+dickinson()
+frost()
+keats()
+poe()
+shelley()
 byron()
+
 join()
