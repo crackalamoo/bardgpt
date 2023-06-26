@@ -358,8 +358,6 @@ def join():
     text = text.replace("coming", "come ing").replace("living","live ing").replace("dying","die ing")
     text = text.replace("trembling","tremble ing").replace("sitting","sit ing").replace("getting","get ing")
     text = text.replace("breathing","breathe ing").replace("making","make ing").replace("leaving","leave ing")
-    for root in ["go", "be", "burn", "pass", "look", "dream", "sleep", "wander", "think", "part", "say"]:
-        text = text.replace(root+"ing",root+" ing")
     text = text.replace("dropped","drop ed")
     for root in ["pass", "seem", "look", "turn", "call", "ask", "touch", "wander", "roll", "depart", "stay", "perish", "fail", "want"]:
         text = text.replace(" "+root+"ed "," "+root+" ed ")
@@ -367,25 +365,30 @@ def join():
         text = text.replace(" "+root+"d "," "+root+" ed ")
     text = text.replace(" skies "," sky s ").replace(" memories "," memory s ").replace(" mysteries "," mystery s ")
     text = text.replace(" ings "," ing s ")
-    for root in ["eye","flower","bell","thing","star","day","hour","tree","word","year","wing","angel","come","hand",
-                 "bird","dream","hill","cloud","finger","sound","seem","make","lie","mountain","wave","look","time",
-                 "heart","field","friend","say","know","water","sigh","sea","soul","arm","think","smile","shadow",
-                 "thought","door","hope","head","forest","window","wall","stone","creature","lock","street","fear",
-                 "float","rock","want","cheek","rock","stand","region","lover","voice","gale","pleasure","lamp",
-                 "need","hall","pearl","horse","see","son","grief","bear","robin","nest","call","lead",
-                 "like","love","night","heaven","light","way","tell","die","sun","sleep","air","own","live",
-                 "spirit","summer","face","back","morning","take","hear","wind","turn","find","name",
-                 "home","mine","place","put","pain","get","breast","keep","house","rest","fire","nothing",
-                 "ask","mind","feel","bed","save","side","rose","right","breathe","art","breath","drop","joy",
-                 "noon","ear","grave","snow","form","slow","sit","woe","forget","speak","morn","power","song",
-                 "room","sorrow","bee","wander","fall","meet","part","land","storm","care","brain","warm",
-                 "give","throne","spring","sight","truth","passion","play","shore","set","burn","delight",
-                 "chamber","move","father","read","town","bring","close","bosom","shade","grace","cease",
-                 "open","lake","work","break","shut","mortal","roll","river","weep","thousand","ring","kind",
-                 "boy","calm","garden","brook","step","tongue","sing","glow","despair","use","brow","road",
-                 "seek","view","run","moment","free","shape","please","tomb","prayer","tone","thunder",
-                 "spread","stir","wait","king","doubt","fail","brother","eve"]:
-        text = text.replace(" "+root+"s "," "+root+" s ")
+    words = text.split(' ')
+    counts = {}
+    for word in words:
+        if not word in counts:
+            counts[word] = 0
+        counts[word] += 1
+    words = list(counts.keys())
+    words.sort(key=lambda word: counts[word], reverse=True)
+    for word in words:
+        if word != '' and word+word[-1]+"ed" in counts and not word in ['ad','cares']:
+            text = text.replace(" "+word+word[-1]+"ed", " "+word+" ed ")
+        if word != '' and word[-1] == 'e' and word+'d' in counts and not word in ['be',
+                        'she','we','see','re','fe','rowe','fee','le','seale']:
+            text = text.replace(" "+word+"d "," "+word+" ed ")
+        if word+'s' in counts and not word in ['','a','i','it','his','her',"'",'their','one','will','your','our','down','pant',
+                        'god','well','other','saw','good','new','ye','leave','right','hair','wood']:
+            text = text.replace(" "+word+"s "," "+word+" s ")
+        if word+'ing' in counts and not word in ['','us','s','st','n','wan','din','k','heav']:
+            text = text.replace(" "+word+"ing "," "+word+" ing ")
+    for root in ['pass','bliss','wish','echo','rich','reach','kiss','goddess','miss','couch',
+                 'wilderness','stretch','moss','glass','wretch','blush','porch','hero','rush',
+                 'abyss','surpass','torch','bush','match','gush','approach','press','lash','birch',
+                 'branch','possess','crouch','oppress','wash','dish','caress','sooth','marsh']:
+        text = text.replace(" "+root+"es "," "+root+" s ")
     out = open("data/join.txt", "w+")
     out.write(text)
     out.close()
