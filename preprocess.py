@@ -47,10 +47,12 @@ def dickinson():
         poem = text[this:next]
         poem = poem.replace('\n', NEWLINE)
         poem = poem.replace("  ", "").replace('_','')
+        poem = poem.replace(" they 'd "," they'd ")
         poem = TITLE + title + NEWLINE + poem + NEWLINE
         poem = poem.lower()
+        poem = poem.replace(" i 'd "," i'd ").replace(" he 'd "," he'd ")
         out.write(poem)
-        print(poem)
+        #print(poem)
     out.close()
 def frost():
     text = getContents("data/frost-raw.txt")
@@ -71,7 +73,7 @@ def frost():
         poem = TITLE + title + poem + NEWLINE
         poem = poem.lower()
         out.write(poem)
-        print(poem)
+        #print(poem)
     out.close()
 def keats():
     text = getContents("data/keats-raw.txt")
@@ -164,8 +166,6 @@ def poe():
         poem = text[endtitle:next]
         poem = poem.replace("    ", "").replace('_', '')
         poem = poem.split('\n')
-        if i == 0:
-            print(poem)
         j = len(poem)-1
         while j >= 0:
             while poem[j].startswith(" "):
@@ -199,7 +199,7 @@ def poe():
         poem = poem.replace('\n', NEWLINE)
         poem = poem.lower()
         out.write(poem)
-        print(poem)
+        #print(poem)
     out.close()
 def shelley():
     text = getContents("data/shelley-raw.txt")
@@ -398,7 +398,7 @@ def ballads():
         while poem.endswith('\n') or poem.endswith(' '):
             poem = poem[:-1]
         print("title: " + title.upper())
-        print("poem: "+poem)
+        #print("poem: "+poem)
         poem = poem.replace('\n',NEWLINE)
         poem = TITLE + title + NEWLINE + poem
         poem = poem.lower()
@@ -408,78 +408,129 @@ def join():
     text = ''
     for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads']:
         text += getContents("data/"+author+".txt")
-    text = text.replace("’","'")
-    text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through").replace("e'en","even")
-    text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
-    text = text.replace("'tis", "it is").replace("'twould", "it would").replace("it 's", "it's")
-    text = text.replace("'twas", "it was").replace("'twere", "it were").replace("'twould","it would")
-    text = text.replace(" twas "," it was ").replace(" twere "," it were ").replace(" twould "," it would ").replace(" twill "," it will ")
+    text = text.replace("’","'").replace('“','"').replace('”','"')
     text = text.replace("—-", "--")
     text = text.replace(" .",".").replace(" ,",",").replace("."," .").replace(","," ,")
     text = text.replace(" :",":").replace(" ;",";").replace(":"," :").replace(";"," ;")
     text = text.replace(" !","!").replace(" ?","?").replace("!"," !").replace("?"," ?")
     text = text.replace(NEWLINE+NEWLINE, NEWLINE+" "+NEWLINE)
     text = text.replace("><", "> <")
-    text = text.replace("  ", " ")
+    text = text.replace('>','> ')
+    text = text.replace("  ", " ").replace("  ", " ")
     text = text.replace(" -","-").replace("- ","-").replace("-"," - ")
     text = text.replace(' "','"').replace('" ','"').replace('"',' " ')
-    text = text.replace(" i'd "," ID ").replace(" we'd "," WED ").replace(" he'd "," HED ").replace(" she'd "," SHED ")
-    text = text.replace("don't", "DONT").replace("wouldn't","WOULDNT").replace("isn't", "ISNT").replace("aren't","ARENT")
-    text = text.replace("doesn't","DOESNT").replace("won't","WONT").replace("shouldn't","SHOULDNT").replace("couldn't","COULDNT")
-    text = text.replace("can't","CANT").replace("shan't","SHANT").replace("didn't","DIDNT")
-    text = text.replace("'s", " S").replace("'m"," M").replace("'ve"," VE").replace("'re"," RE")
-    text = text.replace("'d", " ed")
-    text = text.replace(" '","'").replace("' ","'").replace("'"," ' ")
-    text = text.replace("ID","i 'd").replace("WED","we 'd").replace("HED","he 'd").replace("SHED","she 'd")
-    text = text.replace("DONT","do n't").replace("WOULDNT", "would n't").replace("ISNT", "is n't").replace("ARENT", "are n't")
-    text = text.replace("DOESNT","does n't").replace("WONT","wo n't").replace("SHOULDNT","should n't").replace("COULDNT","could n't")
-    text = text.replace("CANT","can n't").replace("SHANT","sha n't").replace("DIDNT","did n't")
-    text = text.replace("S", "'s").replace("M","'m").replace("VE","'ve").replace("RE","'re")
-    text = text.replace("(","").replace(")","")
-    text = text.replace("coming", "come ing").replace("living","live ing").replace("dying","die ing")
-    text = text.replace("trembling","tremble ing").replace("sitting","sit ing").replace("getting","get ing")
-    text = text.replace("breathing","breathe ing").replace("making","make ing").replace("leaving","leave ing")
-    text = text.replace("dropped","drop ed")
-    for root in ["pass", "seem", "look", "turn", "call", "ask", "touch", "wander", "roll", "depart", "stay", "perish", "fail", "want"]:
-        text = text.replace(" "+root+"ed "," "+root+" ed ")
-    for root in ["use", "die", "love", "live", "breathe", "smile",  "move", "cease", "save"]:
-        text = text.replace(" "+root+"d "," "+root+" ed ")
-    text = text.replace(" skies "," sky s ").replace(" memories "," memory s ").replace(" mysteries "," mystery s ")
-    text = text.replace(" ings "," ing s ")
-    words = text.split(' ')
-    counts = {}
-    for word in words:
-        if not word in counts:
-            counts[word] = 0
-        counts[word] += 1
-    words = list(counts.keys())
-    words.sort(key=lambda word: counts[word], reverse=True)
-    for word in words:
-        if word != '' and word+word[-1]+"ed" in counts and not word in ['ad','cares']:
-            text = text.replace(" "+word+word[-1]+"ed", " "+word+" ed ")
-        if word != '' and word[-1] == 'e' and word+'d' in counts and not word in ['be',
-                        'she','we','see','re','fe','rowe','fee','le','seale']:
-            text = text.replace(" "+word+"d "," "+word+" ed ")
-        if word+'s' in counts and not word in ['','a','i','it','his','her',"'",'their','one','will','your','our','down','pant',
-                        'god','well','other','saw','good','new','ye','leave','right','hair','wood']:
-            text = text.replace(" "+word+"s "," "+word+" s ")
-        if word+'ing' in counts and not word in ['','us','s','st','n','wan','din','k','heav']:
-            text = text.replace(" "+word+"ing "," "+word+" ing ")
-    for root in ['pass','bliss','wish','echo','rich','reach','kiss','goddess','miss','couch',
-                 'wilderness','stretch','moss','glass','wretch','blush','porch','hero','rush',
-                 'abyss','surpass','torch','bush','match','gush','approach','press','lash','birch',
-                 'branch','possess','crouch','oppress','wash','dish','caress','sooth','marsh']:
-        text = text.replace(" "+root+"es "," "+root+" s ")
+    PROCESS_MORPHEMES = True
+    if PROCESS_MORPHEMES:
+        text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through").replace("e'en","even")
+        text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
+        text = text.replace("'tis", "it is").replace("'twould", "it would").replace("it 's", "it's")
+        text = text.replace("'twas", "it was").replace("'twere", "it were").replace("'twould","it would")
+        text = text.replace(" twas "," it was ").replace(" twere "," it were ").replace(" twould "," it would ").replace(" twill "," it will ")
+        text = text.replace("èd ","ed ")
+        text = text.replace(" i'll "," i LL ").replace(" thou'lt "," thou LT ").replace(" we'll "," we LL ")
+        text = text.replace(" he'll "," he LL ").replace(" she'll "," she LL ").replace(" it'll "," it LL ")
+        text = text.replace(" they'll "," they LL ").replace(" you'll "," you LL ")
+        text = text.replace(" i'd "," ID ").replace(" we'd "," WED ").replace(" he'd "," HED ").replace(" she'd "," SHED ")
+        text = text.replace("don't", "DONT").replace("wouldn't","WOULDNT").replace("isn't", "ISNT").replace("aren't","ARENT")
+        text = text.replace("doesn't","DOESNT").replace("won't","WONT").replace("shouldn't","SHOULDNT").replace("couldn't","COULDNT")
+        text = text.replace("can't","CANT").replace("shan't","SHANT").replace("didn't","DIDNT")
+        text = text.replace("'s", " S").replace("'m"," M").replace("'ve"," VE").replace("'re"," RE")
+        text = text.replace("'d ", "ed ")
+        text = text.replace(" '","'").replace("' ","'").replace("'"," ' ")
+        text = text.replace("ID","i 'd").replace("WED","we 'd").replace("HED","he 'd").replace("SHED","she 'd")
+        text = text.replace("DONT","do n't").replace("WOULDNT", "would n't").replace("ISNT", "is n't").replace("ARENT", "are n't")
+        text = text.replace("DOESNT","does n't").replace("WONT","wo n't").replace("SHOULDNT","should n't").replace("COULDNT","could n't")
+        text = text.replace("CANT","can n't").replace("SHANT","sha n't").replace("DIDNT","did n't")
+        text = text.replace(" Di 'dNT "," did n't").replace(" Di dNT "," did n't ")
+        text = text.replace("S", "'s").replace("M","'m").replace("VE","'ve").replace("RE","'re")
+        text = text.replace(" LL "," 'll ").replace(" LT "," 'lt ")
+        text = text.replace("(","").replace(")","")
+        text = text.replace("dying","die =ing")
+        text = text.replace(" ings "," =ing =s ").replace(" n't "," =n't ")
+        words = text.split(' ')
+        counts = {}
+        for word in words:
+            if not word in counts:
+                counts[word] = 0
+            counts[word] += 1
+        words = list(counts.keys())
+        words.sort(key=lambda word: counts[word], reverse=True)
+        est_set = set(['for','t','n','liv','b','di',
+                            'l','eld','pr','inter','sever','hug','earn','smil'])
+        ed_set = set(['he','you','they','we','will','mov',
+                            'till','far','fell','de','b','f','l','re','hopp','ne'])
+        d_set = set(['be', 'she','we','see','re','fe','rowe','fee','le','seale'])
+        y_ed_set = set(['drapery','city','weary'])
+        s_set = set(['','a','i','it','his','her',"'",'their','one','will','your','our','down','pant','wa',
+                            'god','well','other','saw','good','new','ye','leave','right','hair','wood'])
+        st_set = set(['be','we','ne','re','tempe','le','mode'])
+        er_set = set(['with','she','h','quak','curr','hopp','minist','eth','thund','whisp','whit',
+                    'fev','rememb','inn','rend','de','beak','wand','port','heath','clos',
+                    'wrapp','cap','cow','lett','moth','chart','prop','danc','dinn','slumb',
+                    'sever','ladd','falt','eld','aft','hind','flatt','murd','show'])
+        _er_set = set(['of','in','but','up','man','let','shut','sum','slip','din','flit',
+                    'mat','bat','bit','lad','ban','bet','ad'])
+        e_er_set = set(['he',"'re",'rule','cottage','quake','cove','clove','warble','prime','lowe',
+                        'cape','tempe','late'])
+        ing_set = set(['','us','s','st','n','wan','din','k','heav'])
+        _ing_set = set(['er','wed','ad','ear','begin'])
+        e_ing_set = set(['the','we','bee','bore','lute','ne','re','please','displease','tide'])
+        y_ing_set = set(['ry'])
+        text = text.replace(" hopper ", " hop =er ").replace(" dispelled "," dispel =ed ").replace(" hopped "," hop =ed ")
+        text = text.replace(" conjectured "," conjecture =ed ").replace(' sophistries ',' sophistry =s ').replace(' beads ',' bead =s ')
+        text = text.replace(" halves "," half =s ").replace(" consented "," consent =ed ").replace(" ceded "," cede =ed ")
+        for word in words:
+            if word != '' and word+'est' in counts and not word in est_set:
+                text = text.replace(" "+word+"est "," "+word+" =est ")
+            if word != '' and word+word[-1]+"ed" in counts and not word in ['ad','cares']:
+                text = text.replace(" "+word+word[-1]+"ed", " "+word+" =ed ")
+            if word != '' and word+word[-1]+"est" in counts:
+                text = text.replace(" "+word+word[-1]+"est", " "+word+" =est ")
+            if word != '' and word[-1] == 'e' and word+'d' in counts and not word in d_set:
+                text = text.replace(" "+word+"d "," "+word+" =ed ")
+            if word.endswith('y') and word[:-1]+'ied' in counts and not word in y_ed_set:
+                text = text.replace(" "+word[:-1]+"ied "," "+word+" =ed ")
+            if word != '' and word[-1] == 'e' and word+'st' in counts and not word in st_set:
+                text = text.replace(" "+word+"st "," "+word+" =est ")
+            if word != '' and word+word[-1]+"er" in counts and not word in _er_set:
+                text = text.replace(" "+word+word[-1]+"er "," "+word+" =er ")
+            if word.endswith('e') and word+"r" in counts and not word in e_er_set:
+                text = text.replace(" "+word+"r "," "+word+" =er ")
+            if word+'s' in counts and not word in s_set:
+                text = text.replace(" "+word+"s "," "+word+" =s ")
+            if word+'ing' in counts and not word in ing_set:
+                text = text.replace(" "+word+"ing "," "+word+" =ing ")
+            if word != '' and word+word[-1]+'ing' in counts and not word in _ing_set:
+                text = text.replace(" "+word+word[-1]+"ing "," "+word+" =ing ")
+            if word != '' and word.endswith('e') and word[:-1]+'ing' in counts and not word in e_ing_set:
+                text = text.replace(" "+word[:-1]+"ing ", " "+word+" =ing ")
+            if word.endswith('y') and word[:-1]+'ies' in counts and not word in y_ing_set:
+                text = text.replace(" "+word[:-1]+"ies "," "+word+" =s ")
+        for word in words:
+            if word != '' and word+"ed" in counts and not word in ed_set:
+                text = text.replace(" "+word+"ed "," "+word+" =ed ")
+            if word != '' and word+"er" in counts and not word in er_set:
+                text = text.replace(" "+word+"er ", " "+word+" =er ")
+        for root in ['pass','bliss','wish','echo','rich','reach','kiss','goddess','miss','couch',
+                    'wilderness','stretch','moss','glass','wretch','blush','porch','hero','rush',
+                    'abyss','surpass','torch','bush','match','gush','approach','press','lash','birch',
+                    'branch','possess','crouch','oppress','wash','dish','caress','sooth','marsh']:
+            text = text.replace(" "+root+"es "," "+root+" =s ")
+        for word in ['neighbor','color','flavor','splendor','labor']:
+            text = text.replace(" "+word+" "," "+word[:-2]+"our ")
+        text = text.replace(' gray ',' grey ').replace(' phrenzy ',' frenzy ')
+        text = text.replace(" ' t was "," it was ").replace(" ' t were "," it were ").replace(" ' t would "," it would ")
     out = open("data/join.txt", "w+")
     out.write(text)
     out.close()
 
-dickinson()
-frost()
-keats()
-poe()
-shelley()
-byron()
-ballads()
+if __name__ == '__main__':
+    dickinson()
+    frost()
+    keats()
+    poe()
+    shelley()
+    byron()
+    ballads()
 
-join()
+    join()

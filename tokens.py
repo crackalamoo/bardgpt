@@ -1,5 +1,6 @@
 from transformers import AutoTokenizer
 import eng_to_ipa as ipa
+from preprocess import NEWLINE, TITLE
 
 VOCAB_SIZE = 4096
 
@@ -19,13 +20,42 @@ for token in tokens:
     counts[token] += 1
 words = list(counts.keys())
 words.sort(reverse=True, key=lambda word: counts[word])
+counts['<unk>'] = 0
 for word in words:
-    if word+"s" in words:
-        print(word, word+"s")
-print(len(words))
-print({word: counts[word] for word in words[:VOCAB_SIZE]})
-for word in tokens:
     if word in words[:VOCAB_SIZE]:
-        print(word, end=" ")
+        continue
+    counts['<unk>'] += counts[word]
+print(len(words))
+print(len(tokens))
+words = list(counts.keys())
+words.sort(reverse=True, key=lambda word: counts[word])
+print({word: counts[word] for word in words[:VOCAB_SIZE]})
+print(len(tokens))
+
+def toText(word, prev=None):
+    if word == NEWLINE.lower()[1:-1]:
+        return '\n'
+    if word == TITLE.lower()[1:-1]:
+        return ' ༄༄༄ '
+    if prev is None:
+        if word.startswith('='):
+            return word[1:]
+        return word
+    punct = set([',', '.', ';', ':', '-', '!', '?'])
+    if word.startswith("'") or word in punct:
+        return word
+    if word.startswith('='):
+        if word == '=s' and (prev.endswith('s') or prev.endswith('sh')):
+            return 'es'
+        if word[1] == 'e' and prev.endswith('e'):
+            return word[2:]
+        return word[1:]
+    return ' '+word
+
+prev = None
+for word in tokens[:10000]:
+    if word in words[:VOCAB_SIZE]:
+        print(toText(word, prev), end="")
     else:
-        print("<unk>", end=" ")
+        print(" <unk>", end="")
+    prev = word
