@@ -7,3 +7,4 @@ Data sources:
 * Edgar Allan Poe ([Plain Text with Index](https://www.gutenberg.org/files/50852/50852-0.txt))
 * Percy Bysshe Shelley ([Plain Text with Index](https://www.gutenberg.org/cache/epub/4800/pg4800.txt))
 * Lord Byron ([Plain Text with Index](https://www.gutenberg.org/cache/epub/8861/pg8861.txt))
+* *Lyrical Ballads* by William Wordsworth and Samuel Taylor Coleridge ([Plain Text with Index](https://www.gutenberg.org/files/9622/9622-0.txt))

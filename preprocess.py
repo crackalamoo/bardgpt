@@ -24,6 +24,10 @@ def isNumeral(s):
         return False
 def isRomanNumeral(s):
     return s != '' and bool(re.search(r"^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$", s))
+def stripTitle(s):
+    while s.endswith('\n') or s.endswith(' ') or s.endswith('.') or s.endswith(';'):
+        s = s[:-1]
+    return s
 
 def dickinson():
     text = getContents("data/dickinson-raw.txt")
@@ -248,6 +252,7 @@ def shelley():
         while poem[len(poem)-1] == '' or poem[len(poem)-1] == ' ':
             poem.pop()
         poem = '\n'.join(poem)
+        title = stripTitle(title)
         poem = TITLE + title + NEWLINE + poem + NEWLINE
         poem = poem.replace('\n', NEWLINE)
         poem = poem.lower()
@@ -309,6 +314,7 @@ def byron():
             poem = poem[poem.find('1.\n')+3:]
         elif poem.find('i.\n') != -1:
             poem = poem[poem.find('i.\n')+3:]
+        title = stripTitle(title)
         poem = TITLE + title + NEWLINE + poem + NEWLINE
         poem = poem.replace('\n\n\n','\n\n')
         poem = poem.replace('\n', NEWLINE)
@@ -324,10 +330,85 @@ def byron():
         print(title)
         #print(poem)
     out.close()
+def ballads():
+    text = getContents("data/ballads-raw.txt")
+    index = getContents("data/ballads-index.txt").replace('  ','').split('\n')
+    out = open("data/ballads.txt", "w+")
+    titles = {"a conversational poem": "the nightingale",
+              "the tables turned; an evening scene, on the same subject": "the tables turned",
+              "old man travelling": "old man travelling",
+              "lines written a few miles above tintern abbey": "on revisiting the banks",
+              "lines written at a small distance from my house, and sent": "",
+              "lines written near richmond, upon the thames, at evening": "upon the thames at evening",
+              "lines written in early spring": "early spring",
+              "lines left upon a seat in a yew-tree which stands near the lake": "a yew tree",
+              "the rime of the ancyent marinere": "the rhyme of the ancient mariner",
+              "simon lee, the old huntsman": "the old huntsman",
+              "anecdote for fathers": "anecdote for fathers"}
+    for heading in index:
+        this = text.find(heading.upper())
+        next = text.find('\n'*4, this+1)
+        if this == -1 or next == -1:
+            continue
+        endtitle = text.find('\n\n',this+1)
+        while text[endtitle] == '\n' or text[endtitle] == '.':
+            endtitle += 1
+        if heading.lower() in titles:
+            title = titles[heading.lower()]
+        else:
+            title = text[this:endtitle]
+        title = stripTitle(title)
+        if heading == 'the thorn':
+            next = text.find('THE LAST OF THE FLOCK', this+1)
+        poem = text[endtitle:next]
+        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
+        poem = poem.split('\n')
+        for i in reversed(range(len(poem))):
+            while poem[i].startswith(' '):
+                poem[i] = poem[i][1:]
+            while poem[i].endswith(" "):
+                poem[i] = poem[i][:-1]
+            if isRomanNumeral(poem[i][:-1]) and poem[i][-1] == '.':
+                if poem[i+1] == '':
+                    poem.pop(i+1)
+                poem.pop(i)
+                continue
+            elif isNumeral(poem[i]):
+                poem.pop(i)
+        if heading.lower() == "the rime of the ancyent marinere":
+            poem.pop(0)
+            poem.pop(0)
+        poem = '\n'.join(poem)
+        poem = poem.lower()
+        poem = poem.replace('contrée','country').replace('countrée','country')
+        poem = poem.replace('\n\n\n','\n\n')
+        if heading.lower() == "the rime of the ancyent marinere":
+            poem = poem[poem.find("i."):]
+            poem = poem.replace('ancyent','ancient').replace('marinere','mariner')
+            poem = poem[3:]
+        if heading.lower() == "the complaint of a forsaken indian woman":
+            poem = removeBrackets(poem)
+        else:
+            notes = poem.count('[')
+            for i in range(notes//2):
+                poem = poem[:poem.rfind('[')]
+            poem = removeBrackets(poem)
+        while poem.startswith('\n'):
+            poem = poem[1:]
+        while poem.endswith('\n') or poem.endswith(' '):
+            poem = poem[:-1]
+        print("title: " + title.upper())
+        print("poem: "+poem)
+        poem = poem.replace('\n',NEWLINE)
+        poem = TITLE + title + NEWLINE + poem
+        poem = poem.lower()
+        out.write(poem)
+    out.close()
 def join():
     text = ''
-    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron']:
+    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads']:
         text += getContents("data/"+author+".txt")
+    text = text.replace("’","'")
     text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through").replace("e'en","even")
     text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
     text = text.replace("'tis", "it is").replace("'twould", "it would").replace("it 's", "it's")
@@ -347,7 +428,7 @@ def join():
     text = text.replace("doesn't","DOESNT").replace("won't","WONT").replace("shouldn't","SHOULDNT").replace("couldn't","COULDNT")
     text = text.replace("can't","CANT").replace("shan't","SHANT").replace("didn't","DIDNT")
     text = text.replace("'s", " S").replace("'m"," M").replace("'ve"," VE").replace("'re"," RE")
-    text = text.replace("'d", "ed")
+    text = text.replace("'d", " ed")
     text = text.replace(" '","'").replace("' ","'").replace("'"," ' ")
     text = text.replace("ID","i 'd").replace("WED","we 'd").replace("HED","he 'd").replace("SHED","she 'd")
     text = text.replace("DONT","do n't").replace("WOULDNT", "would n't").replace("ISNT", "is n't").replace("ARENT", "are n't")
@@ -399,5 +480,6 @@ keats()
 poe()
 shelley()
 byron()
+ballads()
 
 join()
