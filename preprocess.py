@@ -1,4 +1,5 @@
 import re
+import numpy as np
 TITLE = " <TITLE> "
 NEWLINE = " <NEWLINE> "
 
@@ -414,6 +415,7 @@ def join():
     text = text.replace(" :",":").replace(" ;",";").replace(":"," :").replace(";"," ;")
     text = text.replace(" !","!").replace(" ?","?").replace("!"," !").replace("?"," ?")
     text = text.replace(NEWLINE+NEWLINE, NEWLINE+" "+NEWLINE)
+    text = text.replace(NEWLINE,' '+NEWLINE+' ')
     text = text.replace("><", "> <")
     text = text.replace('>','> ')
     text = text.replace("  ", " ").replace("  ", " ")
@@ -422,9 +424,15 @@ def join():
     PROCESS_MORPHEMES = True
     if PROCESS_MORPHEMES:
         text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through").replace("e'en","even")
+        text = text.replace("e'ery","every").replace("wond'rous","wonderous").replace("fev'rous","feverous")
+        text = text.replace("whisp'ring","whispering").replace("thund'rous","thunderous").replace("minist'ring","ministering")
+        text = text.replace("slumb'ring","slumbering").replace("rememb'ring","remembering").replace("flow'rs","flowers")
+        text = text.replace(" flatt'r"," flatter").replace("wand'ring","wandering").replace("mould'ring","mouldering")
+        text = text.replace("murm'ring","mumering")
+        text = text.replace("orat'ries","oratories").replace("falt'ring","faltering").replace("imag'ries","imageries")
         text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
-        text = text.replace("'tis", "it is").replace("'twould", "it would").replace("it 's", "it's")
-        text = text.replace("'twas", "it was").replace("'twere", "it were").replace("'twould","it would")
+        text = text.replace("'tis", "it is").replace("'twould", "it would").replace(" it 's ", " it's ")
+        text = text.replace(" 'twas ", " it was ").replace(" 'twere ", " it were ").replace(" 'twould "," it would ")
         text = text.replace(" twas "," it was ").replace(" twere "," it were ").replace(" twould "," it would ").replace(" twill "," it will ")
         text = text.replace("èd ","ed ")
         text = text.replace(" i'll "," i LL ").replace(" thou'lt "," thou LT ").replace(" we'll "," we LL ")
@@ -433,20 +441,19 @@ def join():
         text = text.replace(" i'd "," ID ").replace(" we'd "," WED ").replace(" he'd "," HED ").replace(" she'd "," SHED ")
         text = text.replace("don't", "DONT").replace("wouldn't","WOULDNT").replace("isn't", "ISNT").replace("aren't","ARENT")
         text = text.replace("doesn't","DOESNT").replace("won't","WONT").replace("shouldn't","SHOULDNT").replace("couldn't","COULDNT")
-        text = text.replace("can't","CANT").replace("shan't","SHANT").replace("didn't","DIDNT")
+        text = text.replace("can't","CANT").replace("shan't","SHANT").replace(" didn't "," DIDNT ")
         text = text.replace("'s", " S").replace("'m"," M").replace("'ve"," VE").replace("'re"," RE")
         text = text.replace("'d ", "ed ")
         text = text.replace(" '","'").replace("' ","'").replace("'"," ' ")
-        text = text.replace("ID","i 'd").replace("WED","we 'd").replace("HED","he 'd").replace("SHED","she 'd")
-        text = text.replace("DONT","do n't").replace("WOULDNT", "would n't").replace("ISNT", "is n't").replace("ARENT", "are n't")
-        text = text.replace("DOESNT","does n't").replace("WONT","wo n't").replace("SHOULDNT","should n't").replace("COULDNT","could n't")
-        text = text.replace("CANT","can n't").replace("SHANT","sha n't").replace("DIDNT","did n't")
-        text = text.replace(" Di 'dNT "," did n't").replace(" Di dNT "," did n't ")
+        text = text.replace(" ID "," i 'd ").replace("WED","we 'd").replace("HED","he 'd").replace("SHED","she 'd")
+        text = text.replace("DONT","do NT").replace("WOULDNT", "would NT").replace("ISNT", "is NT").replace("ARENT", "are NT")
+        text = text.replace("DOESNT","does NT").replace("WONT","wo NT").replace("SHOULDNT","should NT").replace("COULDNT","could NT")
+        text = text.replace("CANT","can NT").replace("SHANT","sha NT").replace(" DIDNT "," did NT ")
         text = text.replace("S", "'s").replace("M","'m").replace("VE","'ve").replace("RE","'re")
         text = text.replace(" LL "," 'll ").replace(" LT "," 'lt ")
         text = text.replace("(","").replace(")","")
         text = text.replace("dying","die =ing")
-        text = text.replace(" ings "," =ing =s ").replace(" n't "," =n't ")
+        text = text.replace(" ings "," =ing =s ").replace(" NT "," =nt ")
         words = text.split(' ')
         counts = {}
         for word in words:
@@ -476,35 +483,53 @@ def join():
         _ing_set = set(['er','wed','ad','ear','begin'])
         e_ing_set = set(['the','we','bee','bore','lute','ne','re','please','displease','tide'])
         y_ing_set = set(['ry'])
+        s_dict = {}
+        ed_dict = {}
+        er_dict = {}
+        est_dict = {}
+        ing_dict = {}
         text = text.replace(" hopper ", " hop =er ").replace(" dispelled "," dispel =ed ").replace(" hopped "," hop =ed ")
         text = text.replace(" conjectured "," conjecture =ed ").replace(' sophistries ',' sophistry =s ').replace(' beads ',' bead =s ')
         text = text.replace(" halves "," half =s ").replace(" consented "," consent =ed ").replace(" ceded "," cede =ed ")
+        s_dict['half'] = 'halves'
+        s_dict['sophistry'] = 'sophistries'
+        er_dict['hop'] = 'hopper'
+        ed_dict['dispel'] = 'dispelled'
+        ed_dict['hop'] = 'hopped'
         for word in words:
             if word != '' and word+'est' in counts and not word in est_set:
                 text = text.replace(" "+word+"est "," "+word+" =est ")
             if word != '' and word+word[-1]+"ed" in counts and not word in ['ad','cares']:
+                ed_dict[word] = word+word[-1]+"ed"
                 text = text.replace(" "+word+word[-1]+"ed", " "+word+" =ed ")
             if word != '' and word+word[-1]+"est" in counts:
+                est_dict[word] = word+word[-1]+"est"
                 text = text.replace(" "+word+word[-1]+"est", " "+word+" =est ")
             if word != '' and word[-1] == 'e' and word+'d' in counts and not word in d_set:
                 text = text.replace(" "+word+"d "," "+word+" =ed ")
             if word.endswith('y') and word[:-1]+'ied' in counts and not word in y_ed_set:
+                ed_dict[word] = word[:-1]+"ied"
                 text = text.replace(" "+word[:-1]+"ied "," "+word+" =ed ")
             if word != '' and word[-1] == 'e' and word+'st' in counts and not word in st_set:
                 text = text.replace(" "+word+"st "," "+word+" =est ")
             if word != '' and word+word[-1]+"er" in counts and not word in _er_set:
+                er_dict[word] = word+word[-1]+"er"
                 text = text.replace(" "+word+word[-1]+"er "," "+word+" =er ")
             if word.endswith('e') and word+"r" in counts and not word in e_er_set:
+                er_dict[word] = word+"r"
                 text = text.replace(" "+word+"r "," "+word+" =er ")
             if word+'s' in counts and not word in s_set:
                 text = text.replace(" "+word+"s "," "+word+" =s ")
             if word+'ing' in counts and not word in ing_set:
                 text = text.replace(" "+word+"ing "," "+word+" =ing ")
             if word != '' and word+word[-1]+'ing' in counts and not word in _ing_set:
+                ing_dict[word] = word+word[-1]+"ing"
                 text = text.replace(" "+word+word[-1]+"ing "," "+word+" =ing ")
             if word != '' and word.endswith('e') and word[:-1]+'ing' in counts and not word in e_ing_set:
+                ing_dict[word] = word[:-1]+"ing"
                 text = text.replace(" "+word[:-1]+"ing ", " "+word+" =ing ")
             if word.endswith('y') and word[:-1]+'ies' in counts and not word in y_ing_set:
+                s_dict[word] = word[:-1]+"ies"
                 text = text.replace(" "+word[:-1]+"ies "," "+word+" =s ")
         for word in words:
             if word != '' and word+"ed" in counts and not word in ed_set:
@@ -515,11 +540,24 @@ def join():
                     'wilderness','stretch','moss','glass','wretch','blush','porch','hero','rush',
                     'abyss','surpass','torch','bush','match','gush','approach','press','lash','birch',
                     'branch','possess','crouch','oppress','wash','dish','caress','sooth','marsh']:
+            s_dict[root] = root+"es"
             text = text.replace(" "+root+"es "," "+root+" =s ")
         for word in ['neighbor','color','flavor','splendor','labor']:
             text = text.replace(" "+word+" "," "+word[:-2]+"our ")
         text = text.replace(' gray ',' grey ').replace(' phrenzy ',' frenzy ')
         text = text.replace(" ' t was "," it was ").replace(" ' t were "," it were ").replace(" ' t would "," it would ")
+        text = text.replace(" to - morrow "," tomorrow ").replace(" to - day "," today ")
+        text = text.replace(NEWLINE.lower()+' '+TITLE.lower(), TITLE.lower())
+        text = text.replace(TITLE.lower() + ' ' + NEWLINE.lower()+' '+NEWLINE.lower(), TITLE.lower()+' '+NEWLINE.lower())
+        text = text.replace("   ", " ").replace("  ", " ")
+        text = text.replace("   ", " ").replace("  ", " ")
+        np.save('lemmas/s.npy', s_dict)
+        np.save('lemmas/ed.npy', ed_dict)
+        np.save('lemmas/er.npy', er_dict)
+        np.save('lemmas/est.npy', est_dict)
+        np.save('lemmas/ing.npy', ing_dict)
+    else:
+        text = text.replace(" '","'").replace("' ","'").replace("'"," ' ")
     out = open("data/join.txt", "w+")
     out.write(text)
     out.close()
