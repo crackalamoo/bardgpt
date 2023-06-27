@@ -4,7 +4,7 @@ import numpy as np
 from preprocess import NEWLINE, TITLE
 
 VOCAB_SIZE = 4096
-NGRAM_N = 5
+NGRAM_N = 3
 
 file = open("data/join.txt", "r")
 text = file.read()
@@ -14,7 +14,6 @@ tokens = text.split(" ")
 for i in reversed(range(len(tokens))):
     if tokens[i] == '':
         tokens.pop(i)
-#print(' '.join(tokens))
 counts = {}
 for token in tokens:
     if not token in counts:
@@ -27,14 +26,10 @@ for word in words:
     if word in words[:VOCAB_SIZE]:
         continue
     counts['<unk>'] += counts[word]
-print(len(words))
-print(len(tokens))
 words = list(counts.keys())
 words.sort(reverse=True, key=lambda word: counts[word])
-print({word: counts[word] for word in words[:VOCAB_SIZE]})
-print(len(tokens))
 
-
+vocab = set(words[:VOCAB_SIZE])
 def pretty_tokens(tokens):
     s_dict = np.load('lemmas/s.npy', allow_pickle=True).item()
     ed_dict = np.load('lemmas/ed.npy', allow_pickle=True).item()
@@ -42,7 +37,6 @@ def pretty_tokens(tokens):
     est_dict = np.load('lemmas/est.npy', allow_pickle=True).item()
     ing_dict = np.load('lemmas/ing.npy', allow_pickle=True).item()
     dicts = {'=s': s_dict, '=ed': ed_dict, '=er': er_dict, '=est': est_dict, '=ing': ing_dict}
-    vocab = set(words[:VOCAB_SIZE])
     res = []
     i = 0
     def includeSpace(this):
@@ -96,9 +90,29 @@ def pretty_tokens(tokens):
         res.append(this)
         i += 1
     res = ''.join(res)
+    res = res[1:] if res.startswith(' ') else res
     return res
 
-ngrams = []
-for i in range(len(tokens)-NGRAM_N):
-    ngrams.append(tokens[i:i+NGRAM_N])
-print(ngrams[:10])
+if __name__ == '__main__':
+    for i in range(NGRAM_N-1):
+        tokens.append(None)
+        tokens.insert(0, None)
+    words.remove('<unk>')
+    for i in reversed(range(len(tokens))):
+        if tokens[i] in vocab:
+            tokens[i] = words.index(tokens[i])
+        else:
+            tokens[i] = -1
+    ngrams = []
+    for i in range(len(tokens)-NGRAM_N):
+        ngrams.append(tokens[i:i+NGRAM_N])
+    train_x = []
+    train_y = []
+    for ngram in ngrams:
+        sample = ngram[:NGRAM_N]
+        train_x.append(sample[:NGRAM_N-1])
+        train_y.append(sample[NGRAM_N-1])
+    print(list(zip(train_x, train_y))[:15])
+
+    np.savez_compressed('data/ngram_train.npz', x=train_x, y=train_y)
+    np.save('lemmas/lemmas.npy', words[:VOCAB_SIZE])
