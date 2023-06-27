@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.layers import Dense, Flatten, Input
+from tensorflow.keras.layers import Dense, Flatten, Dropout, Input
 
 from tokens import VOCAB_SIZE, NGRAM_N, pretty_tokens
 
@@ -13,7 +13,8 @@ class LinearModel(keras.Model):
             Input(shape=(NGRAM_N-1, VOCAB_SIZE)),
             Flatten(),
             Dense(1024, activation='relu'),
-            Dense(512, activation='relu'), # perplexity without: 128
+            Dense(1024, activation='relu'),
+            Dropout(0.2),
             Dense(VOCAB_SIZE, activation='softmax')
         ])
     
@@ -51,10 +52,10 @@ if __name__ == '__main__':
     model = LinearModel()
     print(model(train_x[:1]))
     print(model.summary())
-    print(pretty_tokens(model.genTokens(50)))
-    model.compile(optimizer=keras.optimizers.Adam(),
+    print(pretty_tokens(model.genTokens(500)))
+    model.compile(optimizer=keras.optimizers.Adam(0.0005),
                   loss=keras.losses.CategoricalCrossentropy(),
                   metrics=[perplexity])
-    model.evaluate(train_x, train_y, batch_size=128)
-    model.fit(train_x, train_y, batch_size=128, validation_split=0.2, epochs=2)
-    print(pretty_tokens(model.genTokens(50)))
+    model.evaluate(train_x, train_y, batch_size=1024)
+    model.fit(train_x, train_y, batch_size=128, validation_split=0.2, epochs=3)
+    print(pretty_tokens(model.genTokens(500)))

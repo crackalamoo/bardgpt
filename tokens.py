@@ -4,7 +4,7 @@ import numpy as np
 from preprocess import NEWLINE, TITLE
 
 VOCAB_SIZE = 4096
-NGRAM_N = 3
+NGRAM_N = 4
 
 file = open("data/join.txt", "r")
 text = file.read()
@@ -23,6 +23,8 @@ words = list(counts.keys())
 words.sort(reverse=True, key=lambda word: counts[word])
 counts['<unk>'] = 0
 for word in words:
+    if word.endswith('y') and word[:-1]+'iest' in words[:VOCAB_SIZE]:
+        print(word, word[:-1]+'iest')
     if word in words[:VOCAB_SIZE]:
         continue
     counts['<unk>'] += counts[word]
@@ -82,7 +84,7 @@ def pretty_tokens(tokens):
                             this = this[:-1]
                         this = this+next[1:]
                 i += 1
-                next = tokens[i+1]
+                next = tokens[i+1] if i+1 < len(tokens) else ''
         if this.startswith('='):
             this = this[1:]
         elif includeSpace(this):
