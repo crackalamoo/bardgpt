@@ -219,7 +219,7 @@ def shelley():
         while text[endtitle] == '\n':
             endtitle += 1
         poem = text[endtitle:next]
-        poem = poem.replace('_','')
+        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
         poem = poem.split('\n')
         for i in reversed(range(len(poem))):
             while poem[i].startswith(" "):
@@ -261,8 +261,8 @@ def shelley():
             poem = poem[:poem.rfind("notes;")]
         if poem.rfind("notes:") != -1:
             poem = poem[:poem.rfind("notes:")]
-        if poem.rfind("\nnote:") != -1:
-            poem = poem[:poem.rfind("\nnote:")]
+        if poem.rfind(NEWLINE.lower()+"note:") != -1:
+            poem = poem[:poem.rfind(NEWLINE.lower()+"note:")]
         out.write(poem)
         print(title)
         #print(poem)
@@ -289,7 +289,7 @@ def byron():
         while text[endtitle] == '\n' or text[endtitle] == ' ':
             endtitle += 1
         poem = text[endtitle:next]
-        poem = poem.replace('_','')
+        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
         poem = poem.split('\n')
         for i in reversed(range(len(poem))):
             while poem[i].startswith(" "):
@@ -424,7 +424,7 @@ def join():
     PROCESS_MORPHEMES = True
     if PROCESS_MORPHEMES:
         text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through").replace("e'en","even")
-        text = text.replace("e'ery","every").replace("wond'rous","wonderous").replace("fev'rous","feverous")
+        text = text.replace("ev'ry","every").replace("wond'rous","wonderous").replace("fev'rous","feverous")
         text = text.replace("whisp'ring","whispering").replace("thund'rous","thunderous").replace("minist'ring","ministering")
         text = text.replace("slumb'ring","slumbering").replace("rememb'ring","remembering").replace("flow'rs","flowers")
         text = text.replace(" flatt'r"," flatter").replace("wand'ring","wandering").replace("mould'ring","mouldering")
@@ -432,23 +432,28 @@ def join():
         text = text.replace("orat'ries","oratories").replace("falt'ring","faltering").replace("imag'ries","imageries")
         text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
         text = text.replace("'tis", "it is").replace("'twould", "it would").replace(" it 's ", " it's ")
+        text = text.replace(" is't "," is it ").replace(" 'twill "," it will ")
         text = text.replace(" 'twas ", " it was ").replace(" 'twere ", " it were ").replace(" 'twould "," it would ")
         text = text.replace(" twas "," it was ").replace(" twere "," it were ").replace(" twould "," it would ").replace(" twill "," it will ")
-        text = text.replace("èd ","ed ")
+        text = text.replace("èd ","ed ").replace("alarum","alarm")
         text = text.replace(" i'll "," i LL ").replace(" thou'lt "," thou LT ").replace(" we'll "," we LL ")
         text = text.replace(" he'll "," he LL ").replace(" she'll "," she LL ").replace(" it'll "," it LL ")
         text = text.replace(" they'll "," they LL ").replace(" you'll "," you LL ")
         text = text.replace(" i'd "," ID ").replace(" we'd "," WED ").replace(" he'd "," HED ").replace(" she'd "," SHED ")
         text = text.replace("don't", "DONT").replace("wouldn't","WOULDNT").replace("isn't", "ISNT").replace("aren't","ARENT")
         text = text.replace("doesn't","DOESNT").replace("won't","WONT").replace("shouldn't","SHOULDNT").replace("couldn't","COULDNT")
-        text = text.replace("can't","CANT").replace("shan't","SHANT").replace(" didn't "," DIDNT ")
+        text = text.replace("can't","CANT").replace("shan't","SHANT").replace(" didn't "," DIDNT ").replace("wasn't","WASNT")
+        text = text.replace("hasn't","HASNT").replace("haven't","HAVENT").replace("weren't","WERENT").replace("hadn't","HADNT")
+        text = text.replace("needn't","NEEDNT").replace("mayn't","MAYNT").replace(" ain't "," AINT ")
         text = text.replace("'s", " S").replace("'m"," M").replace("'ve"," VE").replace("'re"," RE")
         text = text.replace("'d ", "ed ")
         text = text.replace(" '","'").replace("' ","'").replace("'"," ' ")
         text = text.replace(" ID "," i 'd ").replace("WED","we 'd").replace("HED","he 'd").replace("SHED","she 'd")
         text = text.replace("DONT","do NT").replace("WOULDNT", "would NT").replace("ISNT", "is NT").replace("ARENT", "are NT")
         text = text.replace("DOESNT","does NT").replace("WONT","wo NT").replace("SHOULDNT","should NT").replace("COULDNT","could NT")
-        text = text.replace("CANT","can NT").replace("SHANT","sha NT").replace(" DIDNT "," did NT ")
+        text = text.replace("CANT","can NT").replace("SHANT","sha NT").replace(" DIDNT "," did NT ").replace("WASNT","was =nt")
+        text = text.replace("HASNT","has =nt").replace("HAVENT","have =nt").replace("WERENT","were =nt").replace("HADNT","had =nt")
+        text = text.replace("NEEDNT","need =nt").replace("MAYNT","may =nt").replace(" AINT "," ai =nt ")
         text = text.replace("S", "'s").replace("M","'m").replace("VE","'ve").replace("RE","'re")
         text = text.replace(" LL "," 'll ").replace(" LT "," 'lt ")
         text = text.replace("(","").replace(")","")
@@ -474,7 +479,7 @@ def join():
         er_set = set(['with','she','h','quak','curr','hopp','minist','eth','thund','whisp','whit',
                     'fev','rememb','inn','rend','de','beak','wand','port','heath','clos',
                     'wrapp','cap','cow','lett','moth','chart','prop','danc','dinn','slumb',
-                    'sever','ladd','falt','eld','aft','hind','flatt','murd','show'])
+                    'sever','ladd','falt','eld','aft','hind','flatt','murd','show','flow'])
         _er_set = set(['of','in','but','up','man','let','shut','sum','slip','din','flit',
                     'mat','bat','bit','lad','ban','bet','ad'])
         e_er_set = set(['he',"'re",'rule','cottage','quake','cove','clove','warble','prime','lowe',
@@ -483,6 +488,8 @@ def join():
         _ing_set = set(['er','wed','ad','ear','begin'])
         e_ing_set = set(['the','we','bee','bore','lute','ne','re','please','displease','tide'])
         y_ing_set = set(['ry'])
+        y_er_set = set(['by'])
+        y_est_set = set(['pry'])
         s_dict = {}
         ed_dict = {}
         er_dict = {}
@@ -531,6 +538,12 @@ def join():
             if word.endswith('y') and word[:-1]+'ies' in counts and not word in y_ing_set:
                 s_dict[word] = word[:-1]+"ies"
                 text = text.replace(" "+word[:-1]+"ies "," "+word+" =s ")
+            if word.endswith('y') and word[:-1]+'ier' in counts and not word in y_er_set:
+                er_dict[word] = word[:-1]+"ier"
+                text = text.replace(" "+word[:-1]+"ier "," "+word+" =er ")
+            if word.endswith('y') and word[:-1]+'iest' in counts and not word in y_est_set:
+                est_dict[word] = word[:-1]+"iest"
+                text = text.replace(" "+word[:-1]+"iest "," "+word+" =est ")
         for word in words:
             if word != '' and word+"ed" in counts and not word in ed_set:
                 text = text.replace(" "+word+"ed "," "+word+" =ed ")

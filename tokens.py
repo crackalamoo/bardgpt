@@ -1,10 +1,12 @@
-from transformers import AutoTokenizer
 import eng_to_ipa as ipa
 import numpy as np
 from preprocess import NEWLINE, TITLE
 
 VOCAB_SIZE = 4096
 NGRAM_N = 4
+TRANSFORMER_N = 32
+MODEL_TYPE = 't' # n: ngram, t: transformer
+TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else 3
 
 file = open("data/join.txt", "r")
 text = file.read()
@@ -23,8 +25,6 @@ words = list(counts.keys())
 words.sort(reverse=True, key=lambda word: counts[word])
 counts['<unk>'] = 0
 for word in words:
-    if word.endswith('y') and word[:-1]+'iest' in words[:VOCAB_SIZE]:
-        print(word, word[:-1]+'iest')
     if word in words[:VOCAB_SIZE]:
         continue
     counts['<unk>'] += counts[word]
@@ -61,7 +61,7 @@ def pretty_tokens(tokens):
         if this == NEWLINE.lower()[1:-1]:
             this = '\n'
         elif this == TITLE.lower()[1:-1]:
-            this = '\n༄༄༄ '
+            this = '\n ༄༅༅ '
         elif not this in vocab:
             this = " <unk>"
             if not includeSpace(this):
@@ -73,7 +73,7 @@ def pretty_tokens(tokens):
             next = tokens[i+1]
             while next.startswith('='):
                 if next == "=nt":
-                    if tokens[i] == 'can':
+                    if tokens[i].endswith('n'):
                         this = this[:-1]
                     this = this+"n't"
                 else:
@@ -96,25 +96,43 @@ def pretty_tokens(tokens):
     return res
 
 if __name__ == '__main__':
-    for i in range(NGRAM_N-1):
+    N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N+1
+    for i in range(N-1):
         tokens.append(None)
         tokens.insert(0, None)
     words.remove('<unk>')
+    print({word: counts[word] for word in words[:VOCAB_SIZE]})
     for i in reversed(range(len(tokens))):
         if tokens[i] in vocab:
             tokens[i] = words.index(tokens[i])
         else:
             tokens[i] = -1
+    i = 1
+    while i < len(tokens):
+        if tokens[i] == words.index(TITLE.lower()[1:-1]):
+            for j in range(N):
+                tokens.insert(i, -1)
+            i += N
+        i += 1
     ngrams = []
-    for i in range(len(tokens)-NGRAM_N):
-        ngrams.append(tokens[i:i+NGRAM_N])
+    for i in range(0, len(tokens)-N, TOKEN_SKIP):
+        ngrams.append(tokens[i:i+N])
     train_x = []
     train_y = []
     for ngram in ngrams:
-        sample = ngram[:NGRAM_N]
-        train_x.append(sample[:NGRAM_N-1])
-        train_y.append(sample[NGRAM_N-1])
-    print(list(zip(train_x, train_y))[:15])
+        sample = ngram[:N]
+        if sample[N-1] != -1:
+            train_x.append(sample[:N-1])
+            train_y.append(sample[N-1])
+    train_x = np.asarray(train_x)
+    train_y = np.asarray(train_y)
+    if MODEL_TYPE != 'n':
+        train_x += 1 # x in [0, VOCAB_SIZE] since 0 is for <unk>
+                     # y in [0, VOCAB_SIZE-1] with VOCAB_SIZE tokens, one for each vocabulary item
+    #print(list(zip(train_x, train_y))[:N*2])
 
-    np.savez_compressed('data/ngram_train.npz', x=train_x, y=train_y)
+    #print(pretty_tokens(list(map(lambda t: "<unk>" if t == 0 else words[t-1], train_x[92]))))
+
+    fname = 'data/ngram_train.npz' if MODEL_TYPE == 'n' else 'data/transformer_train.npz'
+    np.savez_compressed(fname, x=train_x, y=train_y)
     np.save('lemmas/lemmas.npy', words[:VOCAB_SIZE])
