@@ -109,8 +109,9 @@ if __name__ == '__main__':
         else:
             tokens[i] = -1
     i = 1
+    title_token = words.index(TITLE.lower()[1:-1])
     while i < len(tokens):
-        if tokens[i] == words.index(TITLE.lower()[1:-1]):
+        if tokens[i] == title_token:
             for j in range(N):
                 tokens.insert(i, -1)
             i += N
@@ -122,7 +123,7 @@ if __name__ == '__main__':
     train_y = []
     for ngram in ngrams:
         sample = ngram[:N]
-        if sample[N-1] != -1:
+        if sample[N-1] != -1 and sample[N-1] != title_token:
             train_x.append(sample[:N-1])
             train_y.append(sample[N-1])
     train_x = np.asarray(train_x)

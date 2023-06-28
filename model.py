@@ -8,6 +8,8 @@ from tokens import VOCAB_SIZE, NGRAM_N, TRANSFORMER_N, MODEL_TYPE, TITLE, pretty
 N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N
 EMBED_DIM = 256
 TRANSFORMER_LAYERS = 2
+TRANSFORMER_HEADS = 4
+TRANSFORMER_DFF = 1024
 VOCAB = list(np.load('lemmas/lemmas.npy'))
 
 def genTokens(model, tokens, temperature=0.75):
@@ -113,7 +115,7 @@ class Decoder(keras.layers.Layer):
         return x
 
 class Transformer(keras.Model):
-    def __init__(self, *, num_layers=TRANSFORMER_LAYERS, num_heads=4, dff=1024):
+    def __init__(self, *, num_layers=TRANSFORMER_LAYERS, num_heads=TRANSFORMER_HEADS, dff=TRANSFORMER_DFF):
         super(Transformer, self).__init__()
         self.vocab = VOCAB
         self.embed = InputEmbedding()
