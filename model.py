@@ -7,6 +7,7 @@ from tensorflow.keras.layers import Dense, Flatten, Dropout, Embedding,\
 from tokens import VOCAB_SIZE, NGRAM_N, TRANSFORMER_N, MODEL_TYPE, TITLE, pretty_tokens
 N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N
 EMBED_DIM = 256
+TRANSFORMER_LAYERS = 2
 VOCAB = list(np.load('lemmas/lemmas.npy'))
 
 def genTokens(model, tokens, temperature=0.75):
@@ -21,9 +22,6 @@ def genTokens(model, tokens, temperature=0.75):
         pred = np.power(pred, temperature)
         pred /= np.sum(pred)
         pred = np.random.choice(np.arange(VOCAB_SIZE), p=pred)
-        if i%5 == 0:
-            print("sample:", pretty_tokens(list(map(lambda t: "<unk>" if t == 0 else VOCAB[t-1], context[0]))),
-                  "Prediction:", pred, VOCAB[pred])
         res.append(pred)
     res = list(map(lambda token: model.vocab[token], res))
     return res
@@ -76,10 +74,12 @@ class AttentionBlock(keras.layers.Layer):
     def __init__(self, **kwargs):
         super().__init__()
         self.mha = MultiHeadAttention(**kwargs)
+        self.dropout = Dropout(0.1)
         self.norm = LayerNormalization()
         self.add = Add()
     def call(self, input):
         x = self.mha(query=input, value=input, key=input, use_causal_mask=True)
+        x = self.dropout(x)
         x = self.add([input, x])
         x = self.norm(x)
         return x
@@ -113,18 +113,20 @@ class Decoder(keras.layers.Layer):
         return x
 
 class Transformer(keras.Model):
-    def __init__(self, *, num_layers=2, num_heads=4, dff=1024):
+    def __init__(self, *, num_layers=TRANSFORMER_LAYERS, num_heads=4, dff=1024):
         super(Transformer, self).__init__()
         self.vocab = VOCAB
         self.embed = InputEmbedding()
         self.decoder = Decoder(num_layers=num_layers, num_heads=num_heads, dff=dff)
+        self.flatten = Flatten()
         self.out = Dense(VOCAB_SIZE, activation='softmax')
     
     def call(self, input):
         x = self.embed(input)
         x = self.decoder(x)
-        x = x[:,TRANSFORMER_N-1,:]
-        x = self.out(x)
+        # x = self.flatten(x)
+        # x = x[:,TRANSFORMER_N-1,:]
+        x = self.out(x)[:,TRANSFORMER_N-1,:]
         try:
             del x._keras_mask
         except AttributeError:
@@ -152,15 +154,11 @@ def perplexity(y_true, y_pred):
     return tf.math.exp(tf.math.reduce_mean(tf.keras.losses.categorical_crossentropy(y_true, y_pred)))
 
 def sparse_loss(y_true, y_pred):
-    # mask = y_true != 0
     loss_obj = keras.losses.SparseCategoricalCrossentropy(reduction='none')
     loss = loss_obj(y_true, y_pred)
-    # mask = tf.cast(mask, dtype=loss.dtype)
-    # loss *= mask
-    # loss = tf.reduce_sum(loss)/tf.reduce_sum(mask)
     return loss
 def sparse_perplexity(y_true, y_pred):
-    return tf.math.exp(sparse_loss(y_true, y_pred))
+    return tf.math.exp(tf.math.reduce_mean(sparse_loss(y_true, y_pred)))
 
 if __name__ == '__main__':
     fname = 'data/ngram_train.npz' if MODEL_TYPE == 'n' else 'data/transformer_train.npz'

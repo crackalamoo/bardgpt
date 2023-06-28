@@ -1,12 +1,13 @@
-import eng_to_ipa as ipa
 import numpy as np
 from preprocess import NEWLINE, TITLE
+if __name__ == '__main__':
+    import eng_to_ipa as ipa
 
 VOCAB_SIZE = 4096
 NGRAM_N = 4
 TRANSFORMER_N = 32
 MODEL_TYPE = 't' # n: ngram, t: transformer
-TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else 3
+TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else 2
 
 file = open("data/join.txt", "r")
 text = file.read()
