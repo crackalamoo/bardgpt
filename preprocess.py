@@ -405,9 +405,63 @@ def ballads():
         poem = poem.lower()
         out.write(poem)
     out.close()
+def tennyson():
+    text = getContents("data/tennyson-raw.txt")
+    index = getContents("data/tennyson-index.txt").split('\n')
+    out = open("data/tennyson.txt", "w+")
+    titles = {"AN IDYL": "THE BROOK",
+              "THE DUKE OF WELLINGTON": "ODE ON THE DEATH OF THE DUKE OF WELLINGTON",
+              "WRITTEN AT EDINBURGH": "THE DAISY",
+              "CHARGE OF THE LIGHT BRIGADE": "THE CHARGE OF THE LIGHT BRIGADE"}
+    skipindex = text.find("BRIGADE")
+    for heading in index:
+        this = text.find(heading.upper(), skipindex)
+        next = text.find('\n'*4, this+1)
+        if this == -1 or next == -1:
+            continue
+        endtitle = text.find('\n\n',this+1)
+        while text[endtitle] == '\n' or text[endtitle] == '.':
+            endtitle += 1
+        if heading in titles:
+            title = titles[heading]
+        else:
+            title = text[this:endtitle]
+        title = stripTitle(title)
+        poem = text[endtitle:next]
+        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
+        poem = poem.split('\n')
+        for i in reversed(range(len(poem))):
+            while poem[i].startswith(' '):
+                poem[i] = poem[i][1:]
+            while poem[i].endswith(" "):
+                poem[i] = poem[i][:-1]
+            if isRomanNumeral(poem[i][:-1]) and poem[i][-1] == '.':
+                if poem[i+1] == '':
+                    poem.pop(i+1)
+                poem.pop(i)
+                continue
+            elif isNumeral(poem[i][:-1]) and poem[i][-1] == '.':
+                poem.pop(i)
+        if heading == "TO THE REV. F. D. MAURICE":
+            poem.pop()
+            poem.pop()
+        poem = '\n'.join(poem)
+        poem = poem.lower()
+        poem = poem.replace("' d", "'d")
+        while poem.startswith('\n'):
+            poem = poem[1:]
+        while poem.endswith('\n') or poem.endswith(' '):
+            poem = poem[:-1]
+        print("title: " + title.upper())
+        print("poem: "+poem)
+        poem = poem.replace('\n',NEWLINE)
+        poem = TITLE + title + NEWLINE + poem
+        poem = poem.lower()
+        out.write(poem)
+    out.close()
 def join():
     text = ''
-    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads']:
+    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson']:
         text += getContents("data/"+author+".txt")
     text = text.replace("’","'").replace('“','"').replace('”','"')
     text = text.replace("—-", "--")
@@ -424,6 +478,7 @@ def join():
     PROCESS_MORPHEMES = True
     if PROCESS_MORPHEMES:
         text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through").replace("e'en","even")
+        text = text.replace(" tho' ", " though ").replace(" altho' "," although ")
         text = text.replace("ev'ry","every").replace("wond'rous","wonderous").replace("fev'rous","feverous")
         text = text.replace("whisp'ring","whispering").replace("thund'rous","thunderous").replace("minist'ring","ministering")
         text = text.replace("slumb'ring","slumbering").replace("rememb'ring","remembering").replace("flow'rs","flowers")
@@ -582,6 +637,7 @@ if __name__ == '__main__':
     poe()
     shelley()
     byron()
+    tennyson()
     ballads()
 
     join()

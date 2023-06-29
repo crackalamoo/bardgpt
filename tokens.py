@@ -14,6 +14,7 @@ text = file.read()
 file.close()
 
 tokens = text.split(" ")
+print("Total number of tokens:", len(tokens))
 for i in reversed(range(len(tokens))):
     if tokens[i] == '':
         tokens.pop(i)
