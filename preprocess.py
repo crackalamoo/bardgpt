@@ -544,9 +544,66 @@ def blake():
         poem = poem.replace("tyger","tiger")
         out.write(poem)
     out.close()
+def longfellow():
+    text = getContents("data/longfellow-raw.txt")
+    index = getContents("data/longfellow-index.txt").upper().split('\n')
+    index.append("INTERLUDE 2")
+    index.append("INTERLUDE 3")
+    index.append("INTERLUDE 4")
+    index.append("INTERLUDE 5")
+    index.append("INTERLUDE 6")
+    out = open("data/longfellow.txt", "w+")
+    skipindex = text.find("224\n")
+    int_1 = text.find("INTERLUDE",skipindex)
+    int_2 = text.find("INTERLUDE",int_1+1)
+    int_3 = text.find("INTERLUDE",int_2+1)
+    int_4 = text.find("INTERLUDE",int_3+1)
+    int_5 = text.find("INTERLUDE",int_4+1)
+    for heading in index:
+        this = text.find(heading, skipindex)
+        if heading == "INTERLUDE 2":
+            this = text.find("INTERLUDE", int_1+1)
+        elif heading == "INTERLUDE 3":
+            this = text.find("INTERLUDE", int_2+1)
+        elif heading == "INTERLUDE 4":
+            this = text.find("INTERLUDE", int_3+1)
+        elif heading == "INTERLUDE 5":
+            this = text.find("INTERLUDE", int_4+1)
+        elif heading == "INTERLUDE 6":
+            this = text.find("INTERLUDE", int_5+1)
+        if heading.startswith("INTERLUDE"):
+            heading = "INTERLUDE"
+        next = text.find('\n'*4, this+1)
+        if this == -1 or next == -1:
+            continue
+        endtitle = text.find('\n\n',this+1)
+        while text[endtitle] == '\n' or text[endtitle] == '.':
+            endtitle += 1
+        title = heading
+        title = stripTitle(title)
+        poem = text[endtitle:next]
+        if heading == "WEARINESS":
+            poem = poem[:poem.rfind("THE END.")]
+        if poem.endswith('.') and isNumeral(poem[-5:-1]):
+            poem = poem[:-5]
+        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
+        poem = poem.lower()
+        poem = poem.replace("  "," ").replace("\n    ","\n").replace("\n   ","\n").replace("\n  ","\n").replace("\n ","\n")
+        while poem.startswith('\n') or poem.startswith(' '):
+            poem = poem[1:]
+        while poem.endswith('\n') or poem.endswith(' '):
+            poem = poem[:-1]
+        print("title: " + title.upper())
+        # print("poem: "+poem)
+        poem = poem.replace('\n',NEWLINE)
+        poem = TITLE + title + NEWLINE + poem
+        poem = poem.replace("snow-flake","snowflake")
+        poem = poem.lower()
+        out.write(poem)
+    out.close()
 def join():
     text = ''
-    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake']:
+    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake', 'longfellow']:
         text += getContents("data/"+author+".txt")
     text = text.replace("’","'").replace('“','"').replace('”','"')
     text = text.replace("—-", "--")
@@ -726,5 +783,6 @@ if __name__ == '__main__':
     tennyson()
     emerson()
     blake()
+    longfellow()
 
     join()
