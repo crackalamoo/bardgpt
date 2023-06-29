@@ -187,7 +187,7 @@ if __name__ == '__main__':
     model.compile(optimizer=keras.optimizers.Adam(learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                   loss=loss, metrics=[metric])
     
-    train_sample = np.random.choice(np.arange(0, 2000), 100)
+    train_sample = np.random.choice(np.arange(0, train_x.shape[0]), 20)
     for sample in train_sample[:10]:
         feed = np.array([train_x[sample,:]])
         res = np.argmax(model(feed)[0])
@@ -202,7 +202,7 @@ if __name__ == '__main__':
     model.fit(train_x, train_y, batch_size=256, validation_split=0.2, epochs=1)
 
     print("Sample outputs")
-    for sample in train_sample[:20]:
+    for sample in train_sample:
         feed = np.array([train_x[sample,:]])
         res = np.argmax(model(feed)[0])
         print("sample:", pretty_tokens(list(map(lambda t: "<unk>" if t == 0 else VOCAB[t-1], train_x[sample]))),
