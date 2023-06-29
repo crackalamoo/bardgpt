@@ -141,7 +141,7 @@ def keats():
         if poem.rfind("footnotes:") != -1:
             poem = poem[:poem.rfind("footnotes:")]
         out.write(poem)
-        print(title)
+        print("title:",title)
         #print(poem)
     out.close()
 def poe():
@@ -264,7 +264,7 @@ def shelley():
         if poem.rfind(NEWLINE.lower()+"note:") != -1:
             poem = poem[:poem.rfind(NEWLINE.lower()+"note:")]
         out.write(poem)
-        print(title)
+        print("title:",title)
         #print(poem)
     out.close()
 def byron():
@@ -328,7 +328,7 @@ def byron():
         if poem.rfind("\nnote:") != -1:
             poem = poem[:poem.rfind("\nnote:")]
         out.write(poem)
-        print(title)
+        print("title:",title)
         #print(poem)
     out.close()
 def ballads():
@@ -509,11 +509,13 @@ def emerson():
 def blake():
     text = getContents("data/blake-raw.txt")
     index = getContents("data/blake-index.txt").split('\n')
-    index.append("THEL\n\nI")
+    index.append("THEL\n\n  I")
     out = open("data/blake.txt", "w+")
     for heading in index:
         this = text.find(heading)
         next = text.find('\n'*3, this+1)
+        if heading == "THEL\n\n  I":
+            next = text.find('\n'*5, this+1)
         if this == -1 or next == -1:
             continue
         endtitle = text.find('\n\n',this+1)
@@ -536,6 +538,7 @@ def blake():
         print("title: " + title.upper())
         # print("poem: "+poem)
         poem = poem.replace('\n',NEWLINE)
+        poem = poem.replace('&', 'and').replace('ceasd','ceased').replace('smild','smiled')
         poem = TITLE + title + NEWLINE + poem
         poem = poem.lower()
         poem = poem.replace("tyger","tiger")
