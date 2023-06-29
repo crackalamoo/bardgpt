@@ -453,7 +453,54 @@ def tennyson():
         while poem.endswith('\n') or poem.endswith(' '):
             poem = poem[:-1]
         print("title: " + title.upper())
-        print("poem: "+poem)
+        # print("poem: "+poem)
+        poem = poem.replace('\n',NEWLINE)
+        poem = TITLE + title + NEWLINE + poem
+        poem = poem.lower()
+        out.write(poem)
+    out.close()
+def emerson():
+    text = getContents("data/emerson-raw.txt")
+    index = getContents("data/emerson-index.txt").split('\n')
+    out = open("data/emerson.txt", "w+")
+    skipindex = text.find("INDEX OF TITLES")
+    for heading in index:
+        this = text.find(heading.upper(), skipindex)
+        next = text.find('\n'*4, this+1)
+        if this == -1 or next == -1:
+            continue
+        endtitle = text.find('\n\n',this+1)
+        while text[endtitle] == '\n' or text[endtitle] == '.':
+            endtitle += 1
+        title = text[this:endtitle]
+        title = stripTitle(title)
+        poem = text[endtitle:next]
+        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
+        poem = poem.split('\n')
+        for i in reversed(range(len(poem))):
+            while poem[i].startswith(' '):
+                poem[i] = poem[i][1:]
+            while poem[i].endswith(" "):
+                poem[i] = poem[i][:-1]
+            if isRomanNumeral(poem[i][:-1]) and poem[i][-1] == '.':
+                if poem[i+1] == '':
+                    poem.pop(i+1)
+                poem.pop(i)
+                continue
+            elif poem[i].endswith('.') and (isNumeral(poem[i][:-1]) or isNumeral(poem[i][-5:-1])):
+                poem.pop(i)
+            else:
+                stars = poem[i].replace(" ","")
+                if stars.count("*") == len(stars):
+                    poem.pop(i)
+        poem = '\n'.join(poem)
+        poem = poem.lower()
+        while poem.startswith('\n'):
+            poem = poem[1:]
+        while poem.endswith('\n') or poem.endswith(' '):
+            poem = poem[:-1]
+        print("title: " + title.upper())
+        # print("poem: "+poem)
         poem = poem.replace('\n',NEWLINE)
         poem = TITLE + title + NEWLINE + poem
         poem = poem.lower()
@@ -461,7 +508,7 @@ def tennyson():
     out.close()
 def join():
     text = ''
-    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson']:
+    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson']:
         text += getContents("data/"+author+".txt")
     text = text.replace("’","'").replace('“','"').replace('”','"')
     text = text.replace("—-", "--")
@@ -478,12 +525,12 @@ def join():
     PROCESS_MORPHEMES = True
     if PROCESS_MORPHEMES:
         text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through").replace("e'en","even")
-        text = text.replace(" tho' ", " though ").replace(" altho' "," although ")
+        text = text.replace(" tho' ", " though ").replace(" altho' "," although ").replace(" 'mid "," amid ")
         text = text.replace("ev'ry","every").replace("wond'rous","wonderous").replace("fev'rous","feverous")
         text = text.replace("whisp'ring","whispering").replace("thund'rous","thunderous").replace("minist'ring","ministering")
         text = text.replace("slumb'ring","slumbering").replace("rememb'ring","remembering").replace("flow'rs","flowers")
         text = text.replace(" flatt'r"," flatter").replace("wand'ring","wandering").replace("mould'ring","mouldering")
-        text = text.replace("murm'ring","mumering")
+        text = text.replace("murm'ring","mumering").replace(" ta'en "," taken ")
         text = text.replace("orat'ries","oratories").replace("falt'ring","faltering").replace("imag'ries","imageries")
         text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
         text = text.replace("'tis", "it is").replace("'twould", "it would").replace(" it 's ", " it's ")
@@ -522,7 +569,7 @@ def join():
             counts[word] += 1
         words = list(counts.keys())
         words.sort(key=lambda word: counts[word], reverse=True)
-        est_set = set(['for','t','n','liv','b','di',
+        est_set = set(['for','t','n','liv','b','di','j',
                             'l','eld','pr','inter','sever','hug','earn','smil'])
         ed_set = set(['he','you','they','we','will','mov',
                             'till','far','fell','de','b','f','l','re','hopp','ne'])
@@ -637,7 +684,8 @@ if __name__ == '__main__':
     poe()
     shelley()
     byron()
-    tennyson()
     ballads()
+    tennyson()
+    emerson()
 
     join()

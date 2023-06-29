@@ -9,3 +9,4 @@ Data sources:
 * Lord Byron ([Plain Text with Index](https://www.gutenberg.org/cache/epub/8861/pg8861.txt))
 * *Lyrical Ballads* by William Wordsworth and Samuel Taylor Coleridge ([Plain Text with Index](https://www.gutenberg.org/files/9622/9622-0.txt))
 * Alfred Tennyson ([Plain Text with Index](https://www.gutenberg.org/files/56913/56913-0.txt))
+* Ralph Waldo Emerson ([Plain Text with Index](https://www.gutenberg.org/cache/epub/12843/pg12843.txt))
