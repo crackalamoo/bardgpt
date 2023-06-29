@@ -59,7 +59,7 @@ def frost():
     text = getContents("data/frost-raw.txt")
     text = removeBrackets(text)
     index = getContents("data/frost-index.txt").split('\n')
-    print(index)
+    # print(index)
     out = open("data/frost.txt", "w+")
     skipindex = text.find("CONTENTS")
     skipindex = text.find("SELECTED POEMS", skipindex+1)
@@ -80,7 +80,7 @@ def keats():
     text = getContents("data/keats-raw.txt")
     text = removeBrackets(text)
     index = getContents("data/keats-index.txt").split('\n')
-    print(index)
+    # print(index)
     out = open("data/keats.txt", "w+")
     for heading in index:
         this = text.find(heading+".")
@@ -153,7 +153,7 @@ def poe():
     text = removeBrackets(text)
     text = text.replace("TAMERLANE", "_TAMERLANE_")
     index = getContents("data/poe-index.txt").upper().split('\n')
-    print(index)
+    # print(index)
     out = open("data/poe.txt", "w+")
     for i in range(len(index)):
         this = text.find(index[i])
@@ -206,7 +206,7 @@ def shelley():
     text = getContents("data/shelley-raw.txt")
     text = removeBrackets(text)
     index = getContents("data/shelley-index.txt").split('\n')
-    print(index)
+    # print(index)
     out = open("data/shelley.txt", "w+")
     for heading in index:
         this = text.find(heading)
@@ -277,7 +277,7 @@ def byron():
     text = text.replace('\n[', '[')
     text = removeBrackets(text)
     index = getContents("data/byron-index.txt").upper().split('\n')
-    print(index)
+    # print(index)
     out = open("data/byron.txt", "w+")
     for heading in index:
         this = text.find(heading+'.')
@@ -506,9 +506,44 @@ def emerson():
         poem = poem.lower()
         out.write(poem)
     out.close()
+def blake():
+    text = getContents("data/blake-raw.txt")
+    index = getContents("data/blake-index.txt").split('\n')
+    index.append("THEL\n\nI")
+    out = open("data/blake.txt", "w+")
+    for heading in index:
+        this = text.find(heading)
+        next = text.find('\n'*3, this+1)
+        if this == -1 or next == -1:
+            continue
+        endtitle = text.find('\n\n',this+1)
+        while text[endtitle] == '\n' or text[endtitle] == '.':
+            endtitle += 1
+        title = text[this:endtitle]
+        title = stripTitle(title)
+        poem = text[endtitle:next]
+        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
+        poem = poem.lower()
+        if heading == "THE VOICE OF THE ANCIENT BARD":
+            poem = poem[:poem.rfind("appendix")]
+        if heading == "THEL\n\nI":
+            poem = poem.replace("II.\n","").replace("III.\n","")
+        poem = poem.replace("  "," ").replace("\n    ","\n").replace("\n   ","\n").replace("\n  ","\n")
+        while poem.startswith('\n') or poem.startswith(' '):
+            poem = poem[1:]
+        while poem.endswith('\n') or poem.endswith(' '):
+            poem = poem[:-1]
+        print("title: " + title.upper())
+        # print("poem: "+poem)
+        poem = poem.replace('\n',NEWLINE)
+        poem = TITLE + title + NEWLINE + poem
+        poem = poem.lower()
+        poem = poem.replace("tyger","tiger")
+        out.write(poem)
+    out.close()
 def join():
     text = ''
-    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson']:
+    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake']:
         text += getContents("data/"+author+".txt")
     text = text.replace("’","'").replace('“','"').replace('”','"')
     text = text.replace("—-", "--")
@@ -687,5 +722,6 @@ if __name__ == '__main__':
     ballads()
     tennyson()
     emerson()
+    blake()
 
     join()
