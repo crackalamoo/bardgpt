@@ -768,6 +768,13 @@ def join():
         np.save('lemmas/ing.npy', ing_dict)
     else:
         text = text.replace(" '","'").replace("' ","'").replace("'"," ' ")
+    for numeral in ['ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x',
+                    'xi', 'xii', 'xiii', 'xiv', 'xv', 'xvi', 'xvii', 'xviii',
+                    'xix', 'xx', 'xxi', 'xxii', 'xlv']:
+        text = text.replace(' book '+numeral+NEWLINE.lower(),'')
+        text = text.replace(' part '+numeral+NEWLINE.lower(),'')
+        text = text.replace(' '+numeral+' .'+NEWLINE.lower(),'')
+        text = text.replace(' '+numeral+NEWLINE.lower(),'')
     out = open("data/join.txt", "w+")
     out.write(text)
     out.close()
