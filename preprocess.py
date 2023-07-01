@@ -672,7 +672,7 @@ def join():
         y_ed_set = set(['drapery','city','weary'])
         s_set = set(['','a','i','it','his','her',"'",'their','one','will','your','our','down','pant','wa',
                             'god','well','other','saw','good','new','ye','leave','right','hair','wood'])
-        st_set = set(['be','we','ne','re','tempe','le','mode'])
+        st_set = set(['be','we','ne','re','tempe','le','mode', 'fore'])
         er_set = set(['with','she','h','quak','curr','hopp','minist','eth','thund','whisp','whit',
                     'fev','rememb','inn','rend','de','beak','wand','port','heath','clos',
                     'wrapp','cap','cow','lett','moth','chart','prop','danc','dinn','slumb',
