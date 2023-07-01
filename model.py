@@ -12,18 +12,18 @@ TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
 VOCAB = list(np.load('lemmas/lemmas.npy'))
 
+def sampleVocab(dist, temperature):
+    temperature = 1e-8 if temperature == 0 else temperature
+    dist = np.power(dist, temperature)
+    dist /= np.sum(dist)
+    sample = np.random.choice(np.arange(VOCAB_SIZE), p=dist)
+    return sample
+
 def genTokens(model, tokens, temperature=0.75):
     res = [VOCAB.index(TITLE.lower()[1:-1])]
-    temperature = 1e-8 if temperature == 0 else temperature
     for i in range(tokens):
         context = res[-(N-1):] if MODEL_TYPE == 'n' else res[-N:]
-        while len(context) < (N-1 if MODEL_TYPE == 'n' else N):
-            context.insert(0, -1)
-        context = tf.one_hot([context], VOCAB_SIZE) if MODEL_TYPE == 'n' else np.array([context])+1
-        pred = model(context)[0]
-        pred = np.power(pred, temperature)
-        pred /= np.sum(pred)
-        pred = np.random.choice(np.arange(VOCAB_SIZE), p=pred)
+        pred = model.generate(context, temperature)
         res.append(pred)
     res = list(map(lambda token: model.vocab[token], res))
     return res
@@ -45,6 +45,17 @@ class LinearModel(keras.Model):
     def call(self, input):
         x = self.seq(input)
         return x
+
+    def generate(self, context, temperature=0.75):
+        while len(context) > NGRAM_N-1:
+            context.pop(0)
+        while len(context) < NGRAM_N-1:
+            context.append(-1)
+        context = tf.one_hot(context, VOCAB_SIZE)
+        pred = self.predict(context)
+        pred = sampleVocab(pred, temperature)
+        return pred
+        
 
 def positional_encoding(length, depth):
     depth = depth / 2
@@ -126,15 +137,27 @@ class Transformer(keras.Model):
     def call(self, input):
         x = self.embed(input)
         x = self.decoder(x)
-        # x = self.flatten(x)
-        # x = x[:,TRANSFORMER_N-1,:]
-        x = self.out(x)[:,TRANSFORMER_N-1,:]
+        x = self.out(x)
         try:
             del x._keras_mask
         except AttributeError:
             pass
         
         return x
+
+    def generate(self, context, temperature=0.75):
+        lastToken = len(context)-1
+        while len(context) > TRANSFORMER_N:
+            context.pop(0)
+        while len(context) < TRANSFORMER_N:
+            context.append(0)
+        context = np.asarray(context)+1
+        pred = self.predict(context)
+        pred = pred[lastToken]
+        pred = sampleVocab(pred, temperature)
+        return pred
+
+
 
 class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
   def __init__(self, d_model, warmup_steps=4000):

@@ -7,7 +7,7 @@ VOCAB_SIZE = 4096
 NGRAM_N = 4
 TRANSFORMER_N = 32
 MODEL_TYPE = 't' # n: ngram, t: transformer
-TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else 2
+TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else 3
 
 file = open("data/join.txt", "r")
 text = file.read()
@@ -123,14 +123,16 @@ if __name__ == '__main__':
     train_y = []
     for ngram in ngrams:
         sample = ngram[:N]
-        if sample[N-1] != -1 and sample[N-1] != title_token:
-            train_x.append(sample[:N-1])
+        train_x.append(sample[:N-1])
+        if MODEL_TYPE != 'n':
+            train_y.append(sample[1:])
+        else:
             train_y.append(sample[N-1])
     train_x = np.asarray(train_x)
     train_y = np.asarray(train_y)
     if MODEL_TYPE != 'n':
         train_x += 1 # x in [0, VOCAB_SIZE] since 0 is for <unk>
-                     # y in [0, VOCAB_SIZE-1] with VOCAB_SIZE tokens, one for each vocabulary item
+                     # y in [-1, VOCAB_SIZE-1] with VOCAB_SIZE tokens, one for each vocabulary item, and -1 for <unk>
     #print(list(zip(train_x, train_y))[:N*2])
 
     #print(pretty_tokens(list(map(lambda t: "<unk>" if t == 0 else words[t-1], train_x[92]))))
