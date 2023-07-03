@@ -676,7 +676,7 @@ def join():
                             'ha'])
         st_set = set(['be','we','ne','re','tempe','le','mode', 'fore'])
         er_set = set(['with','she','h','quak','curr','hopp','minist','eth','thund','whisp','whit',
-                    'fev','rememb','inn','rend','de','beak','wand','port','heath','clos',
+                    'fev','rememb','inn','rend','de','beak','wand','port','heath','clos','should',
                     'wrapp','cap','cow','lett','moth','chart','prop','danc','dinn','slumb',
                     'sever','ladd','falt','eld','aft','hind','flatt','murd','show','flow'])
         _er_set = set(['of','in','but','up','man','let','shut','sum','slip','din','flit',

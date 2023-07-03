@@ -82,8 +82,17 @@ def pretty_tokens(tokens):
                     if tokens[i] in dicts[next]:
                         this = dicts[next][this]
                     else:
-                        if next[1] == 'e' and this.endswith('e'):
-                            this = this[:-1]
+                        if next[1] == 'e' or next[1] == 'i':
+                            if this.endswith('e'):
+                                this = this[:-1]
+                            elif this.endswith('c'):
+                                this = this+'k'
+                            if this.endswith('y') and next[1] == 'e':
+                                this = this[:-1]+'i'
+                        if next[1] == 's':
+                            if this.endswith('s') or this.endswith('sh') or this.endswith('x'):
+                                this = this+'e'
+                        
                         this = this+next[1:]
                 i += 1
                 next = tokens[i+1] if i+1 < len(tokens) else ''
