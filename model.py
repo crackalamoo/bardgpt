@@ -41,7 +41,7 @@ class LinearModel(keras.Model):
             Dropout(0.2),
             Dense(VOCAB_SIZE, activation='softmax')
         ])
-    
+
     def call(self, input):
         x = self.seq(input)
         return x
@@ -51,11 +51,11 @@ class LinearModel(keras.Model):
             context.pop(0)
         while len(context) < NGRAM_N-1:
             context.append(-1)
-        context = tf.one_hot(context, VOCAB_SIZE)
-        pred = self.predict(context)
+        context = tf.one_hot([context], VOCAB_SIZE)
+        pred = self.call(context)[0]
         pred = sampleVocab(pred, temperature)
         return pred
-        
+
 
 def positional_encoding(length, depth):
     depth = depth / 2
@@ -133,7 +133,7 @@ class Transformer(keras.Model):
         self.decoder = Decoder(num_layers=num_layers, num_heads=num_heads, dff=dff)
         self.flatten = Flatten()
         self.out = Dense(VOCAB_SIZE, activation='softmax')
-    
+
     def call(self, input):
         x = self.embed(input)
         x = self.decoder(x)
@@ -142,7 +142,7 @@ class Transformer(keras.Model):
             del x._keras_mask
         except AttributeError:
             pass
-        
+
         return x
 
     def generate(self, context, temperature=0.75):
@@ -151,8 +151,8 @@ class Transformer(keras.Model):
             context.pop(0)
         while len(context) < TRANSFORMER_N:
             context.append(0)
-        context = np.asarray(context)+1
-        pred = self.predict(context)
+        context = np.asarray([context])+1
+        pred = self.call(context)[0]
         pred = pred[lastToken]
         pred = sampleVocab(pred, temperature)
         return pred
@@ -179,7 +179,7 @@ def perplexity(y_true, y_pred):
     return tf.math.exp(tf.math.reduce_mean(tf.keras.losses.categorical_crossentropy(y_true, y_pred)))
 
 def sparse_loss(y_true, y_pred):
-    loss_obj = keras.losses.SparseCategoricalCrossentropy(reduction='none')
+    loss_obj = keras.losses.SparseCategoricalCrossentropy(ignore_class=-1, reduction='none')
     loss = loss_obj(y_true, y_pred)
     return loss
 def sparse_perplexity(y_true, y_pred):
@@ -191,6 +191,7 @@ if __name__ == '__main__':
     loaded = np.load(fname)
     train_x = tf.one_hot(loaded['x'], VOCAB_SIZE) if MODEL_TYPE == 'n' else loaded['x']
     train_y = tf.one_hot(loaded['y'], VOCAB_SIZE) if MODEL_TYPE == 'n' else loaded['y']
+    del loaded
     print("X:", train_x[:2])
     print("Y:", train_y[:2])
     print("X shape:", train_x.shape)
@@ -209,14 +210,14 @@ if __name__ == '__main__':
     metric = perplexity if MODEL_TYPE == 'n' else sparse_perplexity
     model.compile(optimizer=keras.optimizers.Adam(learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                   loss=loss, metrics=[metric])
-    
+
     train_sample = np.random.choice(np.arange(0, train_x.shape[0]), 20)
-    for sample in train_sample[:10]:
-        feed = np.array([train_x[sample,:]])
-        res = np.argmax(model(feed)[0])
-        print("sample:", pretty_tokens(list(map(lambda t: "<unk>" if t == 0 else VOCAB[t-1], train_x[sample]))),
-              "Truth:", train_y[sample], VOCAB[train_y[sample]], "Output:", res, VOCAB[res])
-    
+    #for sample in train_sample[:10]:
+    #    feed = np.array([train_x[sample,:]])
+    #    res = np.argmax(model(feed)[0])
+    #    print("sample:", pretty_tokens(list(map(lambda t: "<unk>" if t == 0 else VOCAB[t-1], train_x[sample]))),
+    #         "Truth:", train_y[sample], VOCAB[train_y[sample]], "Output:", res, VOCAB[res])
+
     print("Evaluating baseline")
     #model.evaluate(train_x, train_y, batch_size=1024)
     print(pretty_tokens(genTokens(model, 50)))
@@ -225,11 +226,12 @@ if __name__ == '__main__':
     model.fit(train_x, train_y, batch_size=256, validation_split=0.2, epochs=1)
 
     print("Sample outputs")
-    for sample in train_sample:
-        feed = np.array([train_x[sample,:]])
-        res = np.argmax(model(feed)[0])
-        print("sample:", pretty_tokens(list(map(lambda t: "<unk>" if t == 0 else VOCAB[t-1], train_x[sample]))),
-              "Truth:", train_y[sample], VOCAB[train_y[sample]], "Output:", res, VOCAB[res])
+    #for sample in train_sample:
+    #    feed = np.array([train_x[sample,:]])
+    #    res = np.argmax(model(feed)[0])
+    #    print("sample:", pretty_tokens(list(map(lambda t: "<unk>" if t == 0 else VOCAB[t-1], train_x[sample]))),
+    #          "Truth:", train_y[sample], VOCAB[train_y[sample]], "Output:", res, VOCAB[res])
 
     print("Generating sample from trained model")
-    print(pretty_tokens(genTokens(model, 2000)))
+    print(pretty_tokens(genTokens(model, 1000)))
+    print(pretty_tokens(genTokens(model, 1000)))
