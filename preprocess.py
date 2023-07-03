@@ -611,6 +611,7 @@ def join():
     text = text.replace(" :",":").replace(" ;",";").replace(":"," :").replace(";"," ;")
     text = text.replace(" !","!").replace(" ?","?").replace("!"," !").replace("?"," ?")
     text = text.replace(NEWLINE+NEWLINE, NEWLINE+" "+NEWLINE)
+    text = text.replace(NEWLINE.lower()[:-1]+NEWLINE.lower()[1:], NEWLINE)
     text = text.replace(NEWLINE,' '+NEWLINE+' ')
     text = text.replace("><", "> <")
     text = text.replace('>','> ')
@@ -680,8 +681,8 @@ def join():
         _er_set = set(['of','in','but','up','man','let','shut','sum','slip','din','flit',
                     'mat','bat','bit','lad','ban','bet','ad'])
         e_er_set = set(['he',"'re",'rule','cottage','quake','cove','clove','warble','prime','lowe',
-                        'cape','tempe','late'])
-        ing_set = set(['','us','s','st','n','wan','din','k','heav'])
+                        'cape','tempe','late','e'])
+        ing_set = set(['','us','s','st','n','wan','din','k','heav','w'])
         _ing_set = set(['er','wed','ad','ear','begin'])
         e_ing_set = set(['the','we','bee','bore','lute','ne','re','please','displease','tide'])
         y_ing_set = set(['ry'])
@@ -703,7 +704,7 @@ def join():
         for word in words:
             if word != '' and word+'est' in counts and not word in est_set:
                 text = text.replace(" "+word+"est "," "+word+" =est ")
-            if word != '' and word+word[-1]+"ed" in counts and not word in ['ad','cares']:
+            if word != '' and word+word[-1]+"ed" in counts and not word in ['ad','cares','jag']:
                 ed_dict[word] = word+word[-1]+"ed"
                 text = text.replace(" "+word+word[-1]+"ed", " "+word+" =ed ")
             if word != '' and word+word[-1]+"est" in counts:
@@ -756,7 +757,7 @@ def join():
             text = text.replace(" "+word+" "," "+word[:-2]+"our ")
         text = text.replace(' gray ',' grey ').replace(' phrenzy ',' frenzy ')
         text = text.replace(" ' t was "," it was ").replace(" ' t were "," it were ").replace(" ' t would "," it would ")
-        text = text.replace(" to - morrow "," tomorrow ").replace(" to - day "," today ")
+        text = text.replace(" to - morrow "," tomorrow ").replace(" to - day "," today ").replace(" to - night ", " tonight ")
         text = text.replace(NEWLINE.lower()+' '+TITLE.lower(), TITLE.lower())
         text = text.replace(TITLE.lower() + ' ' + NEWLINE.lower()+' '+NEWLINE.lower(), TITLE.lower()+' '+NEWLINE.lower())
         text = text.replace("   ", " ").replace("  ", " ")
