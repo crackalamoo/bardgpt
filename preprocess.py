@@ -48,10 +48,11 @@ def dickinson():
         poem = text[this:next]
         poem = poem.replace('\n', NEWLINE)
         poem = poem.replace("  ", "").replace('_','')
-        poem = poem.replace(" they 'd "," they'd ")
+        poem = poem.replace(" they 'd "," they'd ").replace(" you 'd "," you'd ")
         poem = TITLE + title + NEWLINE + poem + NEWLINE
         poem = poem.lower()
         poem = poem.replace(" i 'd "," i'd ").replace(" he 'd "," he'd ")
+        poem = poem.replace(" who 'll "," who'll ").replace(" they 'll"," they'll ")
         out.write(poem)
         #print(poem)
     out.close()
@@ -206,6 +207,7 @@ def poe():
 def shelley():
     text = getContents("data/shelley-raw.txt")
     text = removeBrackets(text)
+    text = text.replace('\x0a','\n').replace('\x0d','\n')
     index = getContents("data/shelley-index.txt").split('\n')
     # print(index)
     out = open("data/shelley.txt", "w+")
@@ -220,7 +222,7 @@ def shelley():
         while text[endtitle] == '\n':
             endtitle += 1
         poem = text[endtitle:next]
-        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
+        poem = poem.replace('_','')
         poem = poem.split('\n')
         for i in reversed(range(len(poem))):
             while poem[i].startswith(" "):
@@ -270,6 +272,7 @@ def shelley():
     out.close()
 def byron():
     text = getContents("data/byron-raw.txt")
+    text = text.replace('\x0a','\n').replace('\x0d','\n')
     text = text.replace(' [', '[')
     text = text.replace('\n[', '[')
     text = text.replace('\n[', '[')
@@ -290,7 +293,7 @@ def byron():
         while text[endtitle] == '\n' or text[endtitle] == ' ':
             endtitle += 1
         poem = text[endtitle:next]
-        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
+        poem = poem.replace('_','')
         poem = poem.split('\n')
         for i in reversed(range(len(poem))):
             while poem[i].startswith(" "):
@@ -320,7 +323,6 @@ def byron():
         poem = TITLE + title + NEWLINE + poem + NEWLINE
         poem = poem.replace('\n\n\n','\n\n')
         poem = poem.replace('\n', NEWLINE)
-        poem = poem.replace("'d", "ed")
         poem = poem.lower()
         if poem.rfind("notes;") != -1:
             poem = poem[:poem.rfind("notes;")]
@@ -334,6 +336,7 @@ def byron():
     out.close()
 def ballads():
     text = getContents("data/ballads-raw.txt")
+    text = text.replace('\x0a','\n').replace('\x0d','\n')
     index = getContents("data/ballads-index.txt").replace('  ','').split('\n')
     out = open("data/ballads.txt", "w+")
     titles = {"a conversational poem": "the nightingale",
@@ -363,7 +366,7 @@ def ballads():
         if heading == 'the thorn':
             next = text.find('THE LAST OF THE FLOCK', this+1)
         poem = text[endtitle:next]
-        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
+        poem = poem.replace('_','')
         poem = poem.split('\n')
         for i in reversed(range(len(poem))):
             while poem[i].startswith(' '):
@@ -408,6 +411,7 @@ def ballads():
     out.close()
 def tennyson():
     text = getContents("data/tennyson-raw.txt")
+    text = text.replace('\x0a','\n').replace('\x0d','\n')
     index = getContents("data/tennyson-index.txt").split('\n')
     out = open("data/tennyson.txt", "w+")
     titles = {"AN IDYL": "THE BROOK",
@@ -429,7 +433,7 @@ def tennyson():
             title = text[this:endtitle]
         title = stripTitle(title)
         poem = text[endtitle:next]
-        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
+        poem = poem.replace('_','')
         poem = poem.split('\n')
         for i in reversed(range(len(poem))):
             while poem[i].startswith(' '):
@@ -456,12 +460,14 @@ def tennyson():
         print("title: " + title.upper())
         # print("poem: "+poem)
         poem = poem.replace('\n',NEWLINE)
+        poem = poem.replace("vext","vexed").replace("perplext","perplexed").replace("stopt","stopped")
         poem = TITLE + title + NEWLINE + poem
         poem = poem.lower()
         out.write(poem)
     out.close()
 def emerson():
     text = getContents("data/emerson-raw.txt")
+    text = text.replace('\x0a','\n').replace('\x0d','\n')
     index = getContents("data/emerson-index.txt").split('\n')
     out = open("data/emerson.txt", "w+")
     skipindex = text.find("INDEX OF TITLES")
@@ -476,7 +482,7 @@ def emerson():
         title = text[this:endtitle]
         title = stripTitle(title)
         poem = text[endtitle:next]
-        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
+        poem = poem.replace('_','')
         poem = poem.split('\n')
         for i in reversed(range(len(poem))):
             while poem[i].startswith(' '):
@@ -509,6 +515,7 @@ def emerson():
     out.close()
 def blake():
     text = getContents("data/blake-raw.txt")
+    text = text.replace('\x0a','\n').replace('\x0d','\n')
     index = getContents("data/blake-index.txt").split('\n')
     index.append("THEL\n\n  I")
     out = open("data/blake.txt", "w+")
@@ -525,7 +532,7 @@ def blake():
         title = text[this:endtitle]
         title = stripTitle(title)
         poem = text[endtitle:next]
-        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
+        poem = poem.replace('_','')
         poem = poem.lower()
         if heading == "THE VOICE OF THE ANCIENT BARD":
             poem = poem[:poem.rfind("appendix")]
@@ -547,7 +554,8 @@ def blake():
     out.close()
 def longfellow():
     text = getContents("data/longfellow-raw.txt")
-    index = getContents("data/longfellow-index.txt").upper().split('\n')
+    index = getContents("data/longfellow-index.txt").split('\n')
+    text = text.replace('\x0a','\n').replace('\x0d','\n')
     index.append("INTERLUDE 2")
     index.append("INTERLUDE 3")
     index.append("INTERLUDE 4")
@@ -574,7 +582,11 @@ def longfellow():
             this = text.find("INTERLUDE", int_5+1)
         if heading.startswith("INTERLUDE"):
             heading = "INTERLUDE"
-        next = text.find('\n'*4, this+1)
+        if heading == heading.upper():
+            next = text.find('\n'*4, this+1)
+        else:
+            next = text.find('\n'*3, this+1)
+        heading = heading.upper()
         if this == -1 or next == -1:
             continue
         endtitle = text.find('\n\n',this+1)
@@ -587,7 +599,7 @@ def longfellow():
             poem = poem[:poem.rfind("THE END.")]
         if poem.endswith('.') and isNumeral(poem[-5:-1]):
             poem = poem[:-5]
-        poem = poem.replace('_','').replace('\x0a','\n').replace('\x0d','\n')
+        poem = poem.replace('_','')
         poem = poem.lower()
         poem = poem.replace("  "," ").replace("\n    ","\n").replace("\n   ","\n").replace("\n  ","\n").replace("\n ","\n")
         while poem.startswith('\n') or poem.startswith(' '):
@@ -606,13 +618,13 @@ def join():
     text = ''
     for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake', 'longfellow']:
         text += getContents("data/"+author+".txt")
+    text = text.lower()
     text = text.replace("’","'").replace('“','"').replace('”','"')
     text = text.replace("—-", "--")
     text = text.replace(" .",".").replace(" ,",",").replace("."," .").replace(","," ,")
     text = text.replace(" :",":").replace(" ;",";").replace(":"," :").replace(";"," ;")
     text = text.replace(" !","!").replace(" ?","?").replace("!"," !").replace("?"," ?")
-    text = text.replace(NEWLINE.lower()[:-1]+NEWLINE.lower()[1:], NEWLINE)
-    text = text.replace(NEWLINE,' '+NEWLINE+' ')
+    text = text.replace(NEWLINE.lower()[:-1]+NEWLINE.lower()[1:], NEWLINE.lower())
     text = text.replace("><", "> <")
     text = text.replace('>','> ')
     text = text.replace("    ", " ").replace("  ", " ").replace("  ", " ")
@@ -621,12 +633,14 @@ def join():
     PROCESS_MORPHEMES = True
     if PROCESS_MORPHEMES:
         text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through").replace("e'en","even")
+        text = text.replace("ev'n","even").replace("fall'n","fallen").replace("heav'n","heaven")
+        text = text.replace("deep'ning","deepening").replace("stol'n","stolen")
         text = text.replace(" tho' ", " though ").replace(" altho' "," although ").replace(" 'mid "," amid ")
         text = text.replace("ev'ry","every").replace("wond'rous","wonderous").replace("fev'rous","feverous")
         text = text.replace("whisp'ring","whispering").replace("thund'rous","thunderous").replace("minist'ring","ministering")
         text = text.replace("slumb'ring","slumbering").replace("rememb'ring","remembering").replace("flow'rs","flowers")
         text = text.replace(" flatt'r"," flatter").replace("wand'ring","wandering").replace("mould'ring","mouldering")
-        text = text.replace("murm'ring","murmering").replace(" ta'en "," taken ")
+        text = text.replace("murm'ring","murmuring").replace(" ta'en "," taken ").replace(" wa'n't "," wasn't ")
         text = text.replace("orat'ries","oratories").replace("falt'ring","faltering").replace("imag'ries","imageries")
         text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
         text = text.replace("'tis", "it is").replace("'twould", "it would").replace(" it 's ", " it's ")
@@ -636,8 +650,9 @@ def join():
         text = text.replace("èd ","ed ").replace("alarum","alarm")
         text = text.replace(" i'll "," i LL ").replace(" thou'lt "," thou LT ").replace(" we'll "," we LL ")
         text = text.replace(" he'll "," he LL ").replace(" she'll "," she LL ").replace(" it'll "," it LL ")
-        text = text.replace(" they'll "," they LL ").replace(" you'll "," you LL ")
-        text = text.replace(" i'd "," ID ").replace(" we'd "," WED ").replace(" he'd "," HED ").replace(" she'd "," SHED ")
+        text = text.replace(" they'll "," they LL ").replace(" you'll "," you LL ").replace(" who'll "," who LL ")
+        text = text.replace("'ll "," LL ")
+        text = text.replace(" i'd "," ID ").replace(" we'd "," WED ").replace(" he'd "," HED ").replace(" she'd "," SHED ").replace(" you'd "," YOUD ")
         text = text.replace("don't", "DONT").replace("wouldn't","WOULDNT").replace("isn't", "ISNT").replace("aren't","ARENT")
         text = text.replace("doesn't","DOESNT").replace("won't","WONT").replace("shouldn't","SHOULDNT").replace("couldn't","COULDNT")
         text = text.replace("can't","CANT").replace("shan't","SHANT").replace(" didn't "," DIDNT ").replace("wasn't","WASNT")
@@ -646,7 +661,7 @@ def join():
         text = text.replace("'s", " S").replace("'m"," M").replace("'ve"," VE").replace("'re"," RE")
         text = text.replace("'d ", "ed ")
         text = text.replace(" '","'").replace("' ","'").replace("'"," ' ")
-        text = text.replace(" ID "," i 'd ").replace("WED","we 'd").replace("HED","he 'd").replace("SHED","she 'd")
+        text = text.replace(" ID "," i 'd ").replace("WED","we 'd").replace("HED","he 'd").replace("SHED","she 'd").replace("YOUD","you 'd")
         text = text.replace("DONT","do NT").replace("WOULDNT", "would NT").replace("ISNT", "is NT").replace("ARENT", "are NT")
         text = text.replace("DOESNT","does NT").replace("WONT","wo NT").replace("SHOULDNT","should NT").replace("COULDNT","could NT")
         text = text.replace("CANT","can NT").replace("SHANT","sha NT").replace(" DIDNT "," did NT ").replace("WASNT","was =nt")
@@ -655,7 +670,7 @@ def join():
         text = text.replace("S", "'s").replace("M","'m").replace("VE","'ve").replace("RE","'re")
         text = text.replace(" LL "," 'll ").replace(" LT "," 'lt ")
         text = text.replace("(","").replace(")","")
-        text = text.replace("dying","die =ing")
+        text = text.replace("dying","die =ing").replace("lying","lie =ing")
         text = text.replace(" ings "," =ing =s ").replace(" NT "," =nt ")
         words = text.split(' ')
         counts = {}
@@ -665,27 +680,28 @@ def join():
             counts[word] += 1
         words = list(counts.keys())
         words.sort(key=lambda word: counts[word], reverse=True)
-        est_set = set(['for','t','n','liv','b','di','j','r','p','v',
+        est_set = set(['for','t','n','liv','b','di','j','r','p','v','w',
                             'l','eld','pr','inter','sever','hug','earn','smil'])
-        ed_set = set(['he','you','they','we','will','mov',
+        ed_set = set(['he','you','they','we','will','mov','w','wretch',
                             'till','far','fell','de','b','f','l','re','hopp','ne'])
-        d_set = set(['be', 'she','we','see','re','fe','rowe','fee','le','seale'])
+        d_set = set(['be', 'she','we','see','re','fe','rowe','fee','le','seale','dee'])
         y_ed_set = set(['drapery','city','weary'])
         s_set = set(['','a','i','it','his','her',"'",'their','one','will','your','our','down','pant','wa',
                             'god','well','other','saw','good','new','ye','leave','right','hair','wood',
-                            'ha'])
+                            'ha','mis'])
         st_set = set(['be','we','ne','re','tempe','le','mode', 'fore'])
         er_set = set(['with','she','h','quak','curr','hopp','minist','eth','thund','whisp','whit',
                     'fev','rememb','inn','rend','de','beak','wand','port','heath','clos','should',
-                    'wrapp','cap','cow','lett','moth','chart','prop','danc','dinn','slumb',
-                    'sever','ladd','falt','eld','aft','hind','flatt','murd','show','flow'])
+                    'wrapp','cap','cow','lett','moth','chart','prop','danc','dinn','slumb','tend',
+                    'sever','ladd','falt','eld','aft','hind','flatt','murd','show','flow','sob',
+                    'pray','s','numb'])
         _er_set = set(['of','in','but','up','man','let','shut','sum','slip','din','flit',
                     'mat','bat','bit','lad','ban','bet','ad'])
         e_er_set = set(['he',"'re",'rule','cottage','quake','cove','clove','warble','prime','lowe',
-                        'cape','tempe','late','e'])
-        ing_set = set(['','us','s','st','n','wan','din','k','heav','w'])
+                        'cape','tempe','late','e','rive','dee'])
+        ing_set = set(['','us','s','st','n','wan','din','k','heav','w','morn','cloth'])
         _ing_set = set(['er','wed','ad','ear','begin'])
-        e_ing_set = set(['the','we','bee','bore','lute','ne','re','please','displease','tide'])
+        e_ing_set = set(['the','we','bee','bore','lute','ne','re','please','displease','tide','clothe'])
         y_ing_set = set(['ry'])
         y_er_set = set(['by'])
         y_est_set = set(['pry'])
