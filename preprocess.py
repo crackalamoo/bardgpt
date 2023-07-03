@@ -138,6 +138,7 @@ def keats():
         poem = TITLE + title + NEWLINE + poem + NEWLINE
         poem = poem.replace('\n', NEWLINE)
         poem = poem.lower()
+        poem = poem.replace("faery","fairy")
         if poem.rfind("footnotes:") != -1:
             poem = poem[:poem.rfind("footnotes:")]
         out.write(poem)
@@ -610,12 +611,11 @@ def join():
     text = text.replace(" .",".").replace(" ,",",").replace("."," .").replace(","," ,")
     text = text.replace(" :",":").replace(" ;",";").replace(":"," :").replace(";"," ;")
     text = text.replace(" !","!").replace(" ?","?").replace("!"," !").replace("?"," ?")
-    text = text.replace(NEWLINE+NEWLINE, NEWLINE+" "+NEWLINE)
     text = text.replace(NEWLINE.lower()[:-1]+NEWLINE.lower()[1:], NEWLINE)
     text = text.replace(NEWLINE,' '+NEWLINE+' ')
     text = text.replace("><", "> <")
     text = text.replace('>','> ')
-    text = text.replace("  ", " ").replace("  ", " ")
+    text = text.replace("    ", " ").replace("  ", " ").replace("  ", " ")
     text = text.replace(" -","-").replace("- ","-").replace("-"," - ")
     text = text.replace(' "','"').replace('" ','"').replace('"',' " ')
     PROCESS_MORPHEMES = True
@@ -626,7 +626,7 @@ def join():
         text = text.replace("whisp'ring","whispering").replace("thund'rous","thunderous").replace("minist'ring","ministering")
         text = text.replace("slumb'ring","slumbering").replace("rememb'ring","remembering").replace("flow'rs","flowers")
         text = text.replace(" flatt'r"," flatter").replace("wand'ring","wandering").replace("mould'ring","mouldering")
-        text = text.replace("murm'ring","mumering").replace(" ta'en "," taken ")
+        text = text.replace("murm'ring","murmering").replace(" ta'en "," taken ")
         text = text.replace("orat'ries","oratories").replace("falt'ring","faltering").replace("imag'ries","imageries")
         text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
         text = text.replace("'tis", "it is").replace("'twould", "it would").replace(" it 's ", " it's ")
@@ -665,14 +665,15 @@ def join():
             counts[word] += 1
         words = list(counts.keys())
         words.sort(key=lambda word: counts[word], reverse=True)
-        est_set = set(['for','t','n','liv','b','di','j',
+        est_set = set(['for','t','n','liv','b','di','j','r','p','v',
                             'l','eld','pr','inter','sever','hug','earn','smil'])
         ed_set = set(['he','you','they','we','will','mov',
                             'till','far','fell','de','b','f','l','re','hopp','ne'])
         d_set = set(['be', 'she','we','see','re','fe','rowe','fee','le','seale'])
         y_ed_set = set(['drapery','city','weary'])
         s_set = set(['','a','i','it','his','her',"'",'their','one','will','your','our','down','pant','wa',
-                            'god','well','other','saw','good','new','ye','leave','right','hair','wood'])
+                            'god','well','other','saw','good','new','ye','leave','right','hair','wood',
+                            'ha'])
         st_set = set(['be','we','ne','re','tempe','le','mode', 'fore'])
         er_set = set(['with','she','h','quak','curr','hopp','minist','eth','thund','whisp','whit',
                     'fev','rememb','inn','rend','de','beak','wand','port','heath','clos',
@@ -750,13 +751,19 @@ def join():
         for root in ['pass','bliss','wish','echo','rich','reach','kiss','goddess','miss','couch',
                     'wilderness','stretch','moss','glass','wretch','blush','porch','hero','rush',
                     'abyss','surpass','torch','bush','match','gush','approach','press','lash','birch',
-                    'branch','possess','crouch','oppress','wash','dish','caress','sooth','marsh']:
+                    'branch','possess','crouch','oppress','wash','dish','caress','sooth','marsh',
+                    'mix','vex','sex','perplex','fox','transfix']:
             s_dict[root] = root+"es"
             text = text.replace(" "+root+"es "," "+root+" =s ")
+        for root in ['mimic']:
+            ing_dict[root] = root+"king"
+            text = text.replace(" "+root+"king ", " "+root+" =ing ")
+            ed_dict[root] = root+"ked"
+            text = text.replace(" "+root+"ked "," "+root+" =ed ")
         for word in ['neighbor','color','flavor','splendor','labor']:
             text = text.replace(" "+word+" "," "+word[:-2]+"our ")
         text = text.replace(' gray ',' grey ').replace(' phrenzy ',' frenzy ')
-        text = text.replace(" ' t was "," it was ").replace(" ' t were "," it were ").replace(" ' t would "," it would ")
+        text = text.replace(" ' t was "," it was ").replace(" ' t were "," it were ").replace(" ' t would "," it would ").replace(" ' t will "," it will ")
         text = text.replace(" to - morrow "," tomorrow ").replace(" to - day "," today ").replace(" to - night ", " tonight ")
         text = text.replace(NEWLINE.lower()+' '+TITLE.lower(), TITLE.lower())
         text = text.replace(TITLE.lower() + ' ' + NEWLINE.lower()+' '+NEWLINE.lower(), TITLE.lower()+' '+NEWLINE.lower())
