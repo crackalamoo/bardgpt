@@ -629,9 +629,73 @@ def longfellow():
         poem = poem.lower()
         out.write(poem)
     out.close()
+def holmes():
+    text = getContents("data/holmes-raw.txt")
+    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = removeBrackets(text)
+    index = getContents("data/holmes-index.txt").split('\n')
+    out = open("data/holmes.txt", "w+")
+    text = text.replace("AT THE SATURDAY CLUB\nTHIS", "AT THE SATURDAY CLUB\n\nTHIS")
+    text = text.replace("ALONE! no climber","Alone! no climber")
+    text = text.replace("ALONE, beneath the","Alone, beneath the")
+    skipindex = text.find("TO MY READERS")
+    skipindex = text.find("TO MY READERS",skipindex+1)
+    for heading in index:
+        true_title = None
+        if heading.find(" (") != -1:
+            true_title = heading[heading.find(" (")+2:heading.find(")")]
+            heading = heading[:heading.find(" (")]
+        this = text.find(heading, skipindex)
+        if text.find(heading,this+1) != -1:
+            this = text.find(heading,this+1)
+        next = text.find('\n'*4, this+1)
+        if this == -1 or next == -1:
+            continue
+        endtitle = text.find('\n\n',this+1)
+        while text[endtitle] == '\n' or text[endtitle] == '.':
+            endtitle += 1
+        title = text[this:endtitle]
+        title = stripTitle(title)
+        if true_title is not None:
+            title = true_title
+        poem = text[endtitle:next]
+        poem = poem.replace('_','')
+        poem = poem.split('\n')
+        for i in reversed(range(len(poem))):
+            while poem[i].startswith(' '):
+                poem[i] = poem[i][1:]
+            while poem[i].endswith(" "):
+                poem[i] = poem[i][:-1]
+            if isRomanNumeral(poem[i][:-1]) and poem[i][-1] == '.':
+                if poem[i+1] == '':
+                    poem.pop(i+1)
+                poem.pop(i)
+                continue
+            elif poem[i].endswith('.') and (isNumeral(poem[i][:-1]) or isNumeral(poem[i][-5:-1])):
+                poem.pop(i)
+            else:
+                stars = poem[i].replace(" ","")
+                if stars.count("*") == len(stars) or stars.count(".") == len(stars):
+                    poem.pop(i)
+        poem = '\n'.join(poem)
+        poem = poem.lower()
+        while poem.startswith('\n'):
+            poem = poem[1:]
+        while poem.endswith('\n') or poem.endswith(' '):
+            poem = poem[:-1]
+        poem = poem.replace(" 'd ","'d ").replace(" 'll ","'ll ").replace(" 're ","'re ")
+        poem = poem.replace(" n't","n't").replace("sha'n't","shan't")
+        print("title: " + title.upper())
+        # print("poem: "+poem)
+        poem = poem.replace('\n',NEWLINE)
+        poem = TITLE + title + NEWLINE + poem
+        poem = poem.lower()
+        out.write(poem)
+    out.close()
 def join():
     text = ''
-    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake', 'longfellow']:
+    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
+                   'longfellow', 'holmes']:
         text += getContents("data/"+author+".txt")
     text = text.lower()
     text = text.replace("’","'").replace('“','"').replace('”','"')
@@ -657,6 +721,7 @@ def join():
         text = text.replace(" flatt'r"," flatter").replace("wand'ring","wandering").replace("mould'ring","mouldering")
         text = text.replace("murm'ring","murmuring").replace(" ta'en "," taken ").replace(" wa'n't "," wasn't ")
         text = text.replace("orat'ries","oratories").replace("falt'ring","faltering").replace("imag'ries","imageries")
+        text = text.replace(" practise"," practice")
         text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
         text = text.replace("'tis", "it is").replace("'twould", "it would").replace(" it 's ", " it's ")
         text = text.replace(" is't "," is it ").replace(" 'twill "," it will ")
@@ -672,8 +737,8 @@ def join():
         text = text.replace("doesn't","DOESNT").replace("won't","WONT").replace("shouldn't","SHOULDNT").replace("couldn't","COULDNT")
         text = text.replace("can't","CANT").replace("shan't","SHANT").replace(" didn't "," DIDNT ").replace("wasn't","WASNT")
         text = text.replace("hasn't","HASNT").replace("haven't","HAVENT").replace("weren't","WERENT").replace("hadn't","HADNT")
-        text = text.replace("needn't","NEEDNT").replace("mayn't","MAYNT").replace(" ain't "," AINT ")
-        text = text.replace("'s", " S").replace("'m"," M").replace("'ve"," VE").replace("'re"," RE")
+        text = text.replace("needn't","NEEDNT").replace("mayn't","MAYNT").replace(" ain't "," AINT ").replace(" musn't "," MUSTNT ")
+        text = text.replace("'s", " S").replace("'m "," M ").replace("'ve"," VE").replace("'re"," RE")
         text = text.replace("'d ", "ed ")
         text = text.replace(" '","'").replace("' ","'").replace("'"," ' ")
         text = text.replace(" ID "," i 'd ").replace("WED","we 'd").replace("HED","he 'd").replace("SHED","she 'd").replace("YOUD","you 'd")
@@ -681,11 +746,11 @@ def join():
         text = text.replace("DOESNT","does NT").replace("WONT","wo NT").replace("SHOULDNT","should NT").replace("COULDNT","could NT")
         text = text.replace("CANT","can NT").replace("SHANT","sha NT").replace(" DIDNT "," did NT ").replace("WASNT","was =nt")
         text = text.replace("HASNT","has =nt").replace("HAVENT","have =nt").replace("WERENT","were =nt").replace("HADNT","had =nt")
-        text = text.replace("NEEDNT","need =nt").replace("MAYNT","may =nt").replace(" AINT "," ai =nt ")
+        text = text.replace("NEEDNT","need =nt").replace("MAYNT","may =nt").replace(" AINT "," ai =nt ").replace(" MUSTNT "," must =nt ")
         text = text.replace("S", "'s").replace("M","'m").replace("VE","'ve").replace("RE","'re")
         text = text.replace(" LL "," 'll ").replace(" LT "," 'lt ")
         text = text.replace("(","").replace(")","")
-        text = text.replace("dying","die =ing").replace("lying","lie =ing")
+        text = text.replace("dying","die =ing").replace(" lying"," lie =ing")
         text = text.replace(" ings "," =ing =s ").replace(" NT "," =nt ")
         words = text.split(' ')
         counts = {}
@@ -709,11 +774,11 @@ def join():
                     'fev','rememb','inn','rend','de','beak','wand','port','heath','clos','should',
                     'wrapp','cap','cow','lett','moth','chart','prop','danc','dinn','slumb','tend',
                     'sever','ladd','falt','eld','aft','hind','flatt','murd','show','flow','sob',
-                    'pray','s','numb'])
+                    'pray','s','numb','pond'])
         _er_set = set(['of','in','but','up','man','let','shut','sum','slip','din','flit',
-                    'mat','bat','bit','lad','ban','bet','ad'])
+                    'mat','bat','bit','lad','ban','bet','ad','flat'])
         e_er_set = set(['he',"'re",'rule','cottage','quake','cove','clove','warble','prime','lowe',
-                        'cape','tempe','late','e','rive','dee'])
+                        'cape','tempe','late','e','rive','dee','eve','wave'])
         ing_set = set(['','us','s','st','n','wan','din','k','heav','w','morn','cloth'])
         _ing_set = set(['er','wed','ad','ear','begin'])
         e_ing_set = set(['the','we','bee','bore','lute','ne','re','please','displease','tide','clothe'])
@@ -727,12 +792,12 @@ def join():
         ing_dict = {}
         text = text.replace(" hopper ", " hop =er ").replace(" dispelled "," dispel =ed ").replace(" hopped "," hop =ed ")
         text = text.replace(" conjectured "," conjecture =ed ").replace(' sophistries ',' sophistry =s ').replace(' beads ',' bead =s ')
-        text = text.replace(" halves "," half =s ").replace(" consented "," consent =ed ").replace(" ceded "," cede =ed ")
+        text = text.replace(" halves "," half =s ").replace(" consented "," consent =ed ").replace(" consents "," consent =s ").replace(" ceded "," cede =ed ")
         s_dict['half'] = 'halves'
         s_dict['sophistry'] = 'sophistries'
-        er_dict['hop'] = 'hopper'
+        er_dict['hop'] = 'hopper'; ed_dict['hop'] = 'hopped'
         ed_dict['dispel'] = 'dispelled'
-        ed_dict['hop'] = 'hopped'
+        ing_dict['die'] = 'dying'; ing_dict['lie'] = 'lying'
         for word in words:
             if word != '' and word+'est' in counts and not word in est_set:
                 text = text.replace(" "+word+"est "," "+word+" =est ")
@@ -783,15 +848,19 @@ def join():
                     'wilderness','stretch','moss','glass','wretch','blush','porch','hero','rush',
                     'abyss','surpass','torch','bush','match','gush','approach','press','lash','birch',
                     'branch','possess','crouch','oppress','wash','dish','caress','sooth','marsh',
-                    'mix','vex','sex','perplex','fox','transfix']:
-            s_dict[root] = root+"es"
+                    'mix','vex','sex','perplex','fox','transfix','touch','watch','church','march',
+                    'search','arch','perch','preach','quench','beech','clutch','beach','scorch',
+                    'brooch','coach','larch','bunch','go','do','cargo']:
+            if not word.endswith('s') and not word.endswith('sh') and not word.endswith('x') and not word.endswith('ch'):
+                s_dict[root] = root+"es"
             text = text.replace(" "+root+"es "," "+root+" =s ")
         for root in ['mimic']:
             ing_dict[root] = root+"king"
             text = text.replace(" "+root+"king ", " "+root+" =ing ")
             ed_dict[root] = root+"ked"
             text = text.replace(" "+root+"ked "," "+root+" =ed ")
-        for word in ['neighbor','color','flavor','splendor','labor']:
+        for word in ['neighbor','color','flavor','splendor','labor','favor','fervor','savior','vapor','endeavor','parlor',
+                     'clamor','harbor','splendor','behavior','rumor','humor','savor']:
             text = text.replace(" "+word+" "," "+word[:-2]+"our ")
         text = text.replace(' gray ',' grey ').replace(' phrenzy ',' frenzy ')
         text = text.replace(" ' t was "," it was ").replace(" ' t were "," it were ").replace(" ' t would "," it would ").replace(" ' t will "," it will ")
@@ -830,5 +899,6 @@ if __name__ == '__main__':
     emerson()
     blake()
     longfellow()
+    holmes()
 
     join()

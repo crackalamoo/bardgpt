@@ -27,8 +27,6 @@ words = list(counts.keys())
 words.sort(reverse=True, key=lambda word: counts[word])
 counts['<unk>'] = 0
 for word in words:
-    if word.endswith('ch') and word+'es' in words:
-        print(word, word+'es')
     if word in words[:VOCAB_SIZE]:
         continue
     counts['<unk>'] += counts[word]
@@ -92,7 +90,7 @@ def pretty_tokens(tokens):
                             if this.endswith('y') and next[1] == 'e':
                                 this = this[:-1]+'i'
                         if next[1] == 's':
-                            if this.endswith('s') or this.endswith('sh') or this.endswith('x'):
+                            if this.endswith('s') or this.endswith('sh') or this.endswith('x') or this.endswith('ch'):
                                 this = this+'e'
                         
                         this = this+next[1:]

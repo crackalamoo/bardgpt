@@ -11,3 +11,5 @@ Data sources:
 * Alfred Tennyson ([Plain Text with Index](https://www.gutenberg.org/files/56913/56913-0.txt))
 * Ralph Waldo Emerson ([Plain Text with Index](https://www.gutenberg.org/cache/epub/12843/pg12843.txt))
 * William Blake ([Plain Text with Index](https://www.gutenberg.org/cache/epub/574/pg574.txt))
+* Henry Wadsworth Longfellow ([Plain Text with Index](https://www.gutenberg.org/cache/epub/25153/pg25153.txt))
+* Oliver Wendell Holmes ([Plain Text with Index](https://www.gutenberg.org/cache/epub/7400/pg7400.txt))
