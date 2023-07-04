@@ -71,6 +71,7 @@ def pretty_tokens(tokens):
             res.append(this)
             i += 1
             continue
+        vowels = set(['a','e','i','o','u'])
         if i+1 < len(tokens):
             next = tokens[i+1]
             while next.startswith('='):
@@ -87,7 +88,7 @@ def pretty_tokens(tokens):
                                 this = this[:-1]
                             elif this.endswith('c'):
                                 this = this+'k'
-                            if this.endswith('y') and next[1] == 'e':
+                            if this.endswith('y') and next[1] == 'e' and len(this) > 2 and not this[-2] in vowels:
                                 this = this[:-1]+'i'
                         if next[1] == 's':
                             if this.endswith('s') or this.endswith('sh') or this.endswith('x') or this.endswith('ch'):
