@@ -27,6 +27,8 @@ words = list(counts.keys())
 words.sort(reverse=True, key=lambda word: counts[word])
 counts['<unk>'] = 0
 for word in words:
+    if word.endswith('ch') and word+'es' in words:
+        print(word, word+'es')
     if word in words[:VOCAB_SIZE]:
         continue
     counts['<unk>'] += counts[word]

@@ -469,8 +469,20 @@ def emerson():
     text = getContents("data/emerson-raw.txt")
     text = text.replace('\x0a','\n').replace('\x0d','\n')
     index = getContents("data/emerson-index.txt").split('\n')
+    index.append("\nBEAUTY\n")
+    index.append("\nNATURE\nI")
     out = open("data/emerson.txt", "w+")
     skipindex = text.find("INDEX OF TITLES")
+    titles = {"READ IN MUSIC HALL, JANUARY 1, 1863": "BOSTON HYMN",
+              "SICUT PATRIBUS, SIT DEUS NOBIS": "BOSTON",
+              "PORTO RICO, IN 1832": "THE LAST FAREWELL",
+              "HER MARRIAGE TO MR. EMERSON": "",
+              "BY ELLEN LOUISA TUCKER": "THE VIOLET",
+              "CONCORD, 1838": "DIRGE",
+              "MONUMENT, JULY 4, 1837": "CONCORD HYMN",
+              "OF REV. CHANDLER ROBBINS": "HYMN",
+              "\nBEAUTY\n": "BEAUTY",
+              "\nNATURE\nI": "NATURE"}
     for heading in index:
         this = text.find(heading.upper(), skipindex)
         next = text.find('\n'*4, this+1)
@@ -481,6 +493,8 @@ def emerson():
             endtitle += 1
         title = text[this:endtitle]
         title = stripTitle(title)
+        if heading in titles:
+            title = titles[heading]
         poem = text[endtitle:next]
         poem = poem.replace('_','')
         poem = poem.split('\n')
@@ -509,6 +523,7 @@ def emerson():
         print("title: " + title.upper())
         # print("poem: "+poem)
         poem = poem.replace('\n',NEWLINE)
+        poem = poem.replace("reënter","reenter")
         poem = TITLE + title + NEWLINE + poem
         poem = poem.lower()
         out.write(poem)
