@@ -510,7 +510,7 @@ def emerson():
                 continue
             elif poem[i].endswith('.') and (isNumeral(poem[i][:-1]) or isNumeral(poem[i][-5:-1])):
                 poem.pop(i)
-            else:
+            elif len(poem[i]) > 0:
                 stars = poem[i].replace(" ","")
                 if stars.count("*") == len(stars):
                     poem.pop(i)
@@ -673,7 +673,7 @@ def holmes():
                 continue
             elif poem[i].endswith('.') and (isNumeral(poem[i][:-1]) or isNumeral(poem[i][-5:-1])):
                 poem.pop(i)
-            else:
+            elif len(poem[i]) > 0:
                 stars = poem[i].replace(" ","")
                 if stars.count("*") == len(stars) or stars.count(".") == len(stars):
                     poem.pop(i)
@@ -692,10 +692,83 @@ def holmes():
         poem = poem.lower()
         out.write(poem)
     out.close()
+def wilde():
+    text = getContents("data/wilde-raw.txt")
+    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = removeBrackets(text)
+    index = getContents("data/wilde-index.txt").split('\n')
+    out = open("data/wilde.txt", "w+")
+    skipindex = text.find("HÉLAS!")-5
+    index.append("THE BALLAD OF READING GAOL\n\n\n                                      I")
+    titles = {"HÉLAS!": "GREECE!",
+              "URBS SACRA ÆTERNA": "THE ETERNAL SACRED CITY",
+              "E TENEBRIS": "OUT OF THE DARKNESS",
+              "VITA NUOVA": "NEW LIFE",
+              "IMPRESSION DU MATIN": "IMPRESSION OF THE MORNING",
+              "CHANSON": "SONG",
+              "LES SILHOUETTES": "THE SILHOUETTES",
+              "LA FUITE DE LA LUNE": "THE FLIGHT OF THE MOON",
+              "(NORMANDE)": "NORMAN",
+              "(BRETON)": "THE DOLE OF THE KING’S DAUGHTER",
+              "SILENTIUM AMORIS": "THE SILENCE OF LOVE",
+              "ΓΛΥΚΥΠΙΚΡΟΣ ΕΡΩΣ": "FLOWER OF LOVE",
+              "TRISTITÆ": "SADNESS",
+              "ITALIA": "ITALY",
+              "LE JARDIN": "THE GARDEN",
+              "LA MER": "THE SEA",
+              "LES BALLONS": "THE BALLOONS",
+              "DÉSESPOIR": "DESPAIR",
+              "THE BALLAD OF READING GAOL\n\n\n                                      I": "THE BALLAD OF READING JAIL",
+    }
+    for heading in index:
+        this = text.find(heading, skipindex)
+        next = text.find('\n'*3, this+1)
+        if this == -1 or next == -1:
+            continue
+        endtitle = text.find('\n\n',this+1)
+        while text[endtitle] == '\n' or text[endtitle] == '.' or text[endtitle] == ' ':
+            endtitle += 1
+        title = text[this:endtitle]
+        title = stripTitle(title)
+        if heading in titles:
+            title = titles[heading]
+        next = text.find('\n'*3, endtitle+1)
+        poem = text[endtitle:next]
+        poem = poem.replace('_','')
+        poem = poem.split('\n')
+        for i in reversed(range(len(poem))):
+            while poem[i].startswith(' '):
+                poem[i] = poem[i][1:]
+            while poem[i].endswith(" "):
+                poem[i] = poem[i][:-1]
+            if (isRomanNumeral(poem[i][:-1]) and poem[i][-1] == '.') or isRomanNumeral(poem[i]) and poem[i]:
+                if poem[i+1] == '':
+                    poem.pop(i+1)
+                poem.pop(i)
+                continue
+            elif poem[i].endswith('.') and (isNumeral(poem[i][:-1]) or isNumeral(poem[i][-5:-1])):
+                poem.pop(i)
+            elif len(poem[i]) > 0:
+                stars = poem[i].replace(" ","")
+                if stars.count("*") == len(stars) or stars.count(".") == len(stars):
+                    poem.pop(i)
+        poem = '\n'.join(poem)
+        poem = poem.lower()
+        while poem.startswith('\n'):
+            poem = poem[1:]
+        while poem.endswith('\n') or poem.endswith(' '):
+            poem = poem[:-1]
+        print("title: " + title.upper())
+        # print("poem: "+poem)
+        poem = poem.replace('\n',NEWLINE)
+        poem = TITLE + title + NEWLINE + poem
+        poem = poem.lower()
+        out.write(poem)
+    out.close()
 def join():
     text = ''
     for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
-                   'longfellow', 'holmes']:
+                   'longfellow', 'holmes', 'wilde']:
         text += getContents("data/"+author+".txt")
     text = text.lower()
     text = text.replace("’","'").replace('“','"').replace('”','"')
@@ -721,7 +794,7 @@ def join():
         text = text.replace(" flatt'r"," flatter").replace("wand'ring","wandering").replace("mould'ring","mouldering")
         text = text.replace("murm'ring","murmuring").replace(" ta'en "," taken ").replace(" wa'n't "," wasn't ")
         text = text.replace("orat'ries","oratories").replace("falt'ring","faltering").replace("imag'ries","imageries")
-        text = text.replace(" practise"," practice")
+        text = text.replace(" practise"," practice").replace(" gaol "," jail ")
         text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
         text = text.replace("'tis", "it is").replace("'twould", "it would").replace(" it 's ", " it's ")
         text = text.replace(" is't "," is it ").replace(" 'twill "," it will ")
@@ -764,7 +837,7 @@ def join():
                             'l','eld','pr','inter','sever','hug','earn','smil'])
         ed_set = set(['he','you','they','we','will','mov','w','wretch',
                             'till','far','fell','de','b','f','l','re','hopp','ne'])
-        d_set = set(['be', 'she','we','see','re','fe','rowe','fee','le','seale','dee'])
+        d_set = set(['be', 'she','we','see','re','fe','rowe','fee','le','seale','dee','ne'])
         y_ed_set = set(['drapery','city','weary'])
         s_set = set(['','a','i','it','his','her',"'",'their','one','will','your','our','down','pant','wa',
                             'god','well','other','saw','good','new','ye','leave','right','hair','wood',
@@ -900,5 +973,6 @@ if __name__ == '__main__':
     blake()
     longfellow()
     holmes()
+    wilde()
 
     join()
