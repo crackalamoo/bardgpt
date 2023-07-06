@@ -35,6 +35,9 @@ for word in words:
     counts['<unk>'] += counts[word]
 words = list(counts.keys())
 words.sort(reverse=True, key=lambda word: counts[word])
+for token in ['1','2','3']:
+    words.remove(token)
+    words.append(token)
 
 vocab = set(words[:VOCAB_SIZE])
 def pretty_tokens(tokens):

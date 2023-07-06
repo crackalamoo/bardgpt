@@ -10,6 +10,7 @@ EMBED_DIM = 256
 TRANSFORMER_LAYERS = 2
 TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
+WARMUP_STEPS = 800
 VOCAB = list(np.load('lemmas/lemmas.npy'))
 
 def sampleVocab(dist, temperature):
@@ -19,7 +20,7 @@ def sampleVocab(dist, temperature):
     sample = np.random.choice(np.arange(VOCAB_SIZE), p=dist)
     return sample
 
-def genTokens(model, tokens, temperature=0.75):
+def genTokens(model, tokens, temperature=0.7):
     res = [VOCAB.index(TITLE.lower()[1:-1])]
     for i in range(tokens):
         context = res[-(N-1):] if MODEL_TYPE == 'n' else res[-N:]
@@ -46,7 +47,7 @@ class LinearModel(keras.Model):
         x = self.seq(input)
         return x
 
-    def generate(self, context, temperature=0.75):
+    def generate(self, context, temperature=0.7):
         while len(context) > NGRAM_N-1:
             context.pop(0)
         while len(context) < NGRAM_N-1:
@@ -144,7 +145,7 @@ class Transformer(keras.Model):
 
         return x
 
-    def generate(self, context, temperature=0.75):
+    def generate(self, context, temperature=0.7):
         lastToken = len(context)-1
         while len(context) > TRANSFORMER_N:
             context.pop(0)
@@ -159,7 +160,7 @@ class Transformer(keras.Model):
 
 
 class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
-  def __init__(self, d_model, warmup_steps=400):
+  def __init__(self, d_model, warmup_steps=WARMUP_STEPS):
     super().__init__()
 
     self.d_model = d_model
