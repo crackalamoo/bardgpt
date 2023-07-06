@@ -8,6 +8,8 @@ NGRAM_N = 4
 TRANSFORMER_N = 32
 MODEL_TYPE = 't' # n: ngram, t: transformer
 TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else 3
+BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
+                 'r','d','f','p','agnes','eulalie']
 
 file = open("data/join.txt", "r")
 text = file.read()
@@ -25,7 +27,8 @@ for token in tokens:
     counts[token] += 1
 words = list(counts.keys())
 words.sort(reverse=True, key=lambda word: counts[word])
-for token in ['1','2','3']:
+
+for token in BANNED_TOKENS:
     words.remove(token)
     words.append(token)
 counts['<unk>'] = 0
@@ -35,7 +38,7 @@ for word in words:
     counts['<unk>'] += counts[word]
 words = list(counts.keys())
 words.sort(reverse=True, key=lambda word: counts[word])
-for token in ['1','2','3']:
+for token in BANNED_TOKENS:
     words.remove(token)
     words.append(token)
 

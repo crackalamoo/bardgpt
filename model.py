@@ -192,8 +192,8 @@ if __name__ == '__main__':
     train_x = tf.one_hot(loaded['x'], VOCAB_SIZE) if MODEL_TYPE == 'n' else loaded['x']
     train_y = tf.one_hot(loaded['y'], VOCAB_SIZE) if MODEL_TYPE == 'n' else loaded['y']
     del loaded
-    print("X:", train_x[:2])
-    print("Y:", train_y[:2])
+    print("X:", train_x[:4])
+    print("Y:", train_y[:4])
     print("X shape:", train_x.shape)
     print("Y shape:", train_y.shape)
 

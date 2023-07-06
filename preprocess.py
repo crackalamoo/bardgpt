@@ -651,7 +651,7 @@ def holmes():
         this = text.find(heading, skipindex)
         if text.find(heading,this+1) != -1:
             this = text.find(heading,this+1)
-        next = text.find('\n'*4, this+1)
+        next = text.find('\n'*3, this+1)
         if this == -1 or next == -1:
             continue
         endtitle = text.find('\n\n',this+1)
@@ -863,7 +863,8 @@ def join():
         text = text.replace(" flatt'r"," flatter").replace("wand'ring","wandering").replace("mould'ring","mouldering")
         text = text.replace("murm'ring","murmuring").replace(" ta'en "," taken ").replace(" wa'n't "," wasn't ")
         text = text.replace("orat'ries","oratories").replace("falt'ring","faltering").replace("imag'ries","imageries")
-        text = text.replace(" practise"," practice").replace(" gaol "," jail ")
+        text = text.replace(" practise"," practice").replace(" gaol "," jail ").replace(" dropt "," dropped ")
+        text = text.replace("æ","ae").replace("œ","oe")
         text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
         text = text.replace("'tis", "it is").replace("'twould", "it would").replace(" it 's ", " it's ")
         text = text.replace(" is't "," is it ").replace(" 'twill "," it will ")
@@ -904,7 +905,7 @@ def join():
         words.sort(key=lambda word: counts[word], reverse=True)
         est_set = set(['for','t','n','liv','b','di','j','r','p','v','w',
                             'l','eld','pr','inter','sever','hug','earn','smil'])
-        ed_set = set(['he','you','they','we','will','mov','w','wretch',
+        ed_set = set(['he','you','they','we','will','mov','w','wretch','fe',
                             'till','far','fell','de','b','f','l','re','hopp','ne'])
         d_set = set(['be', 'she','we','see','re','fe','rowe','fee','le','seale','dee','ne'])
         y_ed_set = set(['drapery','city','weary'])
@@ -920,7 +921,7 @@ def join():
         _er_set = set(['of','in','but','up','man','let','shut','sum','slip','din','flit',
                     'mat','bat','bit','lad','ban','bet','ad','flat'])
         e_er_set = set(['he',"'re",'rule','cottage','quake','cove','clove','warble','prime','lowe',
-                        'cape','tempe','late','e','rive','dee','eve','wave'])
+                        'cape','tempe','late','e','rive','dee','eve','wave','me'])
         ing_set = set(['','us','s','st','n','wan','din','k','heav','w','morn','cloth'])
         _ing_set = set(['er','wed','ad','ear','begin'])
         e_ing_set = set(['the','we','bee','bore','lute','ne','re','please','displease','tide','clothe'])
@@ -1025,6 +1026,7 @@ def join():
         text = text.replace(' part '+numeral+NEWLINE.lower(),'')
         text = text.replace(' '+numeral+' .'+NEWLINE.lower(),'')
         text = text.replace(' '+numeral+NEWLINE.lower(),'')
+    text = text.replace("><", "> <")
     out = open("data/join.txt", "w+")
     out.write(text)
     out.close()
