@@ -14,3 +14,4 @@ Data sources:
 * Henry Wadsworth Longfellow ([Plain Text with Index](https://www.gutenberg.org/cache/epub/25153/pg25153.txt))
 * Oliver Wendell Holmes ([Plain Text with Index](https://www.gutenberg.org/cache/epub/7400/pg7400.txt))
 * Oscar Wilde ([Plain Text with Index](https://www.gutenberg.org/files/1057/1057-0.txt))
+* Elizabeth Barron Browning ([Volume II Plain Text with Index](https://www.gutenberg.org/cache/epub/33363/pg33363.txt), [Volume IV Plain Text with Index](https://www.gutenberg.org/cache/epub/31015/pg31015.txt))

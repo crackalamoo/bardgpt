@@ -26,6 +26,7 @@ def isNumeral(s):
 def isRomanNumeral(s):
     return s != '' and bool(re.search(r"^M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$", s))
 def stripTitle(s):
+    s = s.replace('_','')
     while s.endswith('\n') or s.endswith(' ') or s.endswith('.') or s.endswith(';'):
         s = s[:-1]
     return s
@@ -54,7 +55,8 @@ def dickinson():
         poem = poem.replace(" i 'd "," i'd ").replace(" he 'd "," he'd ")
         poem = poem.replace(" who 'll "," who'll ").replace(" they 'll"," they'll ")
         out.write(poem)
-        #print(poem)
+        print("title:", title)
+        # print(poem)
     out.close()
 def frost():
     text = getContents("data/frost-raw.txt")
@@ -75,7 +77,8 @@ def frost():
         poem = TITLE + title + poem + NEWLINE
         poem = poem.lower()
         out.write(poem)
-        #print(poem)
+        print("title:", title)
+        # print(poem)
     out.close()
 def keats():
     text = getContents("data/keats-raw.txt")
@@ -143,8 +146,8 @@ def keats():
         if poem.rfind("footnotes:") != -1:
             poem = poem[:poem.rfind("footnotes:")]
         out.write(poem)
-        print("title:",title)
-        #print(poem)
+        print("title: "+title.upper())
+        # print(poem)
     out.close()
 def poe():
     text = getContents("data/poe-raw.txt")
@@ -202,7 +205,7 @@ def poe():
         poem = poem.replace('\n', NEWLINE)
         poem = poem.lower()
         out.write(poem)
-        #print(poem)
+        # print(poem)
     out.close()
 def shelley():
     text = getContents("data/shelley-raw.txt")
@@ -267,8 +270,8 @@ def shelley():
         if poem.rfind(NEWLINE.lower()+"note:") != -1:
             poem = poem[:poem.rfind(NEWLINE.lower()+"note:")]
         out.write(poem)
-        print("title:",title)
-        #print(poem)
+        print("title: "+title.upper())
+        # print(poem)
     out.close()
 def byron():
     text = getContents("data/byron-raw.txt")
@@ -332,7 +335,7 @@ def byron():
             poem = poem[:poem.rfind("\nnote:")]
         out.write(poem)
         print("title:",title)
-        #print(poem)
+        # print(poem)
     out.close()
 def ballads():
     text = getContents("data/ballads-raw.txt")
@@ -403,7 +406,7 @@ def ballads():
         while poem.endswith('\n') or poem.endswith(' '):
             poem = poem[:-1]
         print("title: " + title.upper())
-        #print("poem: "+poem)
+        # print("poem: "+poem)
         poem = poem.replace('\n',NEWLINE)
         poem = TITLE + title + NEWLINE + poem
         poem = poem.lower()
@@ -765,10 +768,76 @@ def wilde():
         poem = poem.lower()
         out.write(poem)
     out.close()
+def browning():
+    text = getContents("data/browning-raw-iv.txt")
+    vol2 = getContents("data/browning-raw-ii.txt")
+    vol2 = vol2[vol2.find("POEMS"):]
+    text += vol2
+    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = text.replace('\n\n[Illustration:','[')
+    text = removeBrackets(text)
+    index = getContents("data/browning-index.txt").split('\n')
+    out = open("data/browning.txt", "w+")
+    for heading in index:
+        true_title = None
+        if heading.find(" (") != -1:
+            true_title = heading[heading.find(" (")+2:heading.find(")")]
+            heading = heading[:heading.find(" (")]
+        this = text.find(heading)
+        if text.find(heading,this+1) != -1:
+            this = text.find(heading,this+1)
+        next = text.find('\n'*4, this+1)
+        if this == -1 or next == -1:
+            continue
+        endtitle = text.find('\n\n',this+1)
+        while text[endtitle] == '\n' or text[endtitle] == '.':
+            endtitle += 1
+        title = text[this:endtitle]
+        title = stripTitle(title)
+        if true_title is not None:
+            title = true_title
+        poem = text[endtitle:next]
+        poem = poem.replace('_','')
+        poem = poem.split('\n')
+        for i in reversed(range(len(poem))):
+            while poem[i].startswith(' '):
+                poem[i] = poem[i][1:]
+            while poem[i].endswith(" "):
+                poem[i] = poem[i][:-1]
+            if isRomanNumeral(poem[i][:-1]) and poem[i][-1] == '.':
+                if poem[i+1] == '':
+                    poem.pop(i+1)
+                poem.pop(i)
+                continue
+            elif poem[i].endswith('.') and (isNumeral(poem[i][:-1]) or isNumeral(poem[i][-5:-1])):
+                poem.pop(i)
+            elif len(poem[i]) > 0:
+                stars = poem[i].replace(" ","")
+                if stars.count("*") == len(stars) or stars.count(".") == len(stars):
+                    poem.pop(i)
+        poem = '\n'.join(poem)
+        if heading == 'FIRST PART.' and poem.rfind("SECOND PART.") != -1:
+            poem = poem[:poem.rfind("SECOND PART.")]
+        elif heading == 'THIRD PART.' and poem.rfind("FOURTH PART.") != -1:
+            poem = poem[:poem.rfind("FOURTH PART.")]
+        if poem.rfind("FOOTNOTES:") != -1:
+            poem = poem[:poem.rfind("FOOTNOTES:")]
+        poem = poem.lower()
+        while poem.startswith('\n'):
+            poem = poem[1:]
+        while poem.endswith('\n') or poem.endswith(' '):
+            poem = poem[:-1]
+        print("title: " + title.upper())
+        # print("poem: "+poem)
+        poem = poem.replace('\n',NEWLINE)
+        poem = TITLE + title + NEWLINE + poem
+        poem = poem.lower()
+        out.write(poem)
+    out.close()
 def join():
     text = ''
     for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
-                   'longfellow', 'holmes', 'wilde']:
+                   'longfellow', 'holmes', 'wilde', 'browning']:
         text += getContents("data/"+author+".txt")
     text = text.lower()
     text = text.replace("’","'").replace('“','"').replace('”','"')
@@ -974,5 +1043,6 @@ if __name__ == '__main__':
     longfellow()
     holmes()
     wilde()
+    browning()
 
     join()
