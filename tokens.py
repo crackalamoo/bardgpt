@@ -9,7 +9,7 @@ TRANSFORMER_N = 32
 MODEL_TYPE = 't' # n: ngram, t: transformer
 TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else 3
 BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
-                 'r','d','f','p','agnes','eulalie']
+                 'r','d','f','p','agnes','eulalie','kate','niam']
 
 file = open("data/join.txt", "r")
 text = file.read()

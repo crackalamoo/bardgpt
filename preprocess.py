@@ -768,16 +768,20 @@ def wilde():
         poem = poem.lower()
         out.write(poem)
     out.close()
-def browning():
+def browning_yeats():
     text = getContents("data/browning-raw-iv.txt")
     vol2 = getContents("data/browning-raw-ii.txt")
     vol2 = vol2[vol2.find("POEMS"):]
     text += vol2
+    yeats = getContents("data/yeats-raw.txt")
+    text += yeats
     text = text.replace('\x0a','\n').replace('\x0d','\n')
     text = text.replace('\n\n[Illustration:','[')
     text = removeBrackets(text)
-    index = getContents("data/browning-index.txt").split('\n')
-    out = open("data/browning.txt", "w+")
+    index = getContents("data/browning-index.txt")
+    index += getContents("data/yeats-index.txt")
+    index = index.split('\n')
+    out = open("data/browning_yeats.txt", "w+")
     for heading in index:
         true_title = None
         if heading.find(" (") != -1:
@@ -832,12 +836,13 @@ def browning():
         poem = poem.replace('\n',NEWLINE)
         poem = TITLE + title + NEWLINE + poem
         poem = poem.lower()
+        poem = poem.replace("faery","fairy").replace("faeries","fairies")
         out.write(poem)
     out.close()
 def join():
     text = ''
     for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
-                   'longfellow', 'holmes', 'wilde', 'browning']:
+                   'longfellow', 'holmes', 'wilde', 'browning_yeats']:
         text += getContents("data/"+author+".txt")
     text = text.lower()
     text = text.replace("’","'").replace('“','"').replace('”','"')
@@ -1045,6 +1050,6 @@ if __name__ == '__main__':
     longfellow()
     holmes()
     wilde()
-    browning()
+    browning_yeats()
 
     join()
