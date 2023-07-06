@@ -13,3 +13,4 @@ Data sources:
 * William Blake ([Plain Text with Index](https://www.gutenberg.org/cache/epub/574/pg574.txt))
 * Henry Wadsworth Longfellow ([Plain Text with Index](https://www.gutenberg.org/cache/epub/25153/pg25153.txt))
 * Oliver Wendell Holmes ([Plain Text with Index](https://www.gutenberg.org/cache/epub/7400/pg7400.txt))
+* Oscar Wilde ([Plain Text with Index](https://www.gutenberg.org/files/1057/1057-0.txt))

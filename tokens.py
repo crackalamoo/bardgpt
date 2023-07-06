@@ -25,6 +25,9 @@ for token in tokens:
     counts[token] += 1
 words = list(counts.keys())
 words.sort(reverse=True, key=lambda word: counts[word])
+for token in ['1','2','3']:
+    words.remove(token)
+    words.append(token)
 counts['<unk>'] = 0
 for word in words:
     if word in words[:VOCAB_SIZE]:
@@ -93,6 +96,8 @@ def pretty_tokens(tokens):
                         if next[1] == 's':
                             if this.endswith('s') or this.endswith('sh') or this.endswith('x') or this.endswith('ch'):
                                 this = this+'e'
+                            if this.endswith('y') and len(this) > 2 and not this[-2] in vowels:
+                                this = this[:-1]+'ie'
                         
                         this = this+next[1:]
                 i += 1

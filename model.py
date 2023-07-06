@@ -131,7 +131,6 @@ class Transformer(keras.Model):
         self.vocab = VOCAB
         self.embed = InputEmbedding()
         self.decoder = Decoder(num_layers=num_layers, num_heads=num_heads, dff=dff)
-        self.flatten = Flatten()
         self.out = Dense(VOCAB_SIZE, activation='softmax')
 
     def call(self, input):
@@ -160,7 +159,7 @@ class Transformer(keras.Model):
 
 
 class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
-  def __init__(self, d_model, warmup_steps=4000):
+  def __init__(self, d_model, warmup_steps=400):
     super().__init__()
 
     self.d_model = d_model
@@ -235,3 +234,5 @@ if __name__ == '__main__':
     print("Generating sample from trained model")
     print(pretty_tokens(genTokens(model, 1000)))
     print(pretty_tokens(genTokens(model, 1000)))
+    for i in range(10):
+        print(pretty_tokens(genTokens(model, 100)))
