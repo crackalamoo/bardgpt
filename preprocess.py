@@ -839,10 +839,32 @@ def browning_yeats():
         poem = poem.replace("faery","fairy").replace("faeries","fairies")
         out.write(poem)
     out.close()
+def tagore():
+    gitanjali = getContents("data/tagore-raw-gitanjali.txt")
+    gitanjali = gitanjali[gitanjali.find("1."):gitanjali.rfind("END OF THE PROJECT GUTENBERG EBOOK")]
+    gardener = getContents("data/tagore-raw-gardener.txt")
+    gardener = gardener[gardener.find("2\n\n"):gardener.rfind("END OF THE PROJECT GUTENBERG EBOOK")]
+    gardener = gardener.replace("\n ","\n").replace("\n  "," ")
+    out = open("data/tagore.txt", "w+")
+    def writePoem(text, start, end):
+        nonlocal out
+        poem = text[start:end].replace('\n',NEWLINE).replace('_','').lower()
+        out.write(poem)
+    for i in range(2, 85):
+        this = gardener.find(str(i)+"\n\n\n")
+        endtitle = this+len(str(i)+"\n\n\n")
+        next = gardener.find("\n\n\n", endtitle+1)
+        writePoem(gardener, endtitle, next)
+    for i in range(1, 104):
+        this = gitanjali.find(str(i)+".\n\n\n")
+        endtitle = this+len(str(i)+".\n\n\n")
+        next = gitanjali.find("\n\n\n", endtitle+1)
+        writePoem(gitanjali, endtitle, next)
+    out.close()
 def join():
     text = ''
     for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
-                   'longfellow', 'holmes', 'wilde', 'browning_yeats']:
+                   'longfellow', 'holmes', 'wilde', 'browning_yeats', 'tagore']:
         text += getContents("data/"+author+".txt")
     text = text.lower()
     text = text.replace("’","'").replace('“','"').replace('”','"')
@@ -1037,6 +1059,7 @@ def join():
     out.close()
 
 if __name__ == '__main__':
+    tagore()
     dickinson()
     frost()
     keats()
