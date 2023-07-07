@@ -872,6 +872,27 @@ def tagore():
         next = gitanjali.find("\n\n\n", endtitle+1)
         writePoem(gitanjali, endtitle, next)
     out.close()
+def shakespeare():
+    text = getContents("data/shakespeare-raw.txt")
+    text = text[text.find("From fairest creatures"):text.rfind("water cools not love.")+21]
+    text = text.split('\n')
+    for i in reversed(range(len(text))):
+        while text[i].startswith(' '):
+            text[i] = text[i][1:]
+        while text[i].endswith(" "):
+            text[i] = text[i][:-1]
+        if isRomanNumeral(text[i]):
+            text[i] = TITLE
+            text.pop(i+1)
+    text = NEWLINE.join(text)
+    text = TITLE + NEWLINE + text
+    text = text.replace(NEWLINE+TITLE, TITLE)
+    text = text.lower()
+    text = text.replace("’gainst","against").replace("’fore","before").replace("bett’r","better")
+    text = text.replace("’st ","est ")
+    out = open("data/shakespeare.txt", "w+")
+    out.write(text)
+    out.close()
 def join():
     text = ''
     for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
@@ -1070,6 +1091,7 @@ def join():
     out.close()
 
 if __name__ == '__main__':
+    shakespeare()
     tagore()
     dickinson()
     frost()

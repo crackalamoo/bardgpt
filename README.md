@@ -18,3 +18,4 @@ Data sources:
 * W. B. Yeats ([Plain Text with Index](https://www.gutenberg.org/cache/epub/38877/pg38877.txt))
 * Rabindranath Tagore ([Gitanjali Plain Text](https://www.gutenberg.org/cache/epub/7164/pg7164.txt), [The Gardener Plain Text](https://www.gutenberg.org/ebooks/6686))
 * Selections from Modern Poets ([Plain Text with Index](https://www.gutenberg.org/ebooks/53206))
+* William Shakespeare's Sonnets ([Plain Text](https://www.gutenberg.org/cache/epub/1041/pg1041.txt))
