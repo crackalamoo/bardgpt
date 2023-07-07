@@ -29,8 +29,9 @@ words = list(counts.keys())
 words.sort(reverse=True, key=lambda word: counts[word])
 
 for token in BANNED_TOKENS:
-    words.remove(token)
-    words.append(token)
+    if token in words:
+        words.remove(token)
+        words.append(token)
 counts['<unk>'] = 0
 for word in words:
     if word in words[:VOCAB_SIZE]:
@@ -39,8 +40,9 @@ for word in words:
 words = list(counts.keys())
 words.sort(reverse=True, key=lambda word: counts[word])
 for token in BANNED_TOKENS:
-    words.remove(token)
-    words.append(token)
+    if token in words:
+        words.remove(token)
+        words.append(token)
 
 vocab = set(words[:VOCAB_SIZE])
 def pretty_tokens(tokens):

@@ -768,7 +768,7 @@ def wilde():
         poem = poem.lower()
         out.write(poem)
     out.close()
-def browning_yeats():
+def browning_yeats_et_al():
     text = getContents("data/browning-raw-iv.txt")
     vol2 = getContents("data/browning-raw-ii.txt")
     vol2 = vol2[vol2.find("POEMS"):]
@@ -778,19 +778,29 @@ def browning_yeats():
     text = text.replace('\x0a','\n').replace('\x0d','\n')
     text = text.replace('\n\n[Illustration:','[')
     text = removeBrackets(text)
+    modern_skip = len(text)
     index = getContents("data/browning-index.txt")
     index += getContents("data/yeats-index.txt")
+    modern_skip_index = len(index.split('\n'))
+    index += getContents("data/modern-index.txt")
     index = index.split('\n')
-    out = open("data/browning_yeats.txt", "w+")
+    modern = getContents("data/modern-raw.txt")
+    modern = modern[modern.find("LASCELLES ABERCROMBIE"):modern.rfind("INDEX")]
+    text += modern
+    out = open("data/browning_yeats_et_al.txt", "w+")
+    skipindex = 1
+    did_headings = 0
     for heading in index:
+        if did_headings > modern_skip_index:
+            skipindex = modern_skip
         true_title = None
         if heading.find(" (") != -1:
             true_title = heading[heading.find(" (")+2:heading.find(")")]
             heading = heading[:heading.find(" (")]
-        this = text.find(heading)
-        if text.find(heading,this+1) != -1:
+        this = text.find(heading, skipindex)
+        if text.find(heading,this+1) != -1 and not did_headings > modern_skip_index:
             this = text.find(heading,this+1)
-        next = text.find('\n'*4, this+1)
+        next = text.find('\n'*4 if did_headings > modern_skip_index else '\n'*3, this+1)
         if this == -1 or next == -1:
             continue
         endtitle = text.find('\n\n',this+1)
@@ -837,6 +847,7 @@ def browning_yeats():
         poem = TITLE + title + NEWLINE + poem
         poem = poem.lower()
         poem = poem.replace("faery","fairy").replace("faeries","fairies")
+        did_headings += 1
         out.write(poem)
     out.close()
 def tagore():
@@ -864,7 +875,7 @@ def tagore():
 def join():
     text = ''
     for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
-                   'longfellow', 'holmes', 'wilde', 'browning_yeats', 'tagore']:
+                   'longfellow', 'holmes', 'wilde', 'browning_yeats_et_al', 'tagore']:
         text += getContents("data/"+author+".txt")
     text = text.lower()
     text = text.replace("’","'").replace('“','"').replace('”','"')
@@ -891,7 +902,7 @@ def join():
         text = text.replace("murm'ring","murmuring").replace(" ta'en "," taken ").replace(" wa'n't "," wasn't ")
         text = text.replace("orat'ries","oratories").replace("falt'ring","faltering").replace("imag'ries","imageries")
         text = text.replace(" practise"," practice").replace(" gaol "," jail ").replace(" dropt "," dropped ")
-        text = text.replace("æ","ae").replace("œ","oe")
+        text = text.replace("æ","ae").replace("œ","oe").replace("deathbed","death - bed")
         text = text.replace(" th'", " the").replace("i 'm", "i'm").replace("'t is", "it is")
         text = text.replace("'tis", "it is").replace("'twould", "it would").replace(" it 's ", " it's ")
         text = text.replace(" is't "," is it ").replace(" 'twill "," it will ")
@@ -1073,6 +1084,6 @@ if __name__ == '__main__':
     longfellow()
     holmes()
     wilde()
-    browning_yeats()
+    browning_yeats_et_al()
 
     join()
