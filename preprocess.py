@@ -2,6 +2,9 @@ import re
 import numpy as np
 TITLE = " <TITLE> "
 NEWLINE = " <NEWLINE> "
+AUTHOR_LIST = ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
+                   'longfellow', 'holmes', 'wilde', 'browning_yeats_et_al', 'tagore']
+KAGGLE = True
 
 def getContents(fname):
     file = open(fname, "r")
@@ -893,17 +896,16 @@ def shakespeare():
     out = open("data/shakespeare.txt", "w+")
     out.write(text)
     out.close()
-def join():
+def join(kaggle=False):
     text = ''
-    for author in ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
-                   'longfellow', 'holmes', 'wilde', 'browning_yeats_et_al', 'tagore']:
+    for author in (AUTHOR_LIST if not kaggle else ['kaggle']):
         text += getContents("data/"+author+".txt")
     text = text.lower()
     text = text.replace("’","'").replace('“','"').replace('”','"')
-    text = text.replace("—-", "--")
-    text = text.replace(" .",".").replace(" ,",",").replace("."," .").replace(","," ,")
-    text = text.replace(" :",":").replace(" ;",";").replace(":"," :").replace(";"," ;")
-    text = text.replace(" !","!").replace(" ?","?").replace("!"," !").replace("?"," ?")
+    text = text.replace("—-", "--").replace("–","-")
+    text = text.replace(" .",".").replace(" ,",",").replace("."," . ").replace(","," , ")
+    text = text.replace(" :",":").replace(" ;",";").replace(":"," : ").replace(";"," ; ")
+    text = text.replace(" !","!").replace(" ?","?").replace("!"," ! ").replace("?"," ? ")
     text = text.replace(NEWLINE.lower()[:-1]+NEWLINE.lower()[1:], NEWLINE.lower())
     text = text.replace("><", "> <")
     text = text.replace('>','> ')
@@ -970,17 +972,18 @@ def join():
         y_ed_set = set(['drapery','city','weary'])
         s_set = set(['','a','i','it','his','her',"'",'their','one','will','your','our','down','pant','wa',
                             'god','well','other','saw','good','new','ye','leave','right','hair','wood',
-                            'ha','mis'])
+                            'ha','mis','thi','hi'])
         st_set = set(['be','we','ne','re','tempe','le','mode', 'fore'])
         er_set = set(['with','she','h','quak','curr','hopp','minist','eth','thund','whisp','whit',
                     'fev','rememb','inn','rend','de','beak','wand','port','heath','clos','should',
                     'wrapp','cap','cow','lett','moth','chart','prop','danc','dinn','slumb','tend',
                     'sever','ladd','falt','eld','aft','hind','flatt','murd','show','flow','sob',
-                    'pray','s','numb','pond'])
+                    'pray','s','numb','pond','ev'])
         _er_set = set(['of','in','but','up','man','let','shut','sum','slip','din','flit',
                     'mat','bat','bit','lad','ban','bet','ad','flat'])
         e_er_set = set(['he',"'re",'rule','cottage','quake','cove','clove','warble','prime','lowe',
-                        'cape','tempe','late','e','rive','dee','eve','wave','me'])
+                        'cape','tempe','late','e','rive','dee','eve','wave','me','rathe','meter',
+                        'anothe'])
         ing_set = set(['','us','s','st','n','wan','din','k','heav','w','morn','cloth'])
         _ing_set = set(['er','wed','ad','ear','begin'])
         e_ing_set = set(['the','we','bee','bore','lute','ne','re','please','displease','tide','clothe'])
@@ -1064,7 +1067,7 @@ def join():
         for word in ['neighbor','color','flavor','splendor','labor','favor','fervor','savior','vapor','endeavor','parlor',
                      'clamor','harbor','splendor','behavior','rumor','humor','savor']:
             text = text.replace(" "+word+" "," "+word[:-2]+"our ")
-        text = text.replace(' gray ',' grey ').replace(' phrenzy ',' frenzy ')
+        text = text.replace(' gray ',' grey ').replace(' phrenzy ',' frenzy ').replace(' meter ',' metre ')
         text = text.replace(" ' t was "," it was ").replace(" ' t were "," it were ").replace(" ' t would "," it would ").replace(" ' t will "," it will ")
         text = text.replace(" to - morrow "," tomorrow ").replace(" to - day "," today ").replace(" to - night ", " tonight ")
         text = text.replace(NEWLINE.lower()+' '+TITLE.lower(), TITLE.lower())
@@ -1086,7 +1089,7 @@ def join():
         text = text.replace(' '+numeral+' .'+NEWLINE.lower(),'')
         text = text.replace(' '+numeral+NEWLINE.lower(),'')
     text = text.replace("><", "> <")
-    out = open("data/join.txt", "w+")
+    out = open("data/join.txt" if not kaggle else "data/join-kaggle.txt", "w+")
     out.write(text)
     out.close()
 
@@ -1108,4 +1111,4 @@ if __name__ == '__main__':
     wilde()
     browning_yeats_et_al()
 
-    join()
+    join(KAGGLE)

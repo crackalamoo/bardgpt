@@ -85,3 +85,4 @@ cython_debug/
 .DS_Store
 data/*
 lemmas/*
+kaggle/*

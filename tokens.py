@@ -1,5 +1,5 @@
 import numpy as np
-from preprocess import NEWLINE, TITLE
+from preprocess import NEWLINE, TITLE, KAGGLE
 if __name__ == '__main__':
     import eng_to_ipa as ipa
 
@@ -7,11 +7,13 @@ VOCAB_SIZE = 4096
 NGRAM_N = 4
 TRANSFORMER_N = 32
 MODEL_TYPE = 't' # n: ngram, t: transformer
-TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else 3
+TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else (16 if KAGGLE else 3)
 BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
-                 'r','d','f','p','agnes','eulalie','kate','niam','thel']
+                 'r','d','f','p','agnes','eulalie','kate','niam','thel',
+                 '+++++++++++++','c','j','h','4','5','6','7','8','9','10',
+                 '11','12']
 
-file = open("data/join.txt", "r")
+file = open("data/join.txt" if not KAGGLE else "data/join-kaggle.txt", "r")
 text = file.read()
 file.close()
 
