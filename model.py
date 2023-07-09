@@ -135,9 +135,9 @@ class Transformer(keras.Model):
         self.out = Dense(VOCAB_SIZE, activation='softmax')
 
     def call(self, input):
-        x = self.embed(input)
-        x = self.decoder(x)
-        x = self.out(x)
+        x = self.embed(input) # context x embedding
+        x = self.decoder(x) # context x embedding
+        x = self.out(x) # context x vocab size
         try:
             del x._keras_mask
         except AttributeError:

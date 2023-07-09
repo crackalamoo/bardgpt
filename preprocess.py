@@ -1013,7 +1013,7 @@ def join(kaggle=False):
                     'lat','inn','out','off','ent','low','pow','less','wond','mann','care','lov',
                     'rath','form','summ','bett','found','quart','tap','pap','record','shudd',
                     'shatt','tatt','rid','butt','mis','bould','bord','glimm','answ','wav','walk',
-                    'glitt','gath','stick','care','temp','fish','corn','flick','dress','feath',
+                    'glitt','gath','stick','care','temp','fish','corn','flick','dress','feath','met',
                     'broth','both','lock','tow','conqu','che','encount','head','alt','mutt','san'])
         _er_set = set(['of','in','but','up','man','let','shut','sum','slip','din','flit',
                     'mat','bat','bit','lad','ban','bet','ad','flat','pe','ful','smal','up',
@@ -1048,7 +1048,7 @@ def join(kaggle=False):
                          'lighte','reade','appeare','adorne','stocke','aske','locke','calle','crosse',
                          'misse','towe','shoute','feele','heade','burne','singe','faile','bowe',
                          'rolle','walke','heape','obtaine'])
-        y_ing_set = set(['ry'])
+        y_s_set = set(['ry'])
         y_er_set = set(['by'])
         y_est_set = set(['pry'])
         s_dict = {}
@@ -1075,7 +1075,7 @@ def join(kaggle=False):
                 text = text.replace(" "+word+word[-1]+"ed", " "+word+" =ed ")
             elif word != '' and word[-1] == 'e' and word+'d' in counts and not word in d_set:
                 text = text.replace(" "+word+"d "," "+word+" =ed ")
-            elif word.endswith('y') and word[:-1]+'ied' in counts and not word in y_ed_set:
+            elif word.endswith('y') and word[:-1]+"ied" in counts and not word in y_ed_set:
                 ed_dict[word] = word[:-1]+"ied"
                 text = text.replace(" "+word[:-1]+"ied "," "+word+" =ed ")
             if word != '' and word+word[-1]+"est" in counts and not word in _est_set:
@@ -1097,7 +1097,7 @@ def join(kaggle=False):
                 text = text.replace(" "+word[:-1]+"ier "," "+word+" =er ")
             if word+'s' in counts and not word in s_set and not word.endswith('s'):
                 text = text.replace(" "+word+"s "," "+word+" =s ")
-            elif word.endswith('y') and word[:-1]+'ies' in counts and not word in y_ing_set:
+            elif word.endswith('y') and word[:-1]+"ies" in counts and not word in y_s_set:
                 s_dict[word] = word[:-1]+"ies"
                 text = text.replace(" "+word[:-1]+"ies "," "+word+" =s ")
             elif (word.endswith('s') or word.endswith('sh') or word.endswith('x') or word.endswith('ch'))\
@@ -1105,7 +1105,7 @@ def join(kaggle=False):
                 text = text.replace(" "+word+"es "," "+word+" =s ")
             if word+'ing' in counts and not word in ing_set:
                 text = text.replace(" "+word+"ing "," "+word+" =ing ")
-            elif word != '' and word+word[-1]+'ing' in counts and not word in _ing_set:
+            elif word != '' and word+word[-1]+"ing" in counts and not word in _ing_set:
                 ing_dict[word] = word+word[-1]+"ing"
                 text = text.replace(" "+word+word[-1]+"ing "," "+word+" =ing ")
             elif word != '' and word.endswith('e') and word[:-1]+'ing' in counts and not word in e_ing_set:

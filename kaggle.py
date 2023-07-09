@@ -15,6 +15,8 @@ from_gutenberg = set(['William Shakespeare', 'Emily Dickinson', 'Percy Bysshe Sh
 for index, row in df.iterrows():
     if row['Poet'] in from_gutenberg:
         continue
+    if row['Tags'] == row['Tags'] and 'sex' in row['Tags'].lower():
+        continue
     title = row['Title'].replace('\x0d','')
     poem = row['Poem'].replace('\x0d','').replace('\u200a',' ')
     while title.startswith(' ') or title.startswith('\n'):
@@ -38,14 +40,15 @@ text = text.replace('\u00a0',' ').replace('\u0009',' ').replace('\u2002',' ')
 text = text.replace('\u2003',' ').replace('\u2006',' ').replace('\u200b',' ')
 text = text.replace('\u2060',' ').replace('\ufeff',' ').replace('\x0a','\n')
 text = text.replace('\x0d\x0a','\n').replace('//','\n')
-text = text.replace('_','').replace('\n',NEWLINE).replace(NEWLINE+'  ',NEWLINE).replace(NEWLINE+' ',NEWLINE)
+text = text.replace('_',' ').replace('\n',NEWLINE).replace(NEWLINE+'  ',NEWLINE).replace(NEWLINE+' ',NEWLINE)
 text = text.replace('[','').replace(']','').replace('\xa0',' ').replace('\u200a',' ').replace('\u2009',' ')
 text = text.replace('•','')
 text = text.replace(' againe ',' again ').replace(' againe, ',' again, ').replace(' againe. ',' again. ')
 text = text.replace('everie ','every ').replace(' sterne ',' stern ').replace(' soule ',' soul ')
 text = text.replace('endles ','endless ').replace('beautie','beauty').replace(' obtaine ',' obtain ')
-text = text.replace(' aire ',' air ')
+text = text.replace(' aire ',' air ').replace("pow'r","power").replace(' thru ',' through ').replace(' tho ',' though ')
 text = text.replace('   ',' ').replace('  ',' ')
+text = text.lower()
 text = text.encode('utf-8').decode('utf-8-sig')
 out.write(text)
 out.close()

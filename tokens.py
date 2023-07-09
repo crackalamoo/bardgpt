@@ -2,12 +2,13 @@ import numpy as np
 from preprocess import NEWLINE, TITLE, KAGGLE
 if __name__ == '__main__':
     import eng_to_ipa as ipa
+    from threading import Thread
 
 VOCAB_SIZE = 4096
 NGRAM_N = 4
 TRANSFORMER_N = 32
 MODEL_TYPE = 't' # n: ngram, t: transformer
-TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else (12 if KAGGLE else 3)
+TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else (11 if KAGGLE else 3)
 BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'r','d','f','p','agnes','eulalie','kate','niam','thel',
                  '+++++++++++++','c','j','h','4','5','6','7','8','9','10',
@@ -16,7 +17,8 @@ BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  '18','19','20','30','th','bu','ri','w','v','al','iv','wi',
                  'la','las','t','ma','ha','mee','ne','em','ry','di','st',
                  'yr','ful','iii','bo','faire','tos','ai','en','et','sug',
-                 'ga','wel','hee','hon','n','wan','ut']
+                 'ga','wel','hee','hon','n','wan','ut','te','ad','hym','na']
+N_THREADS = 16
 
 if __name__ == '__main__':
     file = open("data/join.txt" if not KAGGLE else "data/join-kaggle.txt", "r")
@@ -24,8 +26,8 @@ if __name__ == '__main__':
     file.close()
 
     tokens = text.split(" ")
-    print("Total number of tokens:", len(tokens))
     tokens = [x for x in tokens if x != '']
+    print("Total number of tokens:", len(tokens))
     print("Counting words")
     counts = {}
     for token in tokens:
@@ -137,24 +139,41 @@ if __name__ == '__main__':
     N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N+1
     for i in range(N-1):
         tokens.append(None)
-        tokens.insert(0, None)
     words.remove('<unk>')
     print({word: counts[word] for word in words[:VOCAB_SIZE]})
     print("Masking unknown tokens")
-    for i in reversed(range(len(tokens))):
-        if tokens[i] in vocab:
-            tokens[i] = words.index(tokens[i])
-        else:
-            tokens[i] = -1
-    i = 1
+    tokens = [(words.index(x) if x in vocab else -1) for x in tokens]
+    
     print("Splitting poems with masked dividers")
     title_token = words.index(TITLE.lower()[1:-1])
-    while i < len(tokens):
-        if tokens[i] == title_token:
-            for j in range(N):
-                tokens.insert(i, -1)
-            i += N+1
-        i += 1
+    mask_list = [-1]*N
+    splits = []
+    chunk_size = len(tokens)//N_THREADS
+    for i in range(N_THREADS):
+        splits.append(
+            tokens[i*chunk_size : (i+1)*chunk_size if i < N_THREADS-1 else len(tokens)])
+
+    results = [None] * N_THREADS
+    threads = []
+
+    def add_dividers(thread_index, split):
+        i = 1
+        while i < len(split):
+            if split[i] == title_token:
+                split = split[:i] + mask_list + split[i:]
+                i += N+5
+            i += 1
+        results[thread_index] = split
+        return split
+    for i in range(N_THREADS):
+        t = Thread(target=add_dividers, args=(i, splits[i],))
+        threads.append(t)
+        t.start()
+    tokens = []
+    for i in range(N_THREADS):
+        threads[i].join()
+        tokens += results[i]
+
     print("Creating sets of ngrams")
     ngrams = []
     for i in range(0, len(tokens)-N, TOKEN_SKIP):
@@ -174,10 +193,7 @@ if __name__ == '__main__':
     if MODEL_TYPE != 'n':
         train_x += 1 # x in [0, VOCAB_SIZE] since 0 is for <unk>
                      # y in [-1, VOCAB_SIZE-1] with VOCAB_SIZE tokens, one for each vocabulary item, and -1 for <unk>
-    #print(list(zip(train_x, train_y))[:N*2])
-
-    #print(pretty_tokens(list(map(lambda t: "<unk>" if t == 0 else words[t-1], train_x[92]))))
-
+    
     print("Saving data")
     fname = 'data/ngram_train.npz' if MODEL_TYPE == 'n' else 'data/transformer_train.npz'
     np.savez_compressed(fname, x=train_x, y=train_y)
