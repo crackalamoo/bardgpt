@@ -14,7 +14,7 @@ Data sources:
 * Henry Wadsworth Longfellow ([Plain Text with Index](https://www.gutenberg.org/cache/epub/25153/pg25153.txt))
 * Oliver Wendell Holmes ([Plain Text with Index](https://www.gutenberg.org/cache/epub/7400/pg7400.txt))
 * Oscar Wilde ([Plain Text with Index](https://www.gutenberg.org/files/1057/1057-0.txt))
-* Elizabeth Barron Browning ([Volume II Plain Text with Index](https://www.gutenberg.org/cache/epub/33363/pg33363.txt), [Volume IV Plain Text with Index](https://www.gutenberg.org/cache/epub/31015/pg31015.txt))
+* Elizabeth Barrett Browning ([Volume II Plain Text with Index](https://www.gutenberg.org/cache/epub/33363/pg33363.txt), [Volume IV Plain Text with Index](https://www.gutenberg.org/cache/epub/31015/pg31015.txt))
 * W. B. Yeats ([Plain Text with Index](https://www.gutenberg.org/cache/epub/38877/pg38877.txt))
 * Rabindranath Tagore ([Gitanjali Plain Text](https://www.gutenberg.org/cache/epub/7164/pg7164.txt), [The Gardener Plain Text](https://www.gutenberg.org/ebooks/6686))
 * Selections from Modern Poets ([Plain Text with Index](https://www.gutenberg.org/ebooks/53206))

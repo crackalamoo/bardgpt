@@ -6,7 +6,15 @@ df = pd.read_csv('kaggle/PoetryFoundationData.csv')
 
 out = open("data/kaggle.txt", 'w+')
 text = ""
+from_gutenberg = set(['William Shakespeare', 'Emily Dickinson', 'Percy Bysshe Shelley',
+            'William Blake', 'Edgar Allan Poe', 'John Keats', 'Ralph Waldo Emerson',
+            'Alfred, Lord Tennyson', 'Lord Byron (George Gordon)', 'Henry Wadsworth Longfellow',
+            'Oliver Wendell Holmes Sr.', 'Oscar Wilde', 'Elizabeth Barrett Browning',
+            'William Butler Yeats', 'Rabindranath Tagore'])
+
 for index, row in df.iterrows():
+    if row['Poet'] in from_gutenberg:
+        continue
     title = row['Title'].replace('\x0d','')
     poem = row['Poem'].replace('\x0d','').replace('\u200a',' ')
     while title.startswith(' ') or title.startswith('\n'):
@@ -18,19 +26,26 @@ for index, row in df.iterrows():
         poem = poem[1:]
     while poem.endswith(' ') or poem.endswith('\n'):
         poem = poem[:-1]
+    if poem.count('\n') <= 2:
+        continue
     poem = poem.replace('\n',NEWLINE)
     poem = TITLE + title + NEWLINE + poem + NEWLINE
     poem = poem.lower()
-    #poem = poem.replace('\x0d\x0a','').replace('\x0a\x0d','')
     text += poem
 
 text = text.replace('\x0d','').replace('\u2028','\n').replace('\u2029','\n\n')
 text = text.replace('\u00a0',' ').replace('\u0009',' ').replace('\u2002',' ')
 text = text.replace('\u2003',' ').replace('\u2006',' ').replace('\u200b',' ')
-text = text.replace('\u2060',' ').replace('\ufeff',' ')
+text = text.replace('\u2060',' ').replace('\ufeff',' ').replace('\x0a','\n')
+text = text.replace('\x0d\x0a','\n').replace('//','\n')
 text = text.replace('_','').replace('\n',NEWLINE).replace(NEWLINE+'  ',NEWLINE).replace(NEWLINE+' ',NEWLINE)
 text = text.replace('[','').replace(']','').replace('\xa0',' ').replace('\u200a',' ').replace('\u2009',' ')
-text = text.replace('•','').replace('//','\n')
+text = text.replace('•','')
+text = text.replace(' againe ',' again ').replace(' againe, ',' again, ').replace(' againe. ',' again. ')
+text = text.replace('everie ','every ').replace(' sterne ',' stern ').replace(' soule ',' soul ')
+text = text.replace('endles ','endless ').replace('beautie','beauty').replace(' obtaine ',' obtain ')
+text = text.replace(' aire ',' air ')
+text = text.replace('   ',' ').replace('  ',' ')
 text = text.encode('utf-8').decode('utf-8-sig')
 out.write(text)
 out.close()

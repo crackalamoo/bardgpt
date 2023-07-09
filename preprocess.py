@@ -213,7 +213,7 @@ def poe():
 def shelley():
     text = getContents("data/shelley-raw.txt")
     text = removeBrackets(text)
-    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = text.replace('\x0a','\n').replace('\x0d','')
     index = getContents("data/shelley-index.txt").split('\n')
     # print(index)
     out = open("data/shelley.txt", "w+")
@@ -278,7 +278,7 @@ def shelley():
     out.close()
 def byron():
     text = getContents("data/byron-raw.txt")
-    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = text.replace('\x0a','\n').replace('\x0d','')
     text = text.replace(' [', '[')
     text = text.replace('\n[', '[')
     text = text.replace('\n[', '[')
@@ -342,7 +342,7 @@ def byron():
     out.close()
 def ballads():
     text = getContents("data/ballads-raw.txt")
-    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = text.replace('\x0a','\n').replace('\x0d','')
     index = getContents("data/ballads-index.txt").replace('  ','').split('\n')
     out = open("data/ballads.txt", "w+")
     titles = {"a conversational poem": "the nightingale",
@@ -417,7 +417,7 @@ def ballads():
     out.close()
 def tennyson():
     text = getContents("data/tennyson-raw.txt")
-    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = text.replace('\x0a','\n').replace('\x0d','')
     index = getContents("data/tennyson-index.txt").split('\n')
     out = open("data/tennyson.txt", "w+")
     titles = {"AN IDYL": "THE BROOK",
@@ -473,7 +473,7 @@ def tennyson():
     out.close()
 def emerson():
     text = getContents("data/emerson-raw.txt")
-    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = text.replace('\x0a','\n').replace('\x0d','')
     index = getContents("data/emerson-index.txt").split('\n')
     index.append("\nBEAUTY\n")
     index.append("\nNATURE\nI")
@@ -536,7 +536,7 @@ def emerson():
     out.close()
 def blake():
     text = getContents("data/blake-raw.txt")
-    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = text.replace('\x0a','\n').replace('\x0d','')
     index = getContents("data/blake-index.txt").split('\n')
     index.append("THEL\n\n  I")
     out = open("data/blake.txt", "w+")
@@ -576,7 +576,7 @@ def blake():
 def longfellow():
     text = getContents("data/longfellow-raw.txt")
     index = getContents("data/longfellow-index.txt").split('\n')
-    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = text.replace('\x0a','\n').replace('\x0d','')
     index.append("INTERLUDE 2")
     index.append("INTERLUDE 3")
     index.append("INTERLUDE 4")
@@ -637,7 +637,7 @@ def longfellow():
     out.close()
 def holmes():
     text = getContents("data/holmes-raw.txt")
-    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = text.replace('\x0a','\n').replace('\x0d','')
     text = removeBrackets(text)
     index = getContents("data/holmes-index.txt").split('\n')
     out = open("data/holmes.txt", "w+")
@@ -700,7 +700,7 @@ def holmes():
     out.close()
 def wilde():
     text = getContents("data/wilde-raw.txt")
-    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = text.replace('\x0a','\n').replace('\x0d','')
     text = removeBrackets(text)
     index = getContents("data/wilde-index.txt").split('\n')
     out = open("data/wilde.txt", "w+")
@@ -778,7 +778,7 @@ def browning_yeats_et_al():
     text += vol2
     yeats = getContents("data/yeats-raw.txt")
     text += yeats
-    text = text.replace('\x0a','\n').replace('\x0d','\n')
+    text = text.replace('\x0a','\n').replace('\x0d','')
     text = text.replace('\n\n[Illustration:','[')
     text = removeBrackets(text)
     modern_skip = len(text)
@@ -976,7 +976,7 @@ def join(kaggle=False):
         ed_set = set(['he','you','they','we','will','mov','w','wretch','fe','wav','gre',
                             'till','far','fell','de','b','f','l','re','hopp','ne','br',
                             'mann','bann','bl','pleas','mark','m','sh','se','spe','ble',
-                            'lov','ste','rous','arm','bar','di','unmov','asham'])
+                            'lov','ste','rous','arm','bar','di','unmov','asham','cre'])
         d_set = set(['be', 'she','we','see','re','fe','rowe','fee','le','seale','dee','ne',
                      'reveale','traine','warme','coole','saile','sweate','mowe','cooke',
                      'gree','warne','aire','seate','ree','temp','doome','helpe','feare',
@@ -989,7 +989,7 @@ def join(kaggle=False):
                      'boxe','talke','returne','sacre','dreame','pulle','seeme','calle',
                      'prie','forme','ruine','lighte','appeare','adorne','aske','locke',
                      'crosse','misse','arme','towe','shoute','heade','burne','faile','bowe',
-                     'rolle','walke','heape'])
+                     'rolle','walke','heape','obtaine'])
         _ed_set = set(['ad','cares','jag','pis','kis','mat','er','mis','cal','pas','fil'])
         y_ed_set = set(['drapery','city','weary'])
         s_set = set(['','a','i','it','his','her',"'",'their','one','will','your','our','down','pant','wa',
@@ -1047,7 +1047,7 @@ def join(kaggle=False):
                          'kisse','returne','dreame','pulle','seeme','matte','forme','meane','ruine',
                          'lighte','reade','appeare','adorne','stocke','aske','locke','calle','crosse',
                          'misse','towe','shoute','feele','heade','burne','singe','faile','bowe',
-                         'rolle','walke','heape'])
+                         'rolle','walke','heape','obtaine'])
         y_ing_set = set(['ry'])
         y_er_set = set(['by'])
         y_est_set = set(['pry'])
