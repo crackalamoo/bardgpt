@@ -898,11 +898,13 @@ def shakespeare():
     out.close()
 def join(kaggle=False):
     text = ''
-    for author in (AUTHOR_LIST if not kaggle else ['kaggle']):
+    for author in (AUTHOR_LIST if not kaggle else AUTHOR_LIST + ['kaggle']):
         text += getContents("data/"+author+".txt")
+    print("Processing punctuation and special tokens")
     text = text.lower()
-    text = text.replace("’","'").replace('“','"').replace('”','"')
-    text = text.replace("—-", "--").replace("–","-")
+    text = text.replace("’","'").replace("‘","'").replace('“','"').replace('”','"')
+    text = text.replace("—-", "--").replace("–","-").replace("—","--")
+    text = text.replace("…","...")
     text = text.replace(" .",".").replace(" ,",",").replace("."," . ").replace(","," , ")
     text = text.replace(" :",":").replace(" ;",";").replace(":"," : ").replace(";"," ; ")
     text = text.replace(" !","!").replace(" ?","?").replace("!"," ! ").replace("?"," ? ")
@@ -912,8 +914,10 @@ def join(kaggle=False):
     text = text.replace("    ", " ").replace("  ", " ").replace("  ", " ")
     text = text.replace(" -","-").replace("- ","-").replace("-"," - ")
     text = text.replace(' "','"').replace('" ','"').replace('"',' " ')
+    text = text.replace("&"," and ")
     PROCESS_MORPHEMES = True
     if PROCESS_MORPHEMES:
+        print("Processing specific morphemes")
         text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through").replace("e'en","even")
         text = text.replace("ev'n","even").replace("fall'n","fallen").replace("heav'n","heaven")
         text = text.replace("deep'ning","deepening").replace("stol'n","stolen")
@@ -947,7 +951,7 @@ def join(kaggle=False):
         text = text.replace(" '","'").replace("' ","'").replace("'"," ' ")
         text = text.replace(" ID "," i 'd ").replace("WED","we 'd").replace("HED","he 'd").replace("SHED","she 'd").replace("YOUD","you 'd")
         text = text.replace("DONT","do NT").replace("WOULDNT", "would NT").replace("ISNT", "is NT").replace("ARENT", "are NT")
-        text = text.replace("DOESNT","does NT").replace("WONT","wo NT").replace("SHOULDNT","should NT").replace("COULDNT","could NT")
+        text = text.replace("DOESNT","does NT").replace("WONT","will NT").replace("SHOULDNT","should NT").replace("COULDNT","could NT")
         text = text.replace("CANT","can NT").replace("SHANT","sha NT").replace(" DIDNT "," did NT ").replace("WASNT","was =nt")
         text = text.replace("HASNT","has =nt").replace("HAVENT","have =nt").replace("WERENT","were =nt").replace("HADNT","had =nt")
         text = text.replace("NEEDNT","need =nt").replace("MAYNT","may =nt").replace(" AINT "," ai =nt ").replace(" MUSTNT "," must =nt ")
@@ -957,6 +961,7 @@ def join(kaggle=False):
         text = text.replace("dying","die =ing").replace(" lying"," lie =ing")
         text = text.replace(" ings "," =ing =s ").replace(" NT "," =nt ")
         words = text.split(' ')
+        print("Counting words")
         counts = {}
         for word in words:
             if not word in counts:
@@ -964,29 +969,85 @@ def join(kaggle=False):
             counts[word] += 1
         words = list(counts.keys())
         words.sort(key=lambda word: counts[word], reverse=True)
-        est_set = set(['for','t','n','liv','b','di','j','r','p','v','w',
-                            'l','eld','pr','inter','sever','hug','earn','smil'])
-        ed_set = set(['he','you','they','we','will','mov','w','wretch','fe',
-                            'till','far','fell','de','b','f','l','re','hopp','ne'])
-        d_set = set(['be', 'she','we','see','re','fe','rowe','fee','le','seale','dee','ne'])
+        print("Creating rules for general morphemes")
+        est_set = set(['for','t','n','liv','b','di','j','r','p','v','w','b','gu',
+                            'l','eld','pr','inter','sever','hug','earn','smil',
+                            'qu','ch','bl','conqu','pri'])
+        ed_set = set(['he','you','they','we','will','mov','w','wretch','fe','wav','gre',
+                            'till','far','fell','de','b','f','l','re','hopp','ne','br',
+                            'mann','bann','bl','pleas','mark','m','sh','se','spe','ble',
+                            'lov','ste','rous','arm','bar','di','unmov','asham'])
+        d_set = set(['be', 'she','we','see','re','fe','rowe','fee','le','seale','dee','ne',
+                     'reveale','traine','warme','coole','saile','sweate','mowe','cooke',
+                     'gree','warne','aire','seate','ree','temp','doome','helpe','feare',
+                     'neare','designe','adde','parte','repeate','gaine','parke','mourne',
+                     'backe','cleane','raine','charme','climbe','wee','fle','barbe','roote',
+                     'waite','fixe','hee','ende','wounde','pointe','earne','cree','matte',
+                     'kisse','haire','marke','neede','summe','farme','poure','owne','showe',
+                     'crowne','entere','evene','turne','crouche','laye','jade','recorde',
+                     'flowe','looke','nee','calle','learne','spe','ble','fille','washe',
+                     'boxe','talke','returne','sacre','dreame','pulle','seeme','calle',
+                     'prie','forme','ruine','lighte','appeare','adorne','aske','locke',
+                     'crosse','misse','arme','towe','shoute','heade','burne','faile','bowe',
+                     'rolle','walke','heape'])
+        _ed_set = set(['ad','cares','jag','pis','kis','mat','er','mis','cal','pas','fil'])
         y_ed_set = set(['drapery','city','weary'])
         s_set = set(['','a','i','it','his','her',"'",'their','one','will','your','our','down','pant','wa',
-                            'god','well','other','saw','good','new','ye','leave','right','hair','wood',
-                            'ha','mis','thi','hi'])
-        st_set = set(['be','we','ne','re','tempe','le','mode', 'fore'])
+                            'god','well','other','saw','good','new','ye','leave','right','wood',
+                            'ha','thi','hi','jesu','riche','specie','alway','ala','grasse','glorie',
+                            'goe','doe','mas','pis','mi','pi','selve','wherea','prie','masse',
+                            'beautie','jame','misse','san','la','lo','politic','u','ga','bu','tos',
+                            'len'])
+        st_set = set(['be','we','ne','re','tempe','le','mode', 'fore','le','que','riche','cre','pe',
+                      'harde','sweete','cleane','je','te','che','highe','earne','deepe','meane','prie',
+                      'olde'])
+        _est_set = set(['ful','smal'])
         er_set = set(['with','she','h','quak','curr','hopp','minist','eth','thund','whisp','whit',
                     'fev','rememb','inn','rend','de','beak','wand','port','heath','clos','should',
                     'wrapp','cap','cow','lett','moth','chart','prop','danc','dinn','slumb','tend',
                     'sever','ladd','falt','eld','aft','hind','flatt','murd','show','flow','sob',
-                    'pray','s','numb','pond','ev'])
+                    'pray','s','numb','pond','ev','und','wint','shiv','ang','fin','hov','teach',
+                    'clov','ov','oth','riv','barb','post','nev','discov','wat','draw','wait',
+                    'suff','deliv','quiv','silv','cov','shelt','los','m','slipp','batt','plast',
+                    'bitt','p','be','pe','ti','pi','ve','se','us','ton','min','sew','lit','tig',
+                    'lat','inn','out','off','ent','low','pow','less','wond','mann','care','lov',
+                    'rath','form','summ','bett','found','quart','tap','pap','record','shudd',
+                    'shatt','tatt','rid','butt','mis','bould','bord','glimm','answ','wav','walk',
+                    'glitt','gath','stick','care','temp','fish','corn','flick','dress','feath',
+                    'broth','both','lock','tow','conqu','che','encount','head','alt','mutt','san'])
         _er_set = set(['of','in','but','up','man','let','shut','sum','slip','din','flit',
-                    'mat','bat','bit','lad','ban','bet','ad','flat'])
-        e_er_set = set(['he',"'re",'rule','cottage','quake','cove','clove','warble','prime','lowe',
+                    'mat','bat','bit','lad','ban','bet','ad','flat','pe','ful','smal','up',
+                    'pis','kis','slip','lat','cop','begin','shud','washe','shat','tat','lit',
+                    'glim','lay','lad','cal','glit','pas','fil','ham','sup','pep','rub','chat',
+                    'skip','alte','flut','mut','scat','dip','stag'])
+        r_set = set(['he',"'re",'rule','cottage','quake','cove','clove','warble','prime','lowe',
                         'cape','tempe','late','e','rive','dee','eve','wave','me','rathe','meter',
-                        'anothe'])
-        ing_set = set(['','us','s','st','n','wan','din','k','heav','w','morn','cloth'])
-        _ing_set = set(['er','wed','ad','ear','begin'])
-        e_ing_set = set(['the','we','bee','bore','lute','ne','re','please','displease','tide','clothe'])
+                        'anothe','mothe','mowe','sweate','saile','leade','hithe','warme','coole',
+                        'reaveale','traine','chee','manne','shee','uppe','withe','designe','neare',
+                        'barbe','darke','banne','pete','faste','soone','oute','rende','parke',
+                        'keepe','lee','rooste','cleane','sweete','bothe','harde','sleepe','poste',
+                        'loude','climbe','flowe','drawe','waite','highe','lathe','summe','fathe',
+                        'cove','farme','lose','showe','deepe','longe','hove','teache','pe','rule',
+                        'freeze','compute','consume','recorde','fille','washe','boxe','talke',
+                        'spide','meane','outside','inside','laye','lighte','reade','ladde',
+                        'eage','forme','coppe','answe','aske','dinne','wave','glitte','feve',
+                        'butte','gathe','pape','broke','matte','time','locke','olde','towe','inne',
+                        'shoute','heade','cunne','burne','singe','mutte','rolle','dippe','walke'])
+        ing_set = set(['','us','s','st','n','wan','din','k','heav','w','morn','cloth','br','wav',
+                       'even','cl','noth','charm','th','spr','bl','p','r','d','tempt','m','s','z',
+                       'ch','mean','exact','bless','train','lov','str','build','pleas','slid','light',
+                       'stock','feel','bo','gap'])
+        _ing_set = set(['er','wed','ad','ear','begin','pis','kis','er','mis','cal','pas','fil'])
+        e_ing_set = set(['the','we','bee','bore','lute','ne','re','please','displease','tide','clothe','ke',
+                         'neare','wounde','che','feare','doome','helpe','designe','evene','dye',
+                         'adde','parte','repeate','gaine','parke','mourne','backe','cleane','charme',
+                         'climbe','waite','fixe','raine','ende','wounde','pointe','earne','neede',
+                         'summe','poure','owne','crowne','entere','turne','crouche','ble','laye',
+                         'recorde','flowe','calle','morne','learne','fille','washe','boxe','talke',
+                         'kisse','returne','dreame','pulle','seeme','matte','forme','meane','ruine',
+                         'lighte','reade','appeare','adorne','stocke','aske','locke','calle','crosse',
+                         'misse','towe','shoute','feele','heade','burne','singe','faile','bowe',
+                         'rolle','walke','heape'])
         y_ing_set = set(['ry'])
         y_er_set = set(['by'])
         y_est_set = set(['pry'])
@@ -997,83 +1058,87 @@ def join(kaggle=False):
         ing_dict = {}
         text = text.replace(" hopper ", " hop =er ").replace(" dispelled "," dispel =ed ").replace(" hopped "," hop =ed ")
         text = text.replace(" conjectured "," conjecture =ed ").replace(' sophistries ',' sophistry =s ').replace(' beads ',' bead =s ')
-        text = text.replace(" halves "," half =s ").replace(" consented "," consent =ed ").replace(" consents "," consent =s ").replace(" ceded "," cede =ed ")
-        s_dict['half'] = 'halves'
+        text = text.replace(" halves "," half =s ").replace(" dyeing "," dye =ing ").replace(" singeing "," singe =ing ")
+        text = text.replace(" selves "," self =s ").replace(" wolves "," wolf =s")
+        s_dict['half'] = 'halves'; s_dict['self'] = 'selves'; s_dict['wolf'] = 'wolves'
         s_dict['sophistry'] = 'sophistries'
         er_dict['hop'] = 'hopper'; ed_dict['hop'] = 'hopped'
         ed_dict['dispel'] = 'dispelled'
         ing_dict['die'] = 'dying'; ing_dict['lie'] = 'lying'
-        for word in words:
+        ing_dict['dye'] = 'dyeing'; ing_dict['singe'] = 'singeing'
+        print("Processing general morphemes")
+        for word in words[:10000]:
             if word != '' and word+'est' in counts and not word in est_set:
                 text = text.replace(" "+word+"est "," "+word+" =est ")
-            if word != '' and word+word[-1]+"ed" in counts and not word in ['ad','cares','jag']:
+            elif word != '' and word+word[-1]+"ed" in counts and not word in _ed_set:
                 ed_dict[word] = word+word[-1]+"ed"
                 text = text.replace(" "+word+word[-1]+"ed", " "+word+" =ed ")
-            if word != '' and word+word[-1]+"est" in counts:
-                est_dict[word] = word+word[-1]+"est"
-                text = text.replace(" "+word+word[-1]+"est", " "+word+" =est ")
-            if word != '' and word[-1] == 'e' and word+'d' in counts and not word in d_set:
+            elif word != '' and word[-1] == 'e' and word+'d' in counts and not word in d_set:
                 text = text.replace(" "+word+"d "," "+word+" =ed ")
-            if word.endswith('y') and word[:-1]+'ied' in counts and not word in y_ed_set:
+            elif word.endswith('y') and word[:-1]+'ied' in counts and not word in y_ed_set:
                 ed_dict[word] = word[:-1]+"ied"
                 text = text.replace(" "+word[:-1]+"ied "," "+word+" =ed ")
-            if word != '' and word[-1] == 'e' and word+'st' in counts and not word in st_set:
+            if word != '' and word+word[-1]+"est" in counts and not word in _est_set:
+                est_dict[word] = word+word[-1]+"est"
+                text = text.replace(" "+word+word[-1]+"est", " "+word+" =est ")
+            elif word.endswith('y') and word[:-1]+'iest' in counts and not word in y_est_set:
+                est_dict[word] = word[:-1]+"iest"
+                text = text.replace(" "+word[:-1]+"iest "," "+word+" =est ")
+            elif word != '' and word[-1] == 'e' and word+'st' in counts and not word in st_set:
                 text = text.replace(" "+word+"st "," "+word+" =est ")
             if word != '' and word+word[-1]+"er" in counts and not word in _er_set:
                 er_dict[word] = word+word[-1]+"er"
                 text = text.replace(" "+word+word[-1]+"er "," "+word+" =er ")
-            if word.endswith('e') and word+"r" in counts and not word in e_er_set:
+            elif word.endswith('e') and word+"r" in counts and not word in r_set:
                 er_dict[word] = word+"r"
                 text = text.replace(" "+word+"r "," "+word+" =er ")
-            if word+'s' in counts and not word in s_set:
-                text = text.replace(" "+word+"s "," "+word+" =s ")
-            if word+'ing' in counts and not word in ing_set:
-                text = text.replace(" "+word+"ing "," "+word+" =ing ")
-            if word != '' and word+word[-1]+'ing' in counts and not word in _ing_set:
-                ing_dict[word] = word+word[-1]+"ing"
-                text = text.replace(" "+word+word[-1]+"ing "," "+word+" =ing ")
-            if word != '' and word.endswith('e') and word[:-1]+'ing' in counts and not word in e_ing_set:
-                ing_dict[word] = word[:-1]+"ing"
-                text = text.replace(" "+word[:-1]+"ing ", " "+word+" =ing ")
-            if word.endswith('y') and word[:-1]+'ies' in counts and not word in y_ing_set:
-                s_dict[word] = word[:-1]+"ies"
-                text = text.replace(" "+word[:-1]+"ies "," "+word+" =s ")
-            if word.endswith('y') and word[:-1]+'ier' in counts and not word in y_er_set:
+            elif word.endswith('y') and word[:-1]+'ier' in counts and not word in y_er_set:
                 er_dict[word] = word[:-1]+"ier"
                 text = text.replace(" "+word[:-1]+"ier "," "+word+" =er ")
-            if word.endswith('y') and word[:-1]+'iest' in counts and not word in y_est_set:
-                est_dict[word] = word[:-1]+"iest"
-                text = text.replace(" "+word[:-1]+"iest "," "+word+" =est ")
-        for word in words:
+            if word+'s' in counts and not word in s_set and not word.endswith('s'):
+                text = text.replace(" "+word+"s "," "+word+" =s ")
+            elif word.endswith('y') and word[:-1]+'ies' in counts and not word in y_ing_set:
+                s_dict[word] = word[:-1]+"ies"
+                text = text.replace(" "+word[:-1]+"ies "," "+word+" =s ")
+            elif (word.endswith('s') or word.endswith('sh') or word.endswith('x') or word.endswith('ch'))\
+                    and word+'es' in counts and not word+'e' in s_set:
+                text = text.replace(" "+word+"es "," "+word+" =s ")
+            if word+'ing' in counts and not word in ing_set:
+                text = text.replace(" "+word+"ing "," "+word+" =ing ")
+            elif word != '' and word+word[-1]+'ing' in counts and not word in _ing_set:
+                ing_dict[word] = word+word[-1]+"ing"
+                text = text.replace(" "+word+word[-1]+"ing "," "+word+" =ing ")
+            elif word != '' and word.endswith('e') and word[:-1]+'ing' in counts and not word in e_ing_set:
+                ing_dict[word] = word[:-1]+"ing"
+                text = text.replace(" "+word[:-1]+"ing ", " "+word+" =ing ")
+        print("Processing regular forms")
+        for word in words[:10000]:
             if word != '' and word+"ed" in counts and not word in ed_set:
                 text = text.replace(" "+word+"ed "," "+word+" =ed ")
             if word != '' and word+"er" in counts and not word in er_set:
                 text = text.replace(" "+word+"er ", " "+word+" =er ")
-        for root in ['pass','bliss','wish','echo','rich','reach','kiss','goddess','miss','couch',
-                    'wilderness','stretch','moss','glass','wretch','blush','porch','hero','rush',
-                    'abyss','surpass','torch','bush','match','gush','approach','press','lash','birch',
-                    'branch','possess','crouch','oppress','wash','dish','caress','sooth','marsh',
-                    'mix','vex','sex','perplex','fox','transfix','touch','watch','church','march',
-                    'search','arch','perch','preach','quench','beech','clutch','beach','scorch',
-                    'brooch','coach','larch','bunch','go','do','cargo']:
+        for root in ['echo','hero','go','do','potato','tomato']:
             if not word.endswith('s') and not word.endswith('sh') and not word.endswith('x') and not word.endswith('ch'):
                 s_dict[root] = root+"es"
             text = text.replace(" "+root+"es "," "+root+" =s ")
-        for root in ['mimic']:
+        for root in ['mimic','panic']:
             ing_dict[root] = root+"king"
             text = text.replace(" "+root+"king ", " "+root+" =ing ")
             ed_dict[root] = root+"ked"
             text = text.replace(" "+root+"ked "," "+root+" =ed ")
+        print("Processing spelling and final fixes")
         for word in ['neighbor','color','flavor','splendor','labor','favor','fervor','savior','vapor','endeavor','parlor',
-                     'clamor','harbor','splendor','behavior','rumor','humor','savor']:
+                     'clamor','harbor','splendor','behavior','rumor','humor','savor','valor','armor','honor']:
             text = text.replace(" "+word+" "," "+word[:-2]+"our ")
-        text = text.replace(' gray ',' grey ').replace(' phrenzy ',' frenzy ').replace(' meter ',' metre ')
+        text = text.replace(' gray ',' grey ').replace(' phrenzy ',' frenzy ').replace(' meter ',' metre ').replace(' meters ',' metres ')
         text = text.replace(" ' t was "," it was ").replace(" ' t were "," it were ").replace(" ' t would "," it would ").replace(" ' t will "," it will ")
         text = text.replace(" to - morrow "," tomorrow ").replace(" to - day "," today ").replace(" to - night ", " tonight ")
         text = text.replace(NEWLINE.lower()+' '+TITLE.lower(), TITLE.lower())
         text = text.replace(TITLE.lower() + ' ' + NEWLINE.lower()+' '+NEWLINE.lower(), TITLE.lower()+' '+NEWLINE.lower())
         text = text.replace("   ", " ").replace("  ", " ")
         text = text.replace("   ", " ").replace("  ", " ")
+        text = text.replace("= ="," =")
+        print("Saving lemmas")
         np.save('lemmas/s.npy', s_dict)
         np.save('lemmas/ed.npy', ed_dict)
         np.save('lemmas/er.npy', er_dict)
@@ -1089,6 +1154,7 @@ def join(kaggle=False):
         text = text.replace(' '+numeral+' .'+NEWLINE.lower(),'')
         text = text.replace(' '+numeral+NEWLINE.lower(),'')
     text = text.replace("><", "> <")
+    print("Saving text")
     out = open("data/join.txt" if not kaggle else "data/join-kaggle.txt", "w+")
     out.write(text)
     out.close()

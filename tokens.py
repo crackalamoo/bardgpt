@@ -7,46 +7,55 @@ VOCAB_SIZE = 4096
 NGRAM_N = 4
 TRANSFORMER_N = 32
 MODEL_TYPE = 't' # n: ngram, t: transformer
-TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else (16 if KAGGLE else 3)
+TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else (12 if KAGGLE else 3)
 BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'r','d','f','p','agnes','eulalie','kate','niam','thel',
                  '+++++++++++++','c','j','h','4','5','6','7','8','9','10',
-                 '11','12']
+                 '11','12','*','x','b','/','k','g','ii','s','u','da','el',
+                 'le','que','~','000','m','thu','thir','13','14','15','16','17',
+                 '18','19','20','30','th','bu','ri','w','v','al','iv','wi',
+                 'la','las','t','ma','ha','mee','ne','em','ry','di','st',
+                 'yr','ful','iii','bo','faire','tos','ai','en','et','sug',
+                 'ga','wel','hee','hon','n','wan','ut']
 
-file = open("data/join.txt" if not KAGGLE else "data/join-kaggle.txt", "r")
-text = file.read()
-file.close()
+if __name__ == '__main__':
+    file = open("data/join.txt" if not KAGGLE else "data/join-kaggle.txt", "r")
+    text = file.read()
+    file.close()
 
-tokens = text.split(" ")
-print("Total number of tokens:", len(tokens))
-for i in reversed(range(len(tokens))):
-    if tokens[i] == '':
-        tokens.pop(i)
-counts = {}
-for token in tokens:
-    if not token in counts:
-        counts[token] = 0
-    counts[token] += 1
-words = list(counts.keys())
-words.sort(reverse=True, key=lambda word: counts[word])
+    tokens = text.split(" ")
+    print("Total number of tokens:", len(tokens))
+    tokens = [x for x in tokens if x != '']
+    print("Counting words")
+    counts = {}
+    for token in tokens:
+        if not token in counts:
+            counts[token] = 0
+        counts[token] += 1
+    words = list(counts.keys())
+    words.sort(reverse=True, key=lambda word: counts[word])
 
-for token in BANNED_TOKENS:
-    if token in words:
-        words.remove(token)
-        words.append(token)
-counts['<unk>'] = 0
-for word in words:
-    if word in words[:VOCAB_SIZE]:
-        continue
-    counts['<unk>'] += counts[word]
-words = list(counts.keys())
-words.sort(reverse=True, key=lambda word: counts[word])
-for token in BANNED_TOKENS:
-    if token in words:
-        words.remove(token)
-        words.append(token)
+    for token in BANNED_TOKENS:
+        if token in words:
+            words.remove(token)
+            words.append(token)
+    counts['<unk>'] = 0
+    for word in words:
+        if word in words[:VOCAB_SIZE]:
+            continue
+        counts['<unk>'] += counts[word]
+    words = list(counts.keys())
+    words.sort(reverse=True, key=lambda word: counts[word])
+    for token in BANNED_TOKENS:
+        if token in words:
+            words.remove(token)
+            words.append(token)
 
-vocab = set(words[:VOCAB_SIZE])
+    vocab = set(words[:VOCAB_SIZE])
+else:
+    print("Loading vocab")
+    vocab = set(list(np.load('lemmas/lemmas.npy')))
+
 def pretty_tokens(tokens):
     s_dict = np.load('lemmas/s.npy', allow_pickle=True).item()
     ed_dict = np.load('lemmas/ed.npy', allow_pickle=True).item()
@@ -91,6 +100,8 @@ def pretty_tokens(tokens):
                 if next == "=nt":
                     if tokens[i].endswith('n'):
                         this = this[:-1]
+                    if tokens[i] == 'will':
+                        this = 'wo'
                     this = this+"n't"
                 else:
                     if tokens[i] in dicts[next]:
@@ -129,19 +140,22 @@ if __name__ == '__main__':
         tokens.insert(0, None)
     words.remove('<unk>')
     print({word: counts[word] for word in words[:VOCAB_SIZE]})
+    print("Masking unknown tokens")
     for i in reversed(range(len(tokens))):
         if tokens[i] in vocab:
             tokens[i] = words.index(tokens[i])
         else:
             tokens[i] = -1
     i = 1
+    print("Splitting poems with masked dividers")
     title_token = words.index(TITLE.lower()[1:-1])
     while i < len(tokens):
         if tokens[i] == title_token:
             for j in range(N):
                 tokens.insert(i, -1)
-            i += N
+            i += N+1
         i += 1
+    print("Creating sets of ngrams")
     ngrams = []
     for i in range(0, len(tokens)-N, TOKEN_SKIP):
         ngrams.append(tokens[i:i+N])
@@ -154,6 +168,7 @@ if __name__ == '__main__':
             train_y.append(sample[1:])
         else:
             train_y.append(sample[N-1])
+    print("Converting arrays")
     train_x = np.asarray(train_x)
     train_y = np.asarray(train_y)
     if MODEL_TYPE != 'n':
@@ -163,6 +178,7 @@ if __name__ == '__main__':
 
     #print(pretty_tokens(list(map(lambda t: "<unk>" if t == 0 else words[t-1], train_x[92]))))
 
+    print("Saving data")
     fname = 'data/ngram_train.npz' if MODEL_TYPE == 'n' else 'data/transformer_train.npz'
     np.savez_compressed(fname, x=train_x, y=train_y)
     np.save('lemmas/lemmas.npy', words[:VOCAB_SIZE])
