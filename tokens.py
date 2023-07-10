@@ -8,7 +8,7 @@ VOCAB_SIZE = 4096
 NGRAM_N = 4
 TRANSFORMER_N = 32
 MODEL_TYPE = 't' # n: ngram, t: transformer
-TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else (11 if KAGGLE else 3)
+TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else (17 if KAGGLE else 3)
 BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'r','d','f','p','agnes','eulalie','kate','niam','thel',
                  '+++++++++++++','c','j','h','4','5','6','7','8','9','10',

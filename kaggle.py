@@ -6,14 +6,17 @@ df = pd.read_csv('kaggle/PoetryFoundationData.csv')
 
 out = open("data/kaggle.txt", 'w+')
 text = ""
-from_gutenberg = set(['William Shakespeare', 'Emily Dickinson', 'Percy Bysshe Shelley',
+remove_poets = set(['William Shakespeare', 'Emily Dickinson', 'Percy Bysshe Shelley',
             'William Blake', 'Edgar Allan Poe', 'John Keats', 'Ralph Waldo Emerson',
             'Alfred, Lord Tennyson', 'Lord Byron (George Gordon)', 'Henry Wadsworth Longfellow',
             'Oliver Wendell Holmes Sr.', 'Oscar Wilde', 'Elizabeth Barrett Browning',
-            'William Butler Yeats', 'Rabindranath Tagore'])
+            'William Butler Yeats', 'Rabindranath Tagore', 'Geoffrey Chaucer', 'William Langland',
+            'John Lydgate'])
 
 for index, row in df.iterrows():
-    if row['Poet'] in from_gutenberg:
+    if 'John Gower' in row['Poet']:
+        print(row['Poet'])
+    if row['Poet'] in remove_poets:
         continue
     if row['Tags'] == row['Tags'] and 'sex' in row['Tags'].lower():
         continue
