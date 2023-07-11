@@ -7,7 +7,7 @@ if __name__ == '__main__':
 VOCAB_SIZE = 4096
 NGRAM_N = 4
 TRANSFORMER_N = 32
-MODEL_TYPE = 't' # n: ngram, t: transformer
+MODEL_TYPE = 'b' # n: ngram, t: transformer, b: bard
 TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else (17 if KAGGLE else 3)
 BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'r','d','f','p','agnes','eulalie','kate','niam','thel',
@@ -19,6 +19,8 @@ BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'yr','ful','iii','bo','faire','tos','ai','en','et','sug',
                  'ga','wel','hee','hon','n','wan','ut','te','ad','hym','na']
 N_THREADS = 16
+RHYMES = ['æ', 'eɪ', 'ɛ', 'i', 'ɪ', 'aɪ', 'ɔ', 'oʊ', 'ə', 'u', 'ʊ', 'ɛr', 'ɪr', 'aɪr', 'ɔr', 'ur', 'ər', 'aʊ']
+RHYME_STACK_SIZE = 3
 
 if __name__ == '__main__':
     file = open("data/join.txt" if not KAGGLE else "data/join-kaggle.txt", "r")
@@ -58,7 +60,7 @@ else:
     print("Loading vocab")
     vocab = set(list(np.load('lemmas/lemmas.npy')))
 
-def pretty_tokens(tokens):
+def pretty_tokens(tokens, mask=True):
     s_dict = np.load('lemmas/s.npy', allow_pickle=True).item()
     ed_dict = np.load('lemmas/ed.npy', allow_pickle=True).item()
     er_dict = np.load('lemmas/er.npy', allow_pickle=True).item()
@@ -88,7 +90,7 @@ def pretty_tokens(tokens):
             this = '\n'
         elif this == TITLE.lower()[1:-1]:
             this = '\n ༄༅༅ '
-        elif not this in vocab:
+        elif mask and not this in vocab:
             this = " <unk>"
             if not includeSpace(this):
                 this = "<unk>"
@@ -135,23 +137,80 @@ def pretty_tokens(tokens):
     res = res[1:] if res.startswith(' ') else res
     return res
 
+
 if __name__ == '__main__':
     N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N+1
     for i in range(N-1):
         tokens.append(None)
     words.remove('<unk>')
     print({word: counts[word] for word in words[:VOCAB_SIZE]})
+    title_token = words.index(TITLE.lower()[1:-1])
+    newline_token = words.index(NEWLINE.lower()[1:-1])
+    if MODEL_TYPE == 'b':
+        def getRhyme(line):
+            if line is None:
+                return None
+            space = line.rfind(' ')
+            if space != -1:
+                line = line[space+1:]
+            ipa_line = [t[0] for t in ipa.ipa_list(line)]
+            if len(ipa_line) == 0:
+                return None
+            word = ipa_line[-1]
+            if '*' in word:
+                return None
+            word = word.replace('ɑ', 'ɔ')
+            while len(word) >= 1:
+                if len(word) >= 2:
+                    for rhyme in RHYMES:
+                        if word[-2:] == rhyme:
+                            return rhyme
+                for rhyme in RHYMES:
+                    if word[-1:] == rhyme:
+                        return rhyme
+                word = word[:-1]
+            return None
+
+        print("Setting up IPA rhyming information")
+        rhymes = []
+        rhyme_stack = [None] * RHYME_STACK_SIZE
+        in_title = True
+        for i in range(len(tokens)):
+            if tokens[i] == TITLE.lower()[1:-1]:
+                in_title = True
+                prev_line = None
+                rhyme_stack = [None] * RHYME_STACK_SIZE
+            elif in_title and tokens[i] == NEWLINE.lower()[1:-1]:
+                in_title = False
+                rhymes.append([None] * RHYME_STACK_SIZE)
+                continue
+            if not in_title and tokens[i] == NEWLINE.lower()[1:-1]:
+                j = i-1
+                while tokens[j] != NEWLINE.lower()[1:-1]:
+                    j -= 1
+                line = pretty_tokens(tokens[j+1:i], False)
+                rhyme_stack.append(getRhyme(line))
+                rhyme_stack.pop(0)
+                assert(len(rhyme_stack) == RHYME_STACK_SIZE)
+                ipa_line = [t[0] for t in ipa.ipa_list(line)]
+                print("finished line:", line)
+                print(ipa_line)
+            else:
+                print(tokens[i])
+                print(rhyme_stack)
+                rhymes.append(rhyme_stack)
+
     print("Masking unknown tokens")
     tokens = [(words.index(x) if x in vocab else -1) for x in tokens]
     
     print("Splitting poems with masked dividers")
-    title_token = words.index(TITLE.lower()[1:-1])
     mask_list = [-1]*N
     splits = []
     chunk_size = len(tokens)//N_THREADS
     for i in range(N_THREADS):
         splits.append(
             tokens[i*chunk_size : (i+1)*chunk_size if i < N_THREADS-1 else len(tokens)])
+
 
     results = [None] * N_THREADS
     threads = []
@@ -195,6 +254,9 @@ if __name__ == '__main__':
                      # y in [-1, VOCAB_SIZE-1] with VOCAB_SIZE tokens, one for each vocabulary item, and -1 for <unk>
     
     print("Saving data")
-    fname = 'data/ngram_train.npz' if MODEL_TYPE == 'n' else 'data/transformer_train.npz'
+    fname = {'n': 'data/ngram_train.npz',
+        't': 'data/transformer_train.npz',
+        'b': 'data/bard_train.npz'
+    }[MODEL_TYPE]
     np.savez_compressed(fname, x=train_x, y=train_y)
     np.save('lemmas/lemmas.npy', words[:VOCAB_SIZE])

@@ -4,7 +4,7 @@ TITLE = " <TITLE> "
 NEWLINE = " <NEWLINE> "
 AUTHOR_LIST = ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
                    'longfellow', 'holmes', 'wilde', 'browning_yeats_et_al', 'tagore']
-KAGGLE = True
+KAGGLE = False
 
 def getContents(fname):
     file = open(fname, "r")
