@@ -19,7 +19,7 @@ BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'yr','ful','iii','bo','faire','tos','ai','en','et','sug',
                  'ga','wel','hee','hon','n','wan','ut','te','ad','hym','na']
 N_THREADS = 16
-RHYMES = ['æ', 'eɪ', 'ɛ', 'i', 'ɪ', 'aɪ', 'ɔ', 'oʊ', 'ə', 'u', 'ʊ', 'ɛr', 'ɪr', 'aɪr', 'ɔr', 'ur', 'ər', 'aʊ']
+RHYMES = ['æ', 'eɪ', 'ɛ', 'i', 'ɪ', 'aɪ', 'ɔ', 'oʊ', 'ə', 'u', 'ʊ', 'ɛr', 'ɪr', 'aɪr', 'ɔr', 'ur', 'ər', 'aʊ','ɔɪ']
 RHYME_STACK_SIZE = 3
 
 if __name__ == '__main__':
@@ -137,6 +137,47 @@ def pretty_tokens(tokens, mask=True):
     res = res[1:] if res.startswith(' ') else res
     return res
 
+def getRhyme(line):
+    if line is None:
+        return None
+    space = line.rfind(' ')
+    if space != -1:
+        line = line[space+1:]
+    ipa_line = [t[0] for t in ipa.ipa_list(line)]
+    if len(ipa_line) == 0:
+        return None
+    word = ipa_line[-1]
+    if '*' in word:
+        return None
+    word = word.replace('ɑ', 'ɔ')
+    while len(word) >= 1:
+        if len(word) >= 2:
+            for rhyme in RHYMES:
+                if word[-2:] == rhyme:
+                    return rhyme
+        for rhyme in RHYMES:
+            if word[-1:] == rhyme:
+                return rhyme
+        word = word[:-1]
+    return None
+def getSyllables(line):
+    if line is None:
+        return None
+    ipa_line = [t[0] for t in ipa.ipa_list(line)]
+    res = 0
+    sort_vowels = sorted(RHYMES, key=len, reverse=True)
+    for word in ipa_line:
+        if word.endswith('*'):
+            word = word.replace('ea','i').replace('ee','i')
+            word = word.replace('ai','eɪ').replace('au','ɔ')
+            word = word.replace('ew','ju').replace('eu','ju')
+            word = word.replace('oa','oʊ').replace('ou','oʊ')
+            word = word.replace('oi','ɔɪ').replace('oo','u')
+            word = word.replace('a','æ').replace('o','ɔ').replace('e','ɛ')
+        for vowel in sort_vowels:
+            res += word.count(vowel)
+            word = word.replace(vowel, '')
+    return res
 
 if __name__ == '__main__':
     N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N+1
@@ -147,39 +188,17 @@ if __name__ == '__main__':
     title_token = words.index(TITLE.lower()[1:-1])
     newline_token = words.index(NEWLINE.lower()[1:-1])
     if MODEL_TYPE == 'b':
-        def getRhyme(line):
-            if line is None:
-                return None
-            space = line.rfind(' ')
-            if space != -1:
-                line = line[space+1:]
-            ipa_line = [t[0] for t in ipa.ipa_list(line)]
-            if len(ipa_line) == 0:
-                return None
-            word = ipa_line[-1]
-            if '*' in word:
-                return None
-            word = word.replace('ɑ', 'ɔ')
-            while len(word) >= 1:
-                if len(word) >= 2:
-                    for rhyme in RHYMES:
-                        if word[-2:] == rhyme:
-                            return rhyme
-                for rhyme in RHYMES:
-                    if word[-1:] == rhyme:
-                        return rhyme
-                word = word[:-1]
-            return None
-
         print("Setting up IPA rhyming information")
         rhymes = []
         rhyme_stack = [None] * RHYME_STACK_SIZE
+        syllable_stack = [None] * RHYME_STACK_SIZE
         in_title = True
         for i in range(len(tokens)):
             if tokens[i] == TITLE.lower()[1:-1]:
                 in_title = True
                 prev_line = None
                 rhyme_stack = [None] * RHYME_STACK_SIZE
+                syllable_stack = [None] * RHYME_STACK_SIZE
             elif in_title and tokens[i] == NEWLINE.lower()[1:-1]:
                 in_title = False
                 rhymes.append([None] * RHYME_STACK_SIZE)
@@ -191,13 +210,15 @@ if __name__ == '__main__':
                 line = pretty_tokens(tokens[j+1:i], False)
                 rhyme_stack.append(getRhyme(line))
                 rhyme_stack.pop(0)
-                assert(len(rhyme_stack) == RHYME_STACK_SIZE)
+                syllable_stack.append(getSyllables(line))
+                syllable_stack.pop(0)
                 ipa_line = [t[0] for t in ipa.ipa_list(line)]
                 print("finished line:", line)
                 print(ipa_line)
             else:
                 print(tokens[i])
                 print(rhyme_stack)
+                print(syllable_stack)
                 rhymes.append(rhyme_stack)
 
     print("Masking unknown tokens")
