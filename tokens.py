@@ -163,9 +163,11 @@ def getSyllables(line):
     if line is None:
         return 0
     res = 0
+    nl = NEWLINE.lower()[1:-1]
+    tl = TITLE.lower()[1:-1]
     for i in range(len(line)):
         word = line[i]
-        if word == NEWLINE.lower()[1:-1] or word == TITLE.lower()[1:-1]:
+        if word == nl or word == tl or word is None:
             continue
         if word == '=ed' and i > 0:
             if line[i-1].endswith('t') or line[i-1].endswith('d'):
@@ -200,7 +202,7 @@ if __name__ == '__main__':
         print("Setting up meter information")
         in_title = True
         split_token_marks = []
-        split_size = len(tokens)//(N_THREADS*2)
+        split_size = len(tokens)//(N_THREADS*2+1)
         for i in range(N_THREADS*2+1):
             split_token_marks.append(split_size*i)
         for i in range(1, N_THREADS*2):
@@ -210,19 +212,17 @@ if __name__ == '__main__':
                     break
         syllables_data = []
         split_token_marks[-1] = len(tokens)
+        print(len(tokens))
+        print(split_token_marks)
         split_tokens = [tokens[split_token_marks[i]:split_token_marks[i+1]] for i in range(N_THREADS*2)]
-        rhyme_meter_res = [None] * (N_THREADS*2)
+        meter_res = [None] * (N_THREADS*2)
         threads = []
-        def process_rhyme_meter(thread_index, split):
+        def processMeter(thread_index, split):
             syllables = []
             syllable_stack = np.zeros(RHYME_STACK_SIZE)
-            print("Thread", thread_index, "starting")
-            print("Thread", thread_index, "processing", len(split), "tokens")
             tl = TITLE.lower()[1:-1]
             nl = NEWLINE.lower()[1:-1]
             for i in range(len(split)):
-                if i % 1000 == 0:
-                    print("Thread", thread_index, "processing token", i)
                 if split[i] == tl:
                     in_title = True
                     syllable_stack = np.zeros(RHYME_STACK_SIZE)
@@ -248,14 +248,14 @@ if __name__ == '__main__':
                     syllable_stack[-1] = getSyllables(line)
                     syllable_stack[-1] = 0
                     syllables.append(syllable_stack.copy())
-            rhyme_meter_res[thread_index] = syllables
+            meter_res[thread_index] = syllables
         for i in range(N_THREADS*2):
-            t = Thread(target=process_rhyme_meter, args=(i, split_tokens[i]))
+            t = Thread(target=processMeter, args=(i, split_tokens[i]))
             threads.append(t)
             t.start()
         for i in range(N_THREADS*2):
             threads[i].join()
-            syllables_data += rhyme_meter_res[i]
+            syllables_data += meter_res[i]
         
         print("Converting meter information")
         syllables_data = np.asarray(syllables_data)
