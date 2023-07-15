@@ -389,8 +389,10 @@ if __name__ == '__main__':
             rhymes_data += rhyme_meter_res[i][1]
         
         print("Converting rhyme and meter information")
-        syllables_data = np.asarray(syllables_data)
+        syllables_data = np.asarray(syllables_data)[:,:,np.newaxis]
         rhymes_data = np.asarray(rhymes_data)
+        rhyme_meter_data = np.concatenate([syllables_data, rhymes_data], axis=2)
+        rhyme_meter_data = np.reshape(rhyme_meter_data, (rhyme_meter_data.shape[0], -1))
 
     print("Masking unknown tokens")
     tokens = [(words.index(x) if x in vocab else -1) for x in tokens]
@@ -453,5 +455,5 @@ if __name__ == '__main__':
     if MODEL_TYPE != 'b':
         np.savez_compressed(fname, x=train_x, y=train_y)
     else:
-        np.savez_compressed(fname, x=train_x, r=rhymes_data, s=syllables_data, y=train_y)
+        np.savez_compressed(fname, x=train_x, rm=rhyme_meter_data, y=train_y)
     np.save('lemmas/lemmas.npy', words[:VOCAB_SIZE])

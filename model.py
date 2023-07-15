@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.layers import Dense, Flatten, Dropout, Embedding,\
-    Add, MultiHeadAttention, LayerNormalization, Input
+    Add, MultiHeadAttention, LayerNormalization, Input, Softmax
 
 from constants import *
 from tokens import pretty_tokens
@@ -128,9 +128,9 @@ class Decoder(keras.layers.Layer):
         x = self.ffn(x)
         return x
 
-class Transformer(keras.Model):
+class TransformerModel(keras.Model):
     def __init__(self, *, num_layers=TRANSFORMER_LAYERS, num_heads=TRANSFORMER_HEADS, dff=TRANSFORMER_DFF):
-        super(Transformer, self).__init__()
+        super(TransformerModel, self).__init__()
         self.vocab = VOCAB
         self.embed = InputEmbedding()
         self.decoder = Decoder(num_layers=num_layers, num_heads=num_heads, dff=dff)
@@ -158,6 +158,33 @@ class Transformer(keras.Model):
         pred = pred[lastToken]
         pred = sampleVocab(pred, temperature)
         return pred
+
+
+class BardModel(keras.Model):
+    def __init__(self, *, num_layers=TRANSFORMER_LAYERS, num_heads=TRANSFORMER_HEADS, dff=TRANSFORMER_DFF):
+        super(BardModel, self).__init__()
+        self.vocab = VOCAB
+        self.embed = InputEmbedding()
+        self.decoder = Decoder(num_layers=num_layers, num_heads=num_heads, dff=dff)
+        self.rhyme_meter = Dense(16, activation='relu')
+        self.rhyme_meter_pred = Dense(VOCAB_SIZE)
+        self.transformer_pred = Dense(VOCAB_SIZE)
+        self.add = Add()
+        self.softmax = Softmax()
+    
+    def call(self, input):
+        x = self.embed(input[0])
+        x = self.decoder(x)
+        x = self.transformer_pred(x)
+        try:
+            del x._keras_mask
+        except AttributeError:
+            pass
+        rhyme_meter_x = self.rhyme_meter(input[1])
+        rhyme_meter_x = self.rhyme_meter_pred(rhyme_meter_x)
+        x = self.add([x, rhyme_meter_x])
+        x = self.softmax(x)
+        return x
 
 
 
@@ -193,6 +220,8 @@ if __name__ == '__main__':
     loaded = np.load(fname)
     train_x = tf.one_hot(loaded['x'], VOCAB_SIZE) if MODEL_TYPE == 'n' else loaded['x']
     train_y = tf.one_hot(loaded['y'], VOCAB_SIZE) if MODEL_TYPE == 'n' else loaded['y']
+    if MODEL_TYPE == 'b':
+        train_x = zip(train_x, loaded['rm']) # rhyme and syllables
     del loaded
     print("X:", train_x[:4])
     print("Y:", train_y[:4])
@@ -200,7 +229,7 @@ if __name__ == '__main__':
     print("Y shape:", train_y.shape)
 
     print("Initializing model")
-    models = {'n': LinearModel, 't': Transformer}
+    models = {'n': LinearModel, 't': TransformerModel}
     model = models[MODEL_TYPE]()
     print(model)
     print(model(train_x[:1]))
