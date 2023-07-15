@@ -1129,8 +1129,8 @@ def join(kaggle=False):
         print("Processing spelling and final fixes")
         for word in ['neighbor','color','flavor','splendor','labor','favor','fervor','savior','vapor','endeavor','parlor',
                      'clamor','harbor','splendor','behavior','rumor','humor','savor','valor','armor','honor']:
-            text = text.replace(" "+word+" "," "+word[:-2]+"our ")
-        text = text.replace(' gray ',' grey ').replace(' phrenzy ',' frenzy ').replace(' meter ',' metre ').replace(' meters ',' metres ')
+            text = text.replace(" "+word[:-2]+"our "," "+word+" ")
+        text = text.replace(' grey ',' gray ').replace(' phrenzy ',' frenzy ').replace(' metre ',' meter ').replace(' metres ',' meters ')
         text = text.replace(" ' t was "," it was ").replace(" ' t were "," it were ").replace(" ' t would "," it would ").replace(" ' t will "," it will ")
         text = text.replace(" to - morrow "," tomorrow ").replace(" to - day "," today ").replace(" to - night ", " tonight ")
         text = text.replace(NEWLINE.lower()+' '+TITLE.lower(), TITLE.lower())
