@@ -134,7 +134,6 @@ def getRhyme(line):
         if len(line) == 0:
             return [-1, -1]
     word = line[-1]+''
-    print("word is", word)
     long_vowel = False
     vowel_type = None
     vowel_map = {'a': 0, 'e': 1, 'i': 2, 'o': 3, 'u': 4, 'ow': 5, 'ou': 5, 'oi': 6, 'oy': 6,
@@ -180,25 +179,29 @@ def getRhyme(line):
                 return [0, 4]
             lock_consonant = 4
             word = line[-2]
-            print("New word is", word)
         if word == '=s' or word == "'s":
             if line[-2].endswith('s') or line[-2].endswith('z') or line[-2].endswith('ch') or line[-2].endswith('sh') or line[-2].endswith('x'):
                 return [4, 6]
             lock_consonant = 6
             word = line[-2]
-            print("New word is", word)
-        if word == "'re":
+        elif word == "'re":
             lock_consonant = 0
             word = line[-2]
-            print("New word is", word)
-        if word == "'ve":
+        elif word == "'ve":
             lock_consonant = 5
             word = line[-2]
-            print("New word is", word)
-        if word == "=nt'":
+        elif word == "'ll":
+            lock_consonant = 1
+            word = line[-2]
+        elif word == "'d":
             lock_consonant = 4
             word = line[-2]
-            print("New word is", word)
+        elif word == "'m":
+            lock_consonant = 2
+            word = line[-2]
+        elif word == "=nt'":
+            lock_consonant = 4
+            word = line[-2]
     if word in DEFINED_RHYMES:
         vowel_type = DEFINED_RHYMES[word][0]
         consonant_type = DEFINED_RHYMES[word][1] if lock_consonant == -1 else lock_consonant
@@ -279,7 +282,7 @@ def getSyllables(line):
         if word == nl or word == tl or word is None:
             continue
         if word == '=ed' and i > 0:
-            if line[i-1].endswith('t') or line[i-1].endswith('d'):
+            if line[i-1].endswith('t') or line[i-1].endswith('d') or line[i-1].endswith('te') or line[i-1].endswith('de'):
                 res += 1
             continue
         if word == '=s' and i > 0:
@@ -293,6 +296,7 @@ def getSyllables(line):
         word = word.replace('ea','i').replace('ee','i')
         word = word.replace('ai','i').replace('au','o')
         word = word.replace('eu','yu')
+        word = word.replace('ei','i').replace('ie','i')
         word = word.replace('oa','oʊ').replace('ou','o')
         word = word.replace('oi','o').replace('oo','u')
         for vowel in VOWELS:
@@ -308,7 +312,7 @@ if __name__ == '__main__':
     title_token = words.index(TITLE.lower()[1:-1])
     newline_token = words.index(NEWLINE.lower()[1:-1])
     if MODEL_TYPE == 'b':
-        print("Setting up meter information")
+        print("Setting up rhyme and meter information")
         in_title = True
         split_token_marks = []
         split_size = len(tokens)//(N_THREADS*2+1)
@@ -320,56 +324,75 @@ if __name__ == '__main__':
                 if split_token_marks[i] >= len(tokens):
                     break
         syllables_data = []
+        rhymes_data = []
         split_token_marks[-1] = len(tokens)
         print(len(tokens))
         print(split_token_marks)
         split_tokens = [tokens[split_token_marks[i]:split_token_marks[i+1]] for i in range(N_THREADS*2)]
-        meter_res = [None] * (N_THREADS*2)
+        rhyme_meter_res = [None] * (N_THREADS*2)
         threads = []
         def processMeter(thread_index, split):
             syllables = []
-            syllable_stack = np.zeros(RHYME_STACK_SIZE)
+            rhymes = []
+            syllable_stack = np.zeros(RHYME_STACK_SIZE, np.short)
+            rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1
             tl = TITLE.lower()[1:-1]
             nl = NEWLINE.lower()[1:-1]
             for i in range(len(split)):
                 if split[i] == tl:
                     in_title = True
-                    syllable_stack = np.zeros(RHYME_STACK_SIZE)
+                    syllable_stack = np.zeros(RHYME_STACK_SIZE, np.short)
+                    rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1
+                    syllables.append(np.zeros(RHYME_STACK_SIZE, np.short))
+                    rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1)
                     continue
                 elif in_title and split[i] == nl:
                     in_title = False
-                    syllables.append(np.zeros(RHYME_STACK_SIZE))
+                    syllables.append(np.zeros(RHYME_STACK_SIZE, np.short))
+                    rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1)
                     continue
                 if not in_title and split[i] == nl:
                     j = i-1
                     while split[j] != nl:
                         j -= 1
                     line = split[j+1:i]
-                    print(pretty_rhyme(getRhyme(line)))
-                    syllable_stack[-1] = getSyllables(line)
-                    syllable_stack[0] = syllable_stack[-1]
-                    syllable_stack[-1] = 0
+                    # print(pretty_rhyme(getRhyme(line)))
+                    print(line, split[i])
+                    print(syllable_stack)
+                    print(rhyme_stack)
+                    rhymes.append(rhyme_stack.copy())
                     syllables.append(syllable_stack.copy())
+                    if split[i-1] != nl:
+                        rhyme_stack = np.roll(rhyme_stack, -1, axis=0)
+                        rhyme_stack[-1] = np.array(getRhyme(line), np.short)
+                        syllable_stack = np.roll(syllable_stack, -1, axis=0)
+                        syllable_stack[-1] = getSyllables(line)
                 else:
                     j = i-1
                     while split[j] != nl:
                         j -= 1
                     line = split[j+1:i]
                     syllable_stack[-1] = getSyllables(line)
-                    syllable_stack[-1] = 0
+                    # syllable_stack[-1] = 0
+                    print(line, split[i])
+                    print(syllable_stack)
+                    print(rhyme_stack)
+                    rhymes.append(rhyme_stack.copy())
                     syllables.append(syllable_stack.copy())
-            meter_res[thread_index] = syllables
+            rhyme_meter_res[thread_index] = [syllables, rhymes]
         for i in range(N_THREADS*2):
             t = Thread(target=processMeter, args=(i, split_tokens[i]))
             threads.append(t)
-            #t.start()
+            t.start()
         for i in range(N_THREADS*2):
             threads[i].start()
             threads[i].join()
-            syllables_data += meter_res[i]
+            syllables_data += rhyme_meter_res[i][0]
+            rhymes_data += rhyme_meter_res[i][1]
         
-        print("Converting meter information")
+        print("Converting rhyme and meter information")
         syllables_data = np.asarray(syllables_data)
+        rhymes_data = np.asarray(rhymes_data)
 
     print("Masking unknown tokens")
     tokens = [(words.index(x) if x in vocab else -1) for x in tokens]
