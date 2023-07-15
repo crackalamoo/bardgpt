@@ -3,7 +3,7 @@ from constants import *
 if __name__ == '__main__':
     from threading import Thread
 
-N_THREADS = 16
+N_THREADS = 32
 RHYME_STACK_SIZE = 2
 
 if __name__ == '__main__':
@@ -315,10 +315,10 @@ if __name__ == '__main__':
         print("Setting up rhyme and meter information")
         in_title = True
         split_token_marks = []
-        split_size = len(tokens)//(N_THREADS*2+1)
-        for i in range(N_THREADS*2+1):
+        split_size = len(tokens)//N_THREADS
+        for i in range(N_THREADS+1):
             split_token_marks.append(split_size*i)
-        for i in range(1, N_THREADS*2):
+        for i in range(1, N_THREADS):
             while tokens[split_token_marks[i]] != TITLE.lower()[1:-1]:
                 split_token_marks[i] += 1
                 if split_token_marks[i] >= len(tokens):
@@ -326,10 +326,8 @@ if __name__ == '__main__':
         syllables_data = []
         rhymes_data = []
         split_token_marks[-1] = len(tokens)
-        print(len(tokens))
-        print(split_token_marks)
-        split_tokens = [tokens[split_token_marks[i]:split_token_marks[i+1]] for i in range(N_THREADS*2)]
-        rhyme_meter_res = [None] * (N_THREADS*2)
+        split_tokens = [tokens[split_token_marks[i]:split_token_marks[i+1]] for i in range(N_THREADS)]
+        rhyme_meter_res = [None] * N_THREADS
         threads = []
         def processMeter(thread_index, split):
             syllables = []
@@ -357,9 +355,9 @@ if __name__ == '__main__':
                         j -= 1
                     line = split[j+1:i]
                     # print(pretty_rhyme(getRhyme(line)))
-                    print(line, split[i])
-                    print(syllable_stack)
-                    print(rhyme_stack)
+                    # print(line, split[i])
+                    # print(syllable_stack)
+                    # print(rhyme_stack)
                     rhymes.append(rhyme_stack.copy())
                     syllables.append(syllable_stack.copy())
                     if split[i-1] != nl:
@@ -374,18 +372,18 @@ if __name__ == '__main__':
                     line = split[j+1:i]
                     syllable_stack[-1] = getSyllables(line)
                     # syllable_stack[-1] = 0
-                    print(line, split[i])
-                    print(syllable_stack)
-                    print(rhyme_stack)
+                    # print(line, split[i])
+                    # print(syllable_stack)
+                    # print(rhyme_stack)
                     rhymes.append(rhyme_stack.copy())
                     syllables.append(syllable_stack.copy())
             rhyme_meter_res[thread_index] = [syllables, rhymes]
-        for i in range(N_THREADS*2):
+        for i in range(N_THREADS):
             t = Thread(target=processMeter, args=(i, split_tokens[i]))
             threads.append(t)
             t.start()
-        for i in range(N_THREADS*2):
-            threads[i].start()
+        for i in range(N_THREADS):
+            # threads[i].start()
             threads[i].join()
             syllables_data += rhyme_meter_res[i][0]
             rhymes_data += rhyme_meter_res[i][1]
@@ -452,5 +450,8 @@ if __name__ == '__main__':
         't': 'data/transformer_train.npz',
         'b': 'data/bard_train.npz'
     }[MODEL_TYPE]
-    np.savez_compressed(fname, x=train_x, y=train_y)
+    if MODEL_TYPE != 'b':
+        np.savez_compressed(fname, x=train_x, y=train_y)
+    else:
+        np.savez_compressed(fname, x=train_x, r=rhymes_data, s=syllables_data, y=train_y)
     np.save('lemmas/lemmas.npy', words[:VOCAB_SIZE])
