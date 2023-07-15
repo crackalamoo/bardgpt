@@ -4,7 +4,9 @@ from tensorflow import keras
 from tensorflow.keras.layers import Dense, Flatten, Dropout, Embedding,\
     Add, MultiHeadAttention, LayerNormalization, Input
 
-from tokens import VOCAB_SIZE, NGRAM_N, TRANSFORMER_N, MODEL_TYPE, TITLE, pretty_tokens
+from constants import *
+from tokens import pretty_tokens
+
 N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N
 EMBED_DIM = 256
 TRANSFORMER_LAYERS = 2
@@ -22,7 +24,7 @@ def sampleVocab(dist, temperature):
 
 def genTokens(model, tokens, temperature=0.7):
     res = [VOCAB.index(TITLE.lower()[1:-1])]
-    for i in range(tokens):
+    for _ in range(tokens):
         context = res[-(N-1):] if MODEL_TYPE == 'n' else res[-N:]
         pred = model.generate(context, temperature)
         res.append(pred)

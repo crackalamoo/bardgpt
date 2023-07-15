@@ -1,25 +1,10 @@
 import numpy as np
-from preprocess import NEWLINE, TITLE, KAGGLE
+from constants import *
 if __name__ == '__main__':
     from threading import Thread
 
-VOCAB_SIZE = 4096
-NGRAM_N = 4
-TRANSFORMER_N = 32
-MODEL_TYPE = 'b' # n: ngram, t: transformer, b: bard
-TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else (17 if KAGGLE else 3)
-BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
-                 'r','d','f','p','agnes','eulalie','kate','niam','thel',
-                 '+++++++++++++','c','j','h','4','5','6','7','8','9','10',
-                 '11','12','*','x','b','/','k','g','ii','s','u','da','el',
-                 'le','que','~','000','m','thu','thir','13','14','15','16','17',
-                 '18','19','20','30','th','bu','ri','w','v','al','iv','wi',
-                 'la','las','t','ma','ha','mee','ne','em','ry','di','st',
-                 'yr','ful','iii','bo','faire','tos','ai','en','et','sug',
-                 'ga','wel','hee','hon','n','wan','ut','te','ad','hym','na']
 N_THREADS = 16
 RHYME_STACK_SIZE = 2
-PUNCT = set(['.', ',', '!', '?', ':', ';', '-'])
 
 if __name__ == '__main__':
     file = open("data/join.txt" if not KAGGLE else "data/join-kaggle.txt", "r")
@@ -113,12 +98,12 @@ def pretty_tokens(tokens, mask=True):
                                 this = this[:-1]
                             elif this.endswith('c'):
                                 this = this+'k'
-                            if this.endswith('y') and next[1] == 'e' and len(this) > 2 and not this[-2] in vowels:
+                            if this.endswith('y') and next[1] == 'e' and len(this) > 2 and not this[-2] in VOWELS:
                                 this = this[:-1]+'i'
                         if next[1] == 's':
                             if this.endswith('s') or this.endswith('sh') or this.endswith('x') or this.endswith('ch'):
                                 this = this+'e'
-                            if this.endswith('y') and len(this) > 2 and not this[-2] in vowels:
+                            if this.endswith('y') and len(this) > 2 and not this[-2] in VOWELS:
                                 this = this[:-1]+'ie'
                         
                         this = this+next[1:]
@@ -134,24 +119,6 @@ def pretty_tokens(tokens, mask=True):
     res = res[1:] if res.startswith(' ') else res
     return res
 
-RHYMES = ['æ', 'eɪ', 'ɛ', 'i', 'ɪ', 'aɪ', 'ɔ', 'oʊ', 'ə', 'u', 'ʊ', 'ɛr', 'ɪr', 'aɪr', 'ɔr', 'ur', 'ər', 'aʊ','ɔɪ']
-vowels = set(['a','e','i','o','u'])
-DEFINED_RHYMES = {
-    "'ll": [4,1], "=er": [13,0], "the": [4,-1], 'a': [4,-1], 'we': [8,-1], 'ye': [8,-1], 'e': [8,-1],
-    'zimbabwe': [7,-1], 'one': [4,2], 'two': [11,-1], 'oh': [10,-1], 'ah': [12,-1], 'i': [9,-1],
-    'you': [11,-1], 'own': [10,2], 'know': [10,-1], 'do': [11,-1],
-    'world': [13,4], 'learn': [13,2], 'earn': [13,2], 'yearn': [13,2], 'of': [4,5], 'service': [4,6],
-    'practice': [4,6], 'police': [8,6], 'through': [11,-1], 'tough': [4,5], 'enough': [4,5],
-    'thorough': [10,-1], 'dough': [10,-1], 'rough': [4,5], 'cough': [3,5], 'snow': [10,-1],
-    'w': [11,-1], 'walk': [3,7], 'talk': [3,7], 'bottle': [4,1], 'angle': [4,1], 'apple': [4,1],
-    'full': [11,1], 'pull': [11,1], 'bull': [11,1], 'put': [11,1], 'push': [11,6], 'book': [11,7],
-    'won': [4,2], 'what': [4,4], 'who': [11,-1], 'whose': [11,6], 'where': [7,0], 'there': [7,0],
-    'their': [7,0], 'theirs': [7,6], 'bear': [7,0], 'wear': [7,0], 'show': [10,-1], 'tow': [10,-1],
-    'row': [10,-1], 'flow': [10,-1], 'low': [10,-1], 'grow': [10,-1], 'sow': [10,-1], 'slow': [10,-1],
-    'blow': [10,-1], 'glow': [10,-1], 'throw': [10,-1], 'arrow': [10,-1], 'below': [10,-1],
-    'elbow': [10,-1], 'narrow': [10,-1], 'follow': [10,-1], 'hollow': [10,-1], 'borrow': [10,-1],
-    'window': [10,-1], 'yellow': [10,-1], 'rainbow': [10,-1], 'shadow': [10,-1], 'tomorrow': [10,-1],
-}
 def getRhyme(line):
     # rhyme format:
     # final vowel (short AEIO, schwa, long AEIOU, OW, OI, A/schwa before R; total 14)
@@ -173,7 +140,7 @@ def getRhyme(line):
     vowel_map = {'a': 0, 'e': 1, 'i': 2, 'o': 3, 'u': 4, 'ow': 5, 'ou': 5, 'oi': 6, 'oy': 6,
                  'ay': 7, 'ai': 7, 'au': 3, 'aw': 3, 'ea': 8, 'ee': 8, 'eu': 11, 'ew': 11,
                  'oa': 10, 'oo': 11, 'y': 9, 'ey': 7, 'ei': 9}
-    sometimes_vowels = vowels.union(['y','w'])
+    
     # vowel type format:
     # 0: A, 1: E, 2: I, 3: O, 4: U, 5: OW, 6: OI
     # short U is schwa
@@ -183,7 +150,7 @@ def getRhyme(line):
     cons_map = {'r': 0, 'l': 1, 'n': 2, 'm': 2, 'ng': 2,
                 'p': 3, 'b': 3, 't': 4, 'd': 4, 'f': 5,
                 'v': 5, 's': 6, 'sh': 6, 'z': 6, 'zh': 6,
-                'th': 6, 'k': 7, 'g': 7, 'ch': 8, 'j': 8}
+                'th': 6, 'k': 7, 'ch': 8, 'j': 8}
     # consonant type format:
     # 0: R, 1: L, 2: N/M/NG, 3: P/B, 4: T/D, 5: F/V, 6: S/SH/Z/ZH/TH, 7: K/G, 8: CH/J
     # total 9 consonant types
@@ -224,6 +191,10 @@ def getRhyme(line):
             lock_consonant = 0
             word = line[-2]
             print("New word is", word)
+        if word == "'ve":
+            lock_consonant = 5
+            word = line[-2]
+            print("New word is", word)
         if word == "=nt'":
             lock_consonant = 4
             word = line[-2]
@@ -232,10 +203,30 @@ def getRhyme(line):
         vowel_type = DEFINED_RHYMES[word][0]
         consonant_type = DEFINED_RHYMES[word][1] if lock_consonant == -1 else lock_consonant
         return [vowel_type, consonant_type]
+    
     if word.endswith('o'):
         return [10, lock_consonant]
-    if word.endswith('bble'):
+    if word.endswith('bble') or word.endswith('ggle'):
         return [4, 1 if lock_consonant == -1 else lock_consonant]
+    if word.endswith('old'):
+        return [10, 1 if lock_consonant == -1 else lock_consonant]
+    if word.endswith('ance'):
+        return [0, 6 if lock_consonant == -1 else lock_consonant]
+    if word.endswith('ense') or word.endswith('ence'):
+        return [1, 6 if lock_consonant == -1 else lock_consonant]
+    if word.endswith('ince'):
+        return [2, 6 if lock_consonant == -1 else lock_consonant]
+    if word.endswith('ture') or word.endswith('sure'):
+        return [13, 0 if lock_consonant == -1 else lock_consonant]
+    if word.endswith('all'):
+        return [3, 1 if lock_consonant == -1 else lock_consonant]
+    if word.endswith('row') or word.endswith('low'):
+        return [10, lock_consonant]
+    if word.endswith('le') and len(word) >= 3 and not word[-3] in VOWELS:
+        return [4, 1 if lock_consonant == -1 else lock_consonant]
+    if word.endswith('on') and len(word) > 3 and not word.endswith('oon'):
+        return [4, 2 if lock_consonant == -1 else lock_consonant]
+    
     if word.endswith('e'):
         long_vowel = True
         word = word[:-1]
@@ -244,11 +235,16 @@ def getRhyme(line):
             consonant_type = cons_map[word[-2:]]
         elif word[-1:] in cons_map:
             consonant_type = cons_map[word[-1:]]
+        elif word[-1] == 'c' and long_vowel:
+            consonant_type = cons_map['s']
+        elif word[-1] == 'g' and long_vowel:
+            consonant_type = cons_map['j']
     else:
         consonant_type = lock_consonant
+    
     lock_r = False
-    if not word[-1] in sometimes_vowels:
-        while not word[-1] in sometimes_vowels:
+    if not word[-1] in SOMETIMES_VOWELS:
+        while not word[-1] in SOMETIMES_VOWELS:
             if word.endswith('igh'):
                 return [9, consonant_type]
             if word[-1] == 'r':
@@ -262,25 +258,15 @@ def getRhyme(line):
         vowel_type = vowel_map[word[-2:]]
     elif word[-1:] in vowel_map:
         vowel_type = vowel_map[word[-1:]]
+    
     vowel_type = getVowel(vowel_type, long_vowel, consonant_type == 0 or lock_r)
     return [vowel_type, consonant_type]
 def pretty_rhyme(rhyme):
-    get = str(rhyme[0])+'_'+str(rhyme[1])
-    map = {'0_-1': 'nah', '1_-1': 'meh', '3_-1': 'saw', '4_-1': 'uh', '5_-1': 'how', '6_-1': 'toy',
-           '7_-1': 'day', '8_-1': 'see', '9_-1': 'tie', '10_-1': 'go', '11_-1': 'shoe', '12_-1': 'far', '13_-1': 'butter',
-           '5_0': 'hour', '6_0': 'lawyer',
-           '7_0': 'care', '8_0': 'hear', '9_0': 'fire', '10_0': 'four', '11_0': 'poor', '12_0': 'far', '13_0': 'butter',
-           '0_1': 'pal', '1_1': 'fell', '2_1': 'fill', '3_1': 'doll', '4_1': 'hull', '5_1': 'towel', '6_1': 'oil',
-           '7_1': 'hail', '8_1': 'feel', '9_1': 'pile', '10_1': 'pole', '11_1': 'pool', '12_1': 'snarl', '13_1': 'twirl',
-           '0_2': 'can', '1_2': 'ten', '2_2': 'bin', '3_2': 'on', '4_2': 'won', '5_2': 'town', '6_2': 'coin',
-           '7_2': 'cane', '8_2': 'teen', '9_2': 'pine', '10_2': 'bone', '11_2': 'tune', '12_2': 'barn', '13_2': 'burn',}
-    if get in map:
-        return "Rhymes with " + map[get]
-    v_map = ['bat', 'bet', 'bit', 'bot', 'but', 'bout', 'boil', 'bait', 'beat', 'bite', 'boat', 'boot', 'bar', 'butter']
+    v_map = ['bat', 'bet', 'bit', 'bot', 'but', 'pout', 'boil', 'bait', 'beat', 'bite', 'boat', 'boot', 'bar', 'sir']
     c_map = ['R', 'L', 'N/M/NG', 'P/B', 'T/D', 'F/V', 'S/SH/Z/ZH/TH', 'K/G', 'CH/J']
     return "Rhyme is " +\
         (v_map[rhyme[0]] if rhyme[0] != -1 else '--') + ' ' + (c_map[rhyme[1]] if rhyme[1] != -1 else 'ø')
-    
+
 
 def getSyllables(line):
     if line is None:
@@ -302,14 +288,14 @@ def getSyllables(line):
             continue
         if word.endswith('e'):
             word = word[:-1]
-        if word.endswith('y') and len(word) > 2 and not word[-2] in vowels:
+        if word.endswith('y') and len(word) > 2 and not word[-2] in VOWELS:
             word = word[:-1]+'i'
         word = word.replace('ea','i').replace('ee','i')
         word = word.replace('ai','i').replace('au','o')
         word = word.replace('eu','yu')
         word = word.replace('oa','oʊ').replace('ou','o')
         word = word.replace('oi','o').replace('oo','u')
-        for vowel in vowels:
+        for vowel in VOWELS:
             res += word.count(vowel)
     return res
 
@@ -359,6 +345,7 @@ if __name__ == '__main__':
                     while split[j] != nl:
                         j -= 1
                     line = split[j+1:i]
+                    print(pretty_rhyme(getRhyme(line)))
                     syllable_stack[-1] = getSyllables(line)
                     syllable_stack[0] = syllable_stack[-1]
                     syllable_stack[-1] = 0
@@ -371,7 +358,6 @@ if __name__ == '__main__':
                     syllable_stack[-1] = getSyllables(line)
                     syllable_stack[-1] = 0
                     syllables.append(syllable_stack.copy())
-                    print(pretty_rhyme(getRhyme(line)))
             meter_res[thread_index] = syllables
         for i in range(N_THREADS*2):
             t = Thread(target=processMeter, args=(i, split_tokens[i]))
