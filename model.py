@@ -5,7 +5,7 @@ from keras.layers import Dense, Flatten, Dropout, Embedding,\
     Add, MultiHeadAttention, LayerNormalization, Input, Softmax
 
 from constants import *
-from tokens import pretty_tokens
+from tokens import pretty_tokens, rhymeMeterFromTokens
 
 N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N
 EMBED_DIM = 256
@@ -199,7 +199,9 @@ class BardModel(keras.Model):
         while len(context) < TRANSFORMER_N:
             context.append(0)
         context = np.asarray([context])+1
-        pred = self.call([context])[0]
+        tl = VOCAB.index(TITLE.lower()[1:-1])
+        rm = rhymeMeterFromTokens(fullContext, len(fullContext), tl, VOCAB)
+        pred = self.call([context, rm])[0]
         pred = pred[lastToken]
         pred = sampleVocab(pred, temperature)
         return pred

@@ -364,19 +364,17 @@ def processRhymeMeter(split):
             rhymes.append(rhyme_stack.copy())
             meter.append(meter_stack.copy())
     return [meter, rhymes]
-def rhymeMeterFromTokens(tokens, endl, nl, tl, vocab=None):
+def rhymeMeterFromTokens(tokens, endl, tl, vocab=None):
     # used as input for model
     res = []
     start = endl
     while start >= 0 and tokens[start] != tl:
         start -= 1
     lines = tokens[start:endl]
-    print(lines)
     while len(lines) < TRANSFORMER_N:
         lines.append(None)
-    print(lines)
-    print(lines[-TRANSFORMER_N:])
-    meter, rhymes = processRhymeMeter(lines)
+    input_lines = lines if vocab is None else [vocab.index(x) for x in lines]
+    meter, rhymes = processRhymeMeter(input_lines)
     rhymes = rhymes[-TRANSFORMER_N:] # context x RHYME_STACK_SIZE x 2
     meter = meter[-TRANSFORMER_N:] # context x METER_STACK_SIZE
     rhymes = np.array(rhymes)
