@@ -4,6 +4,8 @@ TRANSFORMER_N = 32
 MODEL_TYPE = 'b' # n: ngram, t: transformer, b: bard
 KAGGLE = False
 TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else (17 if KAGGLE else 3)
+RHYME_STACK_SIZE = 2
+SYLLABLE_STACK_SIZE = 3
 
 TITLE = " <TITLE> "
 NEWLINE = " <NEWLINE> "

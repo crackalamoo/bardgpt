@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
-from tensorflow.keras.layers import Dense, Flatten, Dropout, Embedding,\
+from keras.layers import Dense, Flatten, Dropout, Embedding,\
     Add, MultiHeadAttention, LayerNormalization, Input, Softmax
 
 from constants import *
@@ -167,8 +167,12 @@ class BardModel(keras.Model):
         self.embed = InputEmbedding()
         self.decoder = Decoder(num_layers=num_layers, num_heads=num_heads, dff=dff)
         self.rhyme_meter = Dense(16, activation='relu')
-        self.rhyme_meter_pred = Dense(VOCAB_SIZE)
         self.transformer_pred = Dense(VOCAB_SIZE)
+        self.rhyme_meter_pred = keras.Sequential([
+            # input is context x rhyme/meter encoding
+            Dense(16, activation='relu'), # context x 16
+            Dense(VOCAB_SIZE) # context x vocab size (to match transformer output)
+        ])
         self.add = Add()
         self.softmax = Softmax()
     
@@ -180,8 +184,7 @@ class BardModel(keras.Model):
             del x._keras_mask
         except AttributeError:
             pass
-        rhyme_meter_x = self.rhyme_meter(input[1])
-        rhyme_meter_x = self.rhyme_meter_pred(rhyme_meter_x)
+        rhyme_meter_x = self.rhyme_meter_pred(input[1])
         x = self.add([x, rhyme_meter_x])
         x = self.softmax(x)
         return x

@@ -4,7 +4,6 @@ if __name__ == '__main__':
     from threading import Thread
 
 N_THREADS = 32
-RHYME_STACK_SIZE = 2
 
 if __name__ == '__main__':
     file = open("data/join.txt" if not KAGGLE else "data/join-kaggle.txt", "r")
@@ -364,20 +363,20 @@ if __name__ == '__main__':
             syllables = []
             rhymes = []
             syllable_stack = np.zeros(RHYME_STACK_SIZE, np.short)
-            rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1
+            rhyme_stack = np.zeros((SYLLABLE_STACK_SIZE, 2), np.short) - 1
             tl = TITLE.lower()[1:-1]
             nl = NEWLINE.lower()[1:-1]
             for i in range(len(split)):
                 if split[i] == tl:
                     in_title = True
-                    syllable_stack = np.zeros(RHYME_STACK_SIZE, np.short)
+                    syllable_stack = np.zeros(SYLLABLE_STACK_SIZE, np.short)
                     rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1
-                    syllables.append(np.zeros(RHYME_STACK_SIZE, np.short))
+                    syllables.append(np.zeros(SYLLABLE_STACK_SIZE, np.short))
                     rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1)
                     continue
                 elif in_title and split[i] == nl:
                     in_title = False
-                    syllables.append(np.zeros(RHYME_STACK_SIZE, np.short))
+                    syllables.append(np.zeros(SYLLABLE_STACK_SIZE, np.short))
                     rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1)
                     continue
                 if not in_title and split[i] == nl:
@@ -411,10 +410,11 @@ if __name__ == '__main__':
             rhymes_data += rhyme_meter_res[i][1]
         
         print("Converting rhyme and meter information")
-        syllables_data = np.asarray(syllables_data)[:,:,np.newaxis]
+        syllables_data = np.asarray(syllables_data)
         rhymes_data = np.asarray(rhymes_data)
-        rhyme_meter_data = np.concatenate([syllables_data, rhymes_data], axis=2)
-        rhyme_meter_data = np.reshape(rhyme_meter_data, (rhyme_meter_data.shape[0], -1))
+        rhymes_data = np.reshape(rhymes_data, (rhymes_data.shape[0], -1))
+        rhyme_meter_data = np.concatenate([syllables_data, rhymes_data], axis=1)
+        # rhyme_meter_data = np.reshape(rhyme_meter_data, (rhyme_meter_data.shape[0], -1))
         print(rhyme_meter_data.shape)
 
     print("Masking unknown tokens")
