@@ -311,92 +311,7 @@ if __name__ == '__main__':
     print({word: counts[word] for word in words[:VOCAB_SIZE]})
     title_token = words.index(TITLE.lower()[1:-1])
     newline_token = words.index(NEWLINE.lower()[1:-1])
-    if MODEL_TYPE == 'b':
-        print("Setting up rhyme and meter information")
-        in_title = True
-        split_token_marks = []
-        split_size = len(tokens)//N_THREADS
-        for i in range(N_THREADS+1):
-            split_token_marks.append(split_size*i)
-        for i in range(1, N_THREADS):
-            while tokens[split_token_marks[i]] != TITLE.lower()[1:-1]:
-                split_token_marks[i] += 1
-                if split_token_marks[i] >= len(tokens):
-                    break
-        syllables_data = []
-        rhymes_data = []
-        split_token_marks[-1] = len(tokens)
-        split_tokens = [tokens[split_token_marks[i]:split_token_marks[i+1]] for i in range(N_THREADS)]
-        rhyme_meter_res = [None] * N_THREADS
-        threads = []
-        def processMeter(thread_index, split):
-            syllables = []
-            rhymes = []
-            syllable_stack = np.zeros(RHYME_STACK_SIZE, np.short)
-            rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1
-            tl = TITLE.lower()[1:-1]
-            nl = NEWLINE.lower()[1:-1]
-            for i in range(len(split)):
-                if split[i] == tl:
-                    in_title = True
-                    syllable_stack = np.zeros(RHYME_STACK_SIZE, np.short)
-                    rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1
-                    syllables.append(np.zeros(RHYME_STACK_SIZE, np.short))
-                    rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1)
-                    continue
-                elif in_title and split[i] == nl:
-                    in_title = False
-                    syllables.append(np.zeros(RHYME_STACK_SIZE, np.short))
-                    rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1)
-                    continue
-                if not in_title and split[i] == nl:
-                    j = i-1
-                    while split[j] != nl:
-                        j -= 1
-                    line = split[j+1:i]
-                    # print(pretty_rhyme(getRhyme(line)))
-                    # print(line, split[i])
-                    # print(syllable_stack)
-                    # print(rhyme_stack)
-                    rhymes.append(rhyme_stack.copy())
-                    syllables.append(syllable_stack.copy())
-                    if split[i-1] != nl:
-                        rhyme_stack = np.roll(rhyme_stack, -1, axis=0)
-                        rhyme_stack[-1] = np.array(getRhyme(line), np.short)
-                        syllable_stack = np.roll(syllable_stack, -1, axis=0)
-                        syllable_stack[-1] = getSyllables(line)
-                else:
-                    j = i-1
-                    while split[j] != nl:
-                        j -= 1
-                    line = split[j+1:i]
-                    syllable_stack[-1] = getSyllables(line)
-                    # syllable_stack[-1] = 0
-                    # print(line, split[i])
-                    # print(syllable_stack)
-                    # print(rhyme_stack)
-                    rhymes.append(rhyme_stack.copy())
-                    syllables.append(syllable_stack.copy())
-            rhyme_meter_res[thread_index] = [syllables, rhymes]
-        for i in range(N_THREADS):
-            t = Thread(target=processMeter, args=(i, split_tokens[i]))
-            threads.append(t)
-            t.start()
-        for i in range(N_THREADS):
-            # threads[i].start()
-            threads[i].join()
-            syllables_data += rhyme_meter_res[i][0]
-            rhymes_data += rhyme_meter_res[i][1]
-        
-        print("Converting rhyme and meter information")
-        syllables_data = np.asarray(syllables_data)[:,:,np.newaxis]
-        rhymes_data = np.asarray(rhymes_data)
-        rhyme_meter_data = np.concatenate([syllables_data, rhymes_data], axis=2)
-        rhyme_meter_data = np.reshape(rhyme_meter_data, (rhyme_meter_data.shape[0], -1))
 
-    print("Masking unknown tokens")
-    tokens = [(words.index(x) if x in vocab else -1) for x in tokens]
-    
     print("Splitting poems with masked dividers")
     mask_list = [-1]*N
     splits = []
@@ -427,15 +342,102 @@ if __name__ == '__main__':
         threads[i].join()
         tokens += results[i]
 
+    if MODEL_TYPE == 'b':
+        print("Computing rhyme and meter information")
+        in_title = True
+        split_token_marks = []
+        split_size = len(tokens)//N_THREADS
+        for i in range(N_THREADS+1):
+            split_token_marks.append(split_size*i)
+        for i in range(1, N_THREADS):
+            while tokens[split_token_marks[i]] != TITLE.lower()[1:-1]:
+                split_token_marks[i] += 1
+                if split_token_marks[i] >= len(tokens):
+                    break
+        syllables_data = []
+        rhymes_data = []
+        split_token_marks[-1] = len(tokens)
+        split_tokens = [tokens[split_token_marks[i]:split_token_marks[i+1]] for i in range(N_THREADS)]
+        rhyme_meter_res = [None] * N_THREADS
+        threads = []
+        def processRhymeMeter(thread_index, split):
+            syllables = []
+            rhymes = []
+            syllable_stack = np.zeros(RHYME_STACK_SIZE, np.short)
+            rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1
+            tl = TITLE.lower()[1:-1]
+            nl = NEWLINE.lower()[1:-1]
+            for i in range(len(split)):
+                if split[i] == tl:
+                    in_title = True
+                    syllable_stack = np.zeros(RHYME_STACK_SIZE, np.short)
+                    rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1
+                    syllables.append(np.zeros(RHYME_STACK_SIZE, np.short))
+                    rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1)
+                    continue
+                elif in_title and split[i] == nl:
+                    in_title = False
+                    syllables.append(np.zeros(RHYME_STACK_SIZE, np.short))
+                    rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1)
+                    continue
+                if not in_title and split[i] == nl:
+                    j = i-1
+                    while split[j] != nl:
+                        j -= 1
+                    line = split[j+1:i]
+                    rhymes.append(rhyme_stack.copy())
+                    syllables.append(syllable_stack.copy())
+                    if split[i-1] != nl:
+                        rhyme_stack = np.roll(rhyme_stack, -1, axis=0)
+                        rhyme_stack[-1] = np.array(getRhyme(line), np.short)
+                        syllable_stack = np.roll(syllable_stack, -1, axis=0)
+                        syllable_stack[-1] = getSyllables(line)
+                else:
+                    j = i-1
+                    while split[j] != nl:
+                        j -= 1
+                    line = split[j+1:i]
+                    syllable_stack[-1] = getSyllables(line)
+                    rhymes.append(rhyme_stack.copy())
+                    syllables.append(syllable_stack.copy())
+            rhyme_meter_res[thread_index] = [syllables, rhymes]
+        for i in range(N_THREADS):
+            t = Thread(target=processRhymeMeter, args=(i, split_tokens[i]))
+            threads.append(t)
+            t.start()
+        for i in range(N_THREADS):
+            threads[i].join()
+            syllables_data += rhyme_meter_res[i][0]
+            rhymes_data += rhyme_meter_res[i][1]
+        
+        print("Converting rhyme and meter information")
+        syllables_data = np.asarray(syllables_data)[:,:,np.newaxis]
+        rhymes_data = np.asarray(rhymes_data)
+        rhyme_meter_data = np.concatenate([syllables_data, rhymes_data], axis=2)
+        rhyme_meter_data = np.reshape(rhyme_meter_data, (rhyme_meter_data.shape[0], -1))
+        print(rhyme_meter_data.shape)
+
+    print("Masking unknown tokens")
+    tokens = [(words.index(x) if x in vocab else -1) for x in tokens]
+
     print("Creating sets of ngrams")
+    print("tok", len(tokens))
+    print("rm", rhyme_meter_data.shape)
     ngrams = []
+    rm_ngrams = []
     for i in range(0, len(tokens)-N, TOKEN_SKIP):
         ngrams.append(tokens[i:i+N])
+        if MODEL_TYPE == 'b':
+            rm_ngrams.append(rhyme_meter_data[i:i+N-1,:])
     train_x = []
     train_y = []
-    for ngram in ngrams:
-        sample = ngram[:N]
+    train_rm = []
+    for i in range(len(ngrams)):
+        sample = ngrams[i][:N]
         train_x.append(sample[:N-1])
+        if MODEL_TYPE == 'b':
+            sample_rm = rm_ngrams[i]
+            train_rm.append(sample_rm)
         if MODEL_TYPE != 'n':
             train_y.append(sample[1:])
         else:
@@ -443,6 +445,8 @@ if __name__ == '__main__':
     print("Converting arrays")
     train_x = np.asarray(train_x)
     train_y = np.asarray(train_y)
+    if MODEL_TYPE == 'b':
+        train_rm = np.asarray(train_rm)
     if MODEL_TYPE != 'n':
         train_x += 1 # x in [0, VOCAB_SIZE] since 0 is for <unk>
                      # y in [-1, VOCAB_SIZE-1] with VOCAB_SIZE tokens, one for each vocabulary item, and -1 for <unk>
@@ -455,5 +459,5 @@ if __name__ == '__main__':
     if MODEL_TYPE != 'b':
         np.savez_compressed(fname, x=train_x, y=train_y)
     else:
-        np.savez_compressed(fname, x=train_x, rm=rhyme_meter_data, y=train_y)
+        np.savez_compressed(fname, x=train_x, rm=train_rm, y=train_y)
     np.save('lemmas/lemmas.npy', words[:VOCAB_SIZE])
