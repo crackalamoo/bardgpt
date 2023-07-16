@@ -25,8 +25,8 @@ def sampleVocab(dist, temperature):
 def genTokens(model, tokens, temperature=0.7):
     res = [VOCAB.index(TITLE.lower()[1:-1])]
     for _ in range(tokens):
-        context = res[-(N-1):] if MODEL_TYPE == 'n' else res[-N:]
-        pred = model.generate(context, temperature)
+        # context = res[-(N-1):] if MODEL_TYPE == 'n' else res[-N:]
+        pred = model.generate(res, temperature)
         res.append(pred)
     res = list(map(lambda token: model.vocab[token], res))
     return res
@@ -49,7 +49,8 @@ class LinearModel(keras.Model):
         x = self.seq(input)
         return x
 
-    def generate(self, context, temperature=0.7):
+    def generate(self, fullContext, temperature=0.7):
+        context = fullContext[-(N-1):]
         while len(context) > NGRAM_N-1:
             context.pop(0)
         while len(context) < NGRAM_N-1:
@@ -147,7 +148,8 @@ class TransformerModel(keras.Model):
 
         return x
 
-    def generate(self, context, temperature=0.7):
+    def generate(self, fullContext, temperature=0.7):
+        context = fullContext[-N:]
         lastToken = len(context)-1
         while len(context) > TRANSFORMER_N:
             context.pop(0)
@@ -188,6 +190,19 @@ class BardModel(keras.Model):
         x = self.add([x, rhyme_meter_x])
         x = self.softmax(x)
         return x
+    
+    def generate(self, fullContext, temperature=0.7):
+        context = fullContext[-N:]
+        lastToken = len(context)-1
+        while len(context) > TRANSFORMER_N:
+            context.pop(0)
+        while len(context) < TRANSFORMER_N:
+            context.append(0)
+        context = np.asarray([context])+1
+        pred = self.call([context])[0]
+        pred = pred[lastToken]
+        pred = sampleVocab(pred, temperature)
+        return pred
 
 
 

@@ -976,8 +976,8 @@ def join(kaggle=False):
         text = text.replace(" hopper ", " hop =er ").replace(" dispelled "," dispel =ed ").replace(" hopped "," hop =ed ")
         text = text.replace(" conjectured "," conjecture =ed ").replace(' sophistries ',' sophistry =s ').replace(' beads ',' bead =s ')
         text = text.replace(" halves "," half =s ").replace(" dyeing "," dye =ing ").replace(" singeing "," singe =ing ")
-        text = text.replace(" selves "," self =s ").replace(" wolves "," wolf =s")
-        s_dict['half'] = 'halves'; s_dict['self'] = 'selves'; s_dict['wolf'] = 'wolves'
+        text = text.replace(" selves "," self =s ").replace(" wolves "," wolf =s").replace(" wives "," wife =s ")
+        s_dict['half'] = 'halves'; s_dict['self'] = 'selves'; s_dict['wolf'] = 'wolves'; s_dict['wife'] = 'wives'
         s_dict['sophistry'] = 'sophistries'
         er_dict['hop'] = 'hopper'; ed_dict['hop'] = 'hopped'
         ed_dict['dispel'] = 'dispelled'

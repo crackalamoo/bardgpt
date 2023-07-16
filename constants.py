@@ -5,7 +5,7 @@ MODEL_TYPE = 'b' # n: ngram, t: transformer, b: bard
 KAGGLE = False
 TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else (17 if KAGGLE else 3)
 RHYME_STACK_SIZE = 2
-SYLLABLE_STACK_SIZE = 3
+METER_STACK_SIZE = 3
 
 TITLE = " <TITLE> "
 NEWLINE = " <NEWLINE> "
@@ -131,11 +131,14 @@ DEFINED_RHYMES = {
     'said': [1,4], 'dead': [1,4], 'word': [13,4], 'heard': [13,4], 'death': [1,6], 'head': [1,4],
     'once': [4,6], 'great': [7,4], 'young': [4,2], 'among': [4,2], 'yon': [3,2],
     'door': [10,0], 'find': [9,4], 'mind': [9,4], 'kind': [9,4], 'behind': [9,4], 'blind': [9,4],
-    'wild': [9,4],'give': [2,5], 'beauty': [8,-1], 'duty': [8,-1], 'move': [11,5], 'above': [4,5],
+    'wild': [9,4], 'give': [2,5], 'beauty': [8,-1], 'duty': [8,-1], 'move': [11,5], 'above': [4,5],
     'prove': [11,5], 'have': [0,5], 'whom': [11,2], 'warm': [10,2], 'done': [4,2], 'gone': [3,2],
     'behind': [9,4], 'none': [4,2], 'most': [10,4], 'ghost': [10,4], 'host': [10,4], 'post': [10,4],
     'travel': [4,1], 'broad': [3,4],'veil': [7,1],'tread': [1,4], 'bread': [1,4], 'ocean': [4,2],
     'truth': [11,6], 'human': [4,2], 'woman': [4,2], 'unto': [11,-1], 'worm': [13,4],
+}
+DEFINED_METERS = {
+    "'re": 0, "'ve": 0
 }
 for word in BRITISH_OUR:
     DEFINED_RHYMES[word] = [4,0]
