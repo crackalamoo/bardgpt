@@ -57,7 +57,7 @@ er_set = set(['with','she','h','quak','curr','hopp','minist','eth','thund','whis
             'suff','deliv','quiv','silv','cov','shelt','los','m','slipp','batt','plast',
             'bitt','p','be','pe','ti','pi','ve','se','us','ton','min','sew','lit','tig',
             'lat','inn','out','off','ent','low','pow','less','wond','mann','care','lov',
-            'rath','form','summ','bett','found','quart','tap','pap','record','shudd',
+            'rath','form','summ','bett','found','quart','tap','pap','record','shudd','pitch',
             'shatt','tatt','rid','butt','mis','bould','bord','glimm','answ','wav','walk',
             'glitt','gath','stick','care','temp','fish','corn','flick','dress','feath','met',
             'broth','both','lock','tow','conqu','che','encount','head','alt','mutt','san'])

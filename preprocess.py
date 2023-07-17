@@ -3,7 +3,7 @@ import numpy as np
 from constants import *
 
 AUTHOR_LIST = ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
-                   'longfellow', 'holmes', 'wilde', 'browning_yeats_et_al', 'tagore']
+                   'longfellow', 'holmes', 'wilde', 'et_al', 'tagore']
 
 def getContents(fname):
     file = open(fname, "r")
@@ -770,87 +770,87 @@ def wilde():
         poem = poem.lower()
         out.write(poem)
     out.close()
-def browning_yeats_et_al():
-    text = getContents("data/browning-raw-iv.txt")
+def et_al():
+    out = open("data/et_al.txt", "w+")
+    def main_processing(text, index_file, skipindex=1, use_second=False, ending_newlines=3):
+        text = text.replace('\x0a','\n').replace('\x0d','')
+        text = text.replace('\n\n[Illustration:','[')
+        text = removeBrackets(text)
+        index = getContents(index_file).split('\n')
+        nonlocal out
+        for heading in index:
+            true_title = None
+            if heading.find(" (") != -1:
+                true_title = heading[heading.find(" (")+2:heading.find(")")]
+                heading = heading[:heading.find(" (")]
+            this = text.find(heading, skipindex)
+            if use_second:
+                this = text.find(heading,this+1)
+            next = text.find('\n'*ending_newlines, this+1)
+            if this == -1 or next == -1:
+                continue
+            endtitle = text.find('\n\n',this+1)
+            while text[endtitle] == '\n' or text[endtitle] == '.':
+                endtitle += 1
+            title = text[this:endtitle]
+            title = stripTitle(title)
+            if true_title is not None:
+                title = true_title
+            poem = text[endtitle:next]
+            poem = poem.replace('_','')
+            poem = poem.split('\n')
+            for i in reversed(range(len(poem))):
+                while poem[i].startswith(' '):
+                    poem[i] = poem[i][1:]
+                while poem[i].endswith(" "):
+                    poem[i] = poem[i][:-1]
+                if isRomanNumeral(poem[i][:-1]) and poem[i][-1] == '.':
+                    if poem[i+1] == '':
+                        poem.pop(i+1)
+                    poem.pop(i)
+                    continue
+                elif poem[i].endswith('.') and (isNumeral(poem[i][:-1]) or isNumeral(poem[i][-5:-1])):
+                    poem.pop(i)
+                elif len(poem[i]) > 0:
+                    stars = poem[i].replace(" ","")
+                    if stars.count("*") == len(stars) or stars.count(".") == len(stars):
+                        poem.pop(i)
+            poem = '\n'.join(poem)
+            if heading == 'FIRST PART.' and poem.rfind("SECOND PART.") != -1:
+                poem = poem[:poem.rfind("SECOND PART.")]
+            elif heading == 'THIRD PART.' and poem.rfind("FOURTH PART.") != -1:
+                poem = poem[:poem.rfind("FOURTH PART.")]
+            if poem.rfind("FOOTNOTES:") != -1:
+                poem = poem[:poem.rfind("FOOTNOTES:")]
+            poem = poem.lower()
+            while poem.startswith('\n'):
+                poem = poem[1:]
+            while poem.endswith('\n') or poem.endswith(' '):
+                poem = poem[:-1]
+            print("title: " + title.upper())
+            # print("poem: "+poem)
+            poem = poem.replace('\n',NEWLINE)
+            poem = TITLE + title + NEWLINE + poem
+            poem = poem.lower()
+            poem = poem.replace("faery","fairy").replace("faeries","fairies")
+            out.write(poem)
+    
+    vol4 = getContents("data/browning-raw-iv.txt")
+    vol4 = vol4[vol4.find("A CHILD'S GRAVE AT FLORENCE."):]
     vol2 = getContents("data/browning-raw-ii.txt")
     vol2 = vol2[vol2.find("POEMS"):]
-    text += vol2
+    browning = vol4 + vol2
     yeats = getContents("data/yeats-raw.txt")
-    text += yeats
-    text = text.replace('\x0a','\n').replace('\x0d','')
-    text = text.replace('\n\n[Illustration:','[')
-    text = removeBrackets(text)
-    modern_skip = len(text)
-    index = getContents("data/browning-index.txt")
-    index += getContents("data/yeats-index.txt")
-    modern_skip_index = len(index.split('\n'))
-    index += getContents("data/modern-index.txt")
-    index = index.split('\n')
     modern = getContents("data/modern-raw.txt")
     modern = modern[modern.find("LASCELLES ABERCROMBIE"):modern.rfind("INDEX")]
-    text += modern
-    out = open("data/browning_yeats_et_al.txt", "w+")
-    skipindex = 1
-    did_headings = 0
-    for heading in index:
-        if did_headings > modern_skip_index:
-            skipindex = modern_skip
-        true_title = None
-        if heading.find(" (") != -1:
-            true_title = heading[heading.find(" (")+2:heading.find(")")]
-            heading = heading[:heading.find(" (")]
-        this = text.find(heading, skipindex)
-        if text.find(heading,this+1) != -1 and not did_headings > modern_skip_index:
-            this = text.find(heading,this+1)
-        next = text.find('\n'*4 if did_headings > modern_skip_index else '\n'*3, this+1)
-        if this == -1 or next == -1:
-            continue
-        endtitle = text.find('\n\n',this+1)
-        while text[endtitle] == '\n' or text[endtitle] == '.':
-            endtitle += 1
-        title = text[this:endtitle]
-        title = stripTitle(title)
-        if true_title is not None:
-            title = true_title
-        poem = text[endtitle:next]
-        poem = poem.replace('_','')
-        poem = poem.split('\n')
-        for i in reversed(range(len(poem))):
-            while poem[i].startswith(' '):
-                poem[i] = poem[i][1:]
-            while poem[i].endswith(" "):
-                poem[i] = poem[i][:-1]
-            if isRomanNumeral(poem[i][:-1]) and poem[i][-1] == '.':
-                if poem[i+1] == '':
-                    poem.pop(i+1)
-                poem.pop(i)
-                continue
-            elif poem[i].endswith('.') and (isNumeral(poem[i][:-1]) or isNumeral(poem[i][-5:-1])):
-                poem.pop(i)
-            elif len(poem[i]) > 0:
-                stars = poem[i].replace(" ","")
-                if stars.count("*") == len(stars) or stars.count(".") == len(stars):
-                    poem.pop(i)
-        poem = '\n'.join(poem)
-        if heading == 'FIRST PART.' and poem.rfind("SECOND PART.") != -1:
-            poem = poem[:poem.rfind("SECOND PART.")]
-        elif heading == 'THIRD PART.' and poem.rfind("FOURTH PART.") != -1:
-            poem = poem[:poem.rfind("FOURTH PART.")]
-        if poem.rfind("FOOTNOTES:") != -1:
-            poem = poem[:poem.rfind("FOOTNOTES:")]
-        poem = poem.lower()
-        while poem.startswith('\n'):
-            poem = poem[1:]
-        while poem.endswith('\n') or poem.endswith(' '):
-            poem = poem[:-1]
-        print("title: " + title.upper())
-        # print("poem: "+poem)
-        poem = poem.replace('\n',NEWLINE)
-        poem = TITLE + title + NEWLINE + poem
-        poem = poem.lower()
-        poem = poem.replace("faery","fairy").replace("faeries","fairies")
-        did_headings += 1
-        out.write(poem)
+    bryant = getContents("data/bryant-raw.txt")
+    bryant = bryant.replace('°','')
+    bryant = bryant[bryant.find("THE AGES."):]
+
+    main_processing(browning, "data/browning-index.txt", use_second=True)
+    main_processing(yeats, "data/yeats-index.txt", use_second=True)
+    main_processing(modern, "data/modern-index.txt", ending_newlines=4)
+    main_processing(bryant, "data/bryant-index.txt", skipindex=0, ending_newlines=4)
     out.close()
 def tagore():
     gitanjali = getContents("data/tagore-raw-gitanjali.txt")
@@ -895,6 +895,7 @@ def shakespeare():
     out = open("data/shakespeare.txt", "w+")
     out.write(text)
     out.close()
+
 def join(kaggle=False):
     text = ''
     for author in (AUTHOR_LIST if not kaggle else AUTHOR_LIST + ['kaggle']):
@@ -919,7 +920,7 @@ def join(kaggle=False):
         print("Processing specific morphemes")
         text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through").replace("e'en","even")
         text = text.replace("ev'n","even").replace("fall'n","fallen").replace("heav'n","heaven")
-        text = text.replace("deep'ning","deepening").replace("stol'n","stolen")
+        text = text.replace("deep'ning","deepening").replace("stol'n","stolen").replace("revery","reverie")
         text = text.replace(" tho' ", " though ").replace(" altho' "," although ").replace(" 'mid "," amid ")
         text = text.replace("ev'ry","every").replace("wond'rous","wonderous").replace("fev'rous","feverous")
         text = text.replace("whisp'ring","whispering").replace("thund'rous","thunderous").replace("minist'ring","ministering")
@@ -945,7 +946,7 @@ def join(kaggle=False):
         text = text.replace("can't","can NT").replace("shan't","shall NT").replace(" didn't "," did NT ").replace("wasn't","was NT")
         text = text.replace("hasn't","has NT").replace("haven't","have NT").replace("weren't","were NT").replace("hadn't","had NT")
         text = text.replace("needn't","need NT").replace("mayn't","may NT").replace(" ain't "," ai NT ").replace(" musn't "," must NT ")
-        text = text.replace("'s", " S").replace("'m "," M ").replace("'ve"," VE").replace("'re"," RE")
+        text = text.replace("'s", " S").replace("'m "," M ").replace("'ve"," VE").replace("'re"," RE").replace("'rt", " art ")
         text = text.replace("'d ", "ed ")
         text = text.replace(" '","'").replace("' ","'").replace("'"," ' ")
         text = text.replace(" ID "," i 'd ").replace("WED","we 'd").replace("HED","he 'd").replace("SHED","she 'd").replace("YOUD","you 'd")
@@ -1044,6 +1045,7 @@ def join(kaggle=False):
         text = text.replace(' grey ',' gray ').replace(' phrenzy ',' frenzy ').replace(' metre ',' meter ').replace(' metres ',' meters ')
         text = text.replace(" ' t was "," it was ").replace(" ' t were "," it were ").replace(" ' t would "," it would ").replace(" ' t will "," it will ")
         text = text.replace(" to - morrow "," tomorrow ").replace(" to - day "," today ").replace(" to - night ", " tonight ")
+        text = text.replace(" ope "," open ")
         text = text.replace(NEWLINE.lower()+' '+TITLE.lower(), TITLE.lower())
         text = text.replace(TITLE.lower() + ' ' + NEWLINE.lower()+' '+NEWLINE.lower(), TITLE.lower()+' '+NEWLINE.lower())
         text = text.replace("   ", " ").replace("  ", " ")
@@ -1086,6 +1088,6 @@ if __name__ == '__main__':
     longfellow()
     holmes()
     wilde()
-    browning_yeats_et_al()
+    et_al()
 
     join(KAGGLE)
