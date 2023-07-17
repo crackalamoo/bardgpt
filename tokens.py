@@ -234,6 +234,8 @@ def getRhyme(line):
         return [4, 1 if lock_consonant == -1 else lock_consonant]
     if word.endswith('on') and len(word) > 3 and not word.endswith('oon'):
         return [4, 2 if lock_consonant == -1 else lock_consonant]
+    if word.endswith('al') and len(word) > 3 and not word.endswith('eal'):
+        return [4, 1 if lock_consonant == -1 else lock_consonant]
     
     if word.endswith('e'):
         long_vowel = True

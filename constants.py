@@ -144,7 +144,8 @@ DEFINED_RHYMES = {
     'valley': [8,-1], 'key': [8,-1], 'journey': [8,-1], 'honey': [8,-1], 'money': [8,-1],
     'chimney': [8,-1], 'monkey': [8,-1], 'donkey': [8,-1], 'alley': [8,-1], 'trolley': [8,-1],
     'galley': [8,-1], 'silly': [8,-1], 'lily': [8,-1], 'barley': [8,-1], 'quiet': [4,4],
-    'else': [1,1], 'christian': [4,2]
+    'else': [1,1], 'christian': [4,2], 'shadow': [10,-1], 'meadow': [10,-1], 'mow': [10,-1],
+    'bestow': [10,-1], 'widow': [10,-1],
 }
 DEFINED_METERS = {
     "'re": 0, "'ve": 0, 'shakespeare': 2, 'every': 2, 'leaves': 1, 'evening': 2,
