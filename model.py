@@ -12,8 +12,8 @@ EMBED_DIM = 512
 TRANSFORMER_LAYERS = 4
 TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
-RHYME_METER_DFF = 128
-WARMUP_STEPS = 800
+RHYME_METER_DFF = 32 # 128
+WARMUP_STEPS = 1 #800
 VOCAB = list(np.load('lemmas/lemmas.npy'))
 
 def sampleVocab(dist, temperature):
@@ -155,7 +155,7 @@ class TransformerModel(keras.Model):
         while len(context) > TRANSFORMER_N:
             context.pop(0)
         while len(context) < TRANSFORMER_N:
-            context.append(0)
+            context.append(-1)
         context = np.asarray([context])+1
         pred = self.call(context)[0]
         pred = pred[lastToken]
@@ -172,8 +172,9 @@ def rhyme_meter_encoding(input):
     vowels = tf.reshape(vowels, [tf.shape(vowels)[0], tf.shape(vowels)[1], -1])
     consonants = tf.reshape(consonants, [tf.shape(consonants)[0], tf.shape(consonants)[1], -1])
     rhyme = tf.concat([vowels, consonants], axis=2)
-    meter = tf.cast(meter, tf.float32)
-    rhyme_meter = tf.concat([rhyme, meter], axis=2)
+    meter = tf.cast(meter, tf.float32)# * (RHYME_STACK_SIZE*(VOWEL_TYPES+CONSONANT_TYPES))
+    # rhyme_meter = tf.concat([rhyme, meter], axis=2)
+    rhyme_meter = meter
     return rhyme_meter
 
 class BardModel(keras.Model):
@@ -204,8 +205,13 @@ class BardModel(keras.Model):
             pass
         rhyme_meter = rhyme_meter_encoding(input[1])
         rhyme_meter_x = self.rhyme_meter_pred(rhyme_meter)
-        x = self.add([x, rhyme_meter_x])
+        # x = self.add([x, rhyme_meter_x])
+        print("in", input[0][:1])
+        print(input[1][:1])
+        x = rhyme_meter_x # ablation
+        print(x)
         x = self.softmax(x)
+        print(x)
         return x
     
     def generate(self, fullContext, temperature=0.7):
@@ -214,7 +220,7 @@ class BardModel(keras.Model):
         while len(context) > TRANSFORMER_N:
             context.pop(0)
         while len(context) < TRANSFORMER_N:
-            context.append(0)
+            context.append(-1)
         context = np.asarray([context])+1
         rm = rhymeMeterFromTokens(fullContext, len(fullContext), self.tl, self.vocab)
         rm = np.asarray([rm])
@@ -297,12 +303,12 @@ if __name__ == '__main__':
     print(pretty_tokens(genTokens(model, 50)))
 
     print("Training model")
-    model.fit(train_x, train_y, batch_size=128, validation_split=0.2, epochs=1)
+    model.fit(train_x, train_y, batch_size=256, validation_split=0.2, epochs=1)
 
     print("Sample outputs")
 
     print("Generating sample from trained model")
-    print(pretty_tokens(genTokens(model, 1000)))
-    print(pretty_tokens(genTokens(model, 1000)))
     for i in range(10):
         print(pretty_tokens(genTokens(model, 100)))
+    print(pretty_tokens(genTokens(model, 500)))
+    print(pretty_tokens(genTokens(model, 500)))
