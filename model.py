@@ -168,13 +168,15 @@ def rhyme_meter_encoding(input):
     consonants = input[:,:,RHYME_STACK_SIZE:RHYME_STACK_SIZE*2]
     meter = input[:,:,-METER_STACK_SIZE:]
     vowels = tf.one_hot(vowels, VOWEL_TYPES)
+    print("v", vowels)
     consonants = tf.one_hot(consonants, CONSONANT_TYPES)
+    print("c", vowels)
     vowels = tf.reshape(vowels, [tf.shape(vowels)[0], tf.shape(vowels)[1], -1])
     consonants = tf.reshape(consonants, [tf.shape(consonants)[0], tf.shape(consonants)[1], -1])
     rhyme = tf.concat([vowels, consonants], axis=2)
-    meter = tf.cast(meter, tf.float32)# * (RHYME_STACK_SIZE*(VOWEL_TYPES+CONSONANT_TYPES))
-    # rhyme_meter = tf.concat([rhyme, meter], axis=2)
-    rhyme_meter = meter
+    meter = tf.cast(meter, tf.float32)
+    rhyme_meter = tf.concat([rhyme, meter], axis=2)
+    print(rhyme_meter)
     return rhyme_meter
 
 class BardModel(keras.Model):
@@ -189,7 +191,7 @@ class BardModel(keras.Model):
         self.rhyme_meter_pred = keras.Sequential([
             # input is context x rhyme/meter encoding
             Dense(RHYME_METER_DFF, activation='relu'), # context x dff
-            Dense(RHYME_METER_DFF),
+            Dense(RHYME_METER_DFF, activation='relu'),
             Dense(VOCAB_SIZE) # context x vocab size (to match transformer output)
         ], name='rhyme_meter')
         self.add = Add()
@@ -206,12 +208,8 @@ class BardModel(keras.Model):
         rhyme_meter = rhyme_meter_encoding(input[1])
         rhyme_meter_x = self.rhyme_meter_pred(rhyme_meter)
         # x = self.add([x, rhyme_meter_x])
-        print("in", input[0][:1])
-        print(input[1][:1])
         x = rhyme_meter_x # ablation
-        print(x)
         x = self.softmax(x)
-        print(x)
         return x
     
     def generate(self, fullContext, temperature=0.7):

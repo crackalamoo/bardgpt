@@ -380,9 +380,7 @@ def rhymeMeterFromTokens(tokens, endl, tl, vocab=None):
     lines = tokens[start:endl]
     while len(lines) < TRANSFORMER_N:
         lines.append(None)
-    print("LINES", lines, start, endl)
     input_lines = lines if vocab is None else [(vocab[x] if (x is not None and 0 <= x < VOCAB_SIZE) else None) for x in lines]
-    print("INPUT LINES", input_lines)
     meter, rhymes = processRhymeMeter(input_lines)
     rhymes = rhymes[-TRANSFORMER_N:] # context x RHYME_STACK_SIZE x 2
     meter = meter[-TRANSFORMER_N:] # context x METER_STACK_SIZE
