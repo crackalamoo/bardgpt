@@ -36,7 +36,7 @@ d_set = set(['be', 'she','we','see','re','fe','rowe','fee','le','seale','dee','n
                 'prie','forme','ruine','lighte','appeare','adorne','aske','locke',
                 'crosse','misse','arme','towe','shoute','heade','burne','faile','bowe',
                 'rolle','walke','heape','obtaine'])
-c_ed_set = set(['ad','cares','jag','pis','kis','mat','er','mis','cal','pas','fil'])
+c_ed_set = set(['ad','cares','jag','pis','kis','mat','er','mis','cal','pas','fil','wo'])
 y_ed_set = set(['drapery','city','weary'])
 s_set = set(['','a','i','it','his','her',"'",'their','one','will','your','our','down','pant','wa',
                     'god','well','other','saw','good','new','ye','leave','right','wood',
@@ -65,7 +65,7 @@ c_er_set = set(['of','in','but','up','man','let','shut','sum','slip','din','flit
             'mat','bat','bit','lad','ban','bet','ad','flat','pe','ful','smal','up',
             'pis','kis','slip','lat','cop','begin','shud','washe','shat','tat','lit',
             'glim','lay','lad','cal','glit','pas','fil','ham','sup','pep','rub','chat',
-            'skip','alte','flut','mut','scat','dip','stag'])
+            'skip','alte','flut','mut','scat','dip','stag','wo'])
 r_set = set(['he',"'re",'rule','cottage','quake','cove','clove','warble','prime','lowe',
                 'cape','tempe','late','e','rive','dee','eve','wave','me','rathe','meter',
                 'anothe','mothe','mowe','sweate','saile','leade','hithe','warme','coole',

@@ -465,7 +465,7 @@ def tennyson():
         print("title: " + title.upper())
         # print("poem: "+poem)
         poem = poem.replace('\n',NEWLINE)
-        poem = poem.replace("vext","vexed").replace("perplext","perplexed").replace("stopt","stopped")
+        poem = poem.replace("vext","vexed").replace("perplext","perplexed")
         poem = TITLE + title + NEWLINE + poem
         poem = poem.lower()
         out.write(poem)
@@ -829,8 +829,8 @@ def et_al():
                 poem = poem[:-1]
             print("title: " + title.upper())
             # print("poem: "+poem)
-            poem = poem.replace('\n',NEWLINE)
             poem = TITLE + title + NEWLINE + poem
+            poem = poem.replace('\n',NEWLINE)
             poem = poem.lower()
             poem = poem.replace("faery","fairy").replace("faeries","fairies")
             out.write(poem)
@@ -1045,7 +1045,7 @@ def join(kaggle=False):
         text = text.replace(' grey ',' gray ').replace(' phrenzy ',' frenzy ').replace(' metre ',' meter ').replace(' metres ',' meters ')
         text = text.replace(" ' t was "," it was ").replace(" ' t were "," it were ").replace(" ' t would "," it would ").replace(" ' t will "," it will ")
         text = text.replace(" to - morrow "," tomorrow ").replace(" to - day "," today ").replace(" to - night ", " tonight ")
-        text = text.replace(" ope "," open ")
+        text = text.replace(" ope "," open ").replace(" stopt "," stop =ed ").replace(" wrapt "," wrap =ed ")
         text = text.replace(NEWLINE.lower()+' '+TITLE.lower(), TITLE.lower())
         text = text.replace(TITLE.lower() + ' ' + NEWLINE.lower()+' '+NEWLINE.lower(), TITLE.lower()+' '+NEWLINE.lower())
         text = text.replace("   ", " ").replace("  ", " ")

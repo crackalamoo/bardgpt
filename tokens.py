@@ -13,7 +13,7 @@ if __name__ == '__main__':
     tokens = text.split(" ")
     tokens = [x for x in tokens if x != '']
     print("Total number of tokens:", len(tokens))
-    print("Counting words")
+    print("Counting tokens")
     counts = {}
     for token in tokens:
         if not token in counts:
