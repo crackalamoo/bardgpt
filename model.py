@@ -167,16 +167,16 @@ def rhyme_meter_encoding(input):
     vowels = input[:,:,:RHYME_STACK_SIZE]
     consonants = input[:,:,RHYME_STACK_SIZE:RHYME_STACK_SIZE*2]
     meter = input[:,:,-METER_STACK_SIZE:]
-    vowels = tf.one_hot(vowels, VOWEL_TYPES)
     print("v", vowels)
+    print("c", consonants)
+    vowels = tf.one_hot(vowels, VOWEL_TYPES)
     consonants = tf.one_hot(consonants, CONSONANT_TYPES)
-    print("c", vowels)
     vowels = tf.reshape(vowels, [tf.shape(vowels)[0], tf.shape(vowels)[1], -1])
     consonants = tf.reshape(consonants, [tf.shape(consonants)[0], tf.shape(consonants)[1], -1])
     rhyme = tf.concat([vowels, consonants], axis=2)
     meter = tf.cast(meter, tf.float32)
     rhyme_meter = tf.concat([rhyme, meter], axis=2)
-    print(rhyme_meter)
+    print("rm", rhyme_meter)
     return rhyme_meter
 
 class BardModel(keras.Model):
