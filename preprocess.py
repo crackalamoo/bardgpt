@@ -772,7 +772,7 @@ def wilde():
     out.close()
 def et_al():
     out = open("data/et_al.txt", "w+")
-    def main_processing(text, index_file, skipindex=1, use_second=False, ending_newlines=3):
+    def main_processing(text, index_file, skipindex=1, use_second=False, ending_newlines=3, remove_last=False):
         text = text.replace('\x0a','\n').replace('\x0d','')
         text = text.replace('\n\n[Illustration:','[')
         text = removeBrackets(text)
@@ -830,6 +830,8 @@ def et_al():
             print("title: " + title.upper())
             # print("poem: "+poem)
             poem = TITLE + title + NEWLINE + poem
+            if remove_last:
+                poem = poem[:poem.rfind('\n')]
             poem = poem.replace('\n',NEWLINE)
             poem = poem.lower()
             poem = poem.replace("faery","fairy").replace("faeries","fairies")
@@ -844,13 +846,16 @@ def et_al():
     modern = getContents("data/modern-raw.txt")
     modern = modern[modern.find("LASCELLES ABERCROMBIE"):modern.rfind("INDEX")]
     bryant = getContents("data/bryant-raw.txt")
-    bryant = bryant.replace('°','')
+    bryant = bryant.replace('°','').replace('º','')
     bryant = bryant[bryant.find("THE AGES."):]
+    whittier = getContents("data/whittier-raw.txt")
+    whittier = whittier[whittier.find("NOTES"):]
 
     main_processing(browning, "data/browning-index.txt", use_second=True)
     main_processing(yeats, "data/yeats-index.txt", use_second=True)
     main_processing(modern, "data/modern-index.txt", ending_newlines=4)
-    main_processing(bryant, "data/bryant-index.txt", skipindex=0, ending_newlines=4)
+    main_processing(bryant, "data/bryant-index.txt", ending_newlines=4)
+    main_processing(whittier, "data/whittier-index.txt", remove_last=True)
     out.close()
 def tagore():
     gitanjali = getContents("data/tagore-raw-gitanjali.txt")
