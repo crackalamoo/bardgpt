@@ -3,9 +3,9 @@ NGRAM_N = 4
 TRANSFORMER_N = 32
 MODEL_TYPE = 'b' # n: ngram, t: transformer, b: bard
 KAGGLE = False
-TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else (17 if KAGGLE else 3)
-RHYME_STACK_SIZE = 3
-METER_STACK_SIZE = 3
+TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else 15
+RHYME_STACK_SIZE = 4
+METER_STACK_SIZE = 4
 VOWEL_TYPES = 14
 CONSONANT_TYPES = 10
 RM_INPUT_SIZE = 2*RHYME_STACK_SIZE + METER_STACK_SIZE
@@ -129,16 +129,17 @@ DEFINED_RHYMES = {
     'your': [11,0], 'heart': [12,4], 'some': [4,2], 'come': [4,2], 'from': [4,2], 'become': [4,2],
     'would': [11,4], 'pour': [10,0],'figure': [13,0], 'author': [4,0], 'sure': [11,0], 'rhythm': [4,2],
     'every': [8,-1], 'very': [8,-1], 'many': [8,-1], 'any': [8,-1], 'busy': [8,-1], 'easy': [8,-1],
-    'happy': [8,-1], 'live': [2,5], 'into': [11,-1], 'soul': [10,2], 'only': [8,-1], 'earth': [13,6],
+    'happy': [8,-1], 'live': [2,5], 'into': [11,-1], 'soul': [10,2], 'only': [8,-1], 'earth': [13,10],
     'though': [10,-1], 'thought': [3,4], 'bought': [3,4], 'brought': [3,4], 'ought': [3,4],
-    'said': [1,4], 'dead': [1,4], 'word': [13,4], 'heard': [13,4], 'death': [1,6], 'head': [1,4],
+    'said': [1,4], 'dead': [1,4], 'word': [13,4], 'heard': [13,4], 'death': [1,10], 'head': [1,4],
     'once': [4,6], 'great': [7,4], 'young': [4,2], 'among': [4,2], 'yon': [3,2],
     'door': [10,0], 'find': [9,4], 'mind': [9,4], 'kind': [9,4], 'behind': [9,4], 'blind': [9,4],
     'wild': [9,4], 'give': [2,5], 'beauty': [8,-1], 'duty': [8,-1], 'move': [11,5], 'above': [4,5],
     'prove': [11,5], 'have': [0,5], 'whom': [11,2], 'warm': [10,2], 'done': [4,2], 'gone': [3,2],
     'behind': [9,4], 'none': [4,2], 'most': [10,4], 'ghost': [10,4], 'host': [10,4], 'post': [10,4],
     'travel': [4,1], 'broad': [3,4],'veil': [7,1],'tread': [1,4], 'bread': [1,4], 'ocean': [4,2],
-    'truth': [11,6], 'human': [4,2], 'woman': [4,2], 'unto': [11,-1], 'worm': [13,4],
+    'truth': [11,10], 'human': [4,2], 'woman': [4,2], 'unto': [11,-1], 'worm': [13,4],
+    'instead': [1,4], 'spread': [1,4], 'ahead': [1,4], 'breadth': [1,10], 'breath': [1,10]
 }
 DEFINED_METERS = {
     "'re": 0, "'ve": 0

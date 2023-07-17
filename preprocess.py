@@ -1,6 +1,10 @@
 import re
 import numpy as np
+import os
 from constants import *
+
+if not os.path.exists("inputs"):
+    os.mkdir("inputs")
 
 AUTHOR_LIST = ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
                    'longfellow', 'holmes', 'wilde', 'et_al', 'tagore']
@@ -1073,7 +1077,7 @@ def join(kaggle=False):
         text = text.replace(' '+numeral+NEWLINE.lower(),'')
     text = text.replace("><", "> <")
     print("Saving text")
-    out = open("data/join.txt" if not kaggle else "data/join-kaggle.txt", "w+")
+    out = open("inputs/join.txt" if not kaggle else "inputs/join-kaggle.txt", "w+")
     out.write(text)
     out.close()
 

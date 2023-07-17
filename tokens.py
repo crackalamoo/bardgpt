@@ -1,4 +1,5 @@
 import numpy as np
+import os
 from constants import *
 if __name__ == '__main__':
     from threading import Thread
@@ -6,7 +7,10 @@ if __name__ == '__main__':
 N_THREADS = 32
 
 if __name__ == '__main__':
-    file = open("data/join.txt" if not KAGGLE else "data/join-kaggle.txt", "r")
+    if not os.path.exists('lemmas'):
+        os.mkdir('lemmas')
+
+    file = open("inputs/join.txt" if not KAGGLE else "inputs/join-kaggle.txt", "r")
     text = file.read()
     file.close()
 
@@ -492,9 +496,9 @@ if __name__ == '__main__':
                      # y in [-1, VOCAB_SIZE-1] with VOCAB_SIZE tokens, one for each vocabulary item, and -1 for <unk>
     
     print("Saving data")
-    fname = {'n': 'data/ngram_train.npz',
-        't': 'data/transformer_train.npz',
-        'b': 'data/bard_train.npz'
+    fname = {'n': 'inputs/ngram_train.npz',
+        't': 'inputs/transformer_train.npz',
+        'b': 'inputs/bard_train.npz'
     }[MODEL_TYPE]
     if MODEL_TYPE != 'b':
         np.savez_compressed(fname, x=train_x, y=train_y)

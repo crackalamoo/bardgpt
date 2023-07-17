@@ -4,7 +4,7 @@ from preprocess import NEWLINE, TITLE, stripTitle
 
 df = pd.read_csv('kaggle/PoetryFoundationData.csv')
 
-out = open("data/kaggle.txt", 'w+')
+out = open("kaggle/kaggle.txt", 'w+')
 text = ""
 remove_poets = set(['William Shakespeare', 'Emily Dickinson', 'Percy Bysshe Shelley',
             'William Blake', 'Edgar Allan Poe', 'John Keats', 'Ralph Waldo Emerson',

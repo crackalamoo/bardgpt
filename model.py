@@ -187,7 +187,7 @@ class BardModel(keras.Model):
         self.transformer_pred = Dense(VOCAB_SIZE)
         self.rhyme_meter_pred = keras.Sequential([
             # input is context x rhyme/meter encoding
-            Dense(RHYME_METER_DFF, activation='relu'), # context x 16
+            Dense(RHYME_METER_DFF, activation='relu'), # context x dff
             Dense(RHYME_METER_DFF),
             Dense(VOCAB_SIZE) # context x vocab size (to match transformer output)
         ], name='rhyme_meter')
@@ -250,9 +250,9 @@ def sparse_perplexity(y_true, y_pred):
     return tf.math.exp(tf.math.reduce_mean(sparse_loss(y_true, y_pred)))
 
 if __name__ == '__main__':
-    fname = {'n': 'data/ngram_train.npz',
-        't': 'data/transformer_train.npz',
-        'b': 'data/bard_train.npz'
+    fname = {'n': 'inputs/ngram_train.npz',
+        't': 'inputs/transformer_train.npz',
+        'b': 'inputs/bard_train.npz'
     }[MODEL_TYPE]
     print("Loading data from", fname)
     loaded = np.load(fname)
@@ -297,7 +297,7 @@ if __name__ == '__main__':
     print(pretty_tokens(genTokens(model, 50)))
 
     print("Training model")
-    model.fit(train_x, train_y, batch_size=256, validation_split=0.2, epochs=1)
+    model.fit(train_x, train_y, batch_size=128, validation_split=0.2, epochs=1)
 
     print("Sample outputs")
 
