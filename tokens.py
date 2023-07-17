@@ -353,8 +353,12 @@ def processRhymeMeter(split):
             meter_stack = np.zeros(METER_STACK_SIZE, np.int8)
             meter_stack[-1] = getMeter(line)
             meter.append(meter_stack.copy())
-            rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1)
+            rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1
+            rhyme_stack[-1] = np.array(getRhyme(line), np.int8)
+            rhymes.append(rhyme_stack.copy())
+            # rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1)
             meter_stack = np.zeros(METER_STACK_SIZE, np.int8)
+            rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1
             continue
         if not in_title and split[i] == nl:
             rhymes.append(rhyme_stack.copy())

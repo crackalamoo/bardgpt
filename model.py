@@ -12,16 +12,12 @@ EMBED_DIM = 512
 TRANSFORMER_LAYERS = 1
 TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
-RHYME_METER_DFF = 32 # 128
-WARMUP_STEPS = 1 #800
+RHYME_METER_DFF = 64 # 128
+WARMUP_STEPS = 23 #800
 VOCAB = list(np.load('lemmas/lemmas.npy'))
-TEST_PROMPT = 'stop =ing by woods on a snowy evening <newline> '+\
-    'whose woods these are i think i know <newline> '
-TEST_PROMPT_TOKENS = [(VOCAB.index(x) if x in VOCAB else -1) for x in TEST_PROMPT.split(' ')]
-
-
-print(TEST_PROMPT)
-print(rhymeMeterFromTokens(TEST_PROMPT_TOKENS, len(TEST_PROMPT_TOKENS), TITLE.lower()[1:-1], VOCAB))
+TEST_PROMPT = '<title> stop =ing by woods on a snowy evening <newline> '+\
+    'whose woods these are i think i know <newline> '+\
+    'his house is in the village though <newline> he'
 
 def sampleVocab(dist, temperature):
     temperature = 1e-8 if temperature == 0 else temperature
@@ -31,11 +27,12 @@ def sampleVocab(dist, temperature):
     return sample
 
 def genTokens(model, tokens, temperature=0.7, prompt=None):
-    res = [VOCAB.index(TITLE.lower()[1:-1])]
+    res = [model.vocab.index(TITLE.lower()[1:-1])]
     if prompt is not None:
-        res = [(VOCAB.index(x) if x in VOCAB else -1) for x in prompt.split(' ')]
+        res = [(model.vocab.index(x) if x in model.vocab else -1) for x in prompt.split(' ')]
     for _ in range(tokens):
         pred = model.generate(res, temperature)
+        assert pred is not None
         res.append(pred)
     res = list(map(lambda token: model.vocab[token], res))
     return res
@@ -176,16 +173,13 @@ def rhyme_meter_encoding(input):
     vowels = input[:,:,:RHYME_STACK_SIZE]
     consonants = input[:,:,RHYME_STACK_SIZE:RHYME_STACK_SIZE*2]
     meter = input[:,:,-METER_STACK_SIZE:]
-    print("v", vowels[:,-1,:])
-    print("c", consonants[:,-1,:])
     vowels = tf.one_hot(vowels, VOWEL_TYPES)
     consonants = tf.one_hot(consonants, CONSONANT_TYPES)
     vowels = tf.reshape(vowels, [tf.shape(vowels)[0], tf.shape(vowels)[1], -1])
     consonants = tf.reshape(consonants, [tf.shape(consonants)[0], tf.shape(consonants)[1], -1])
     rhyme = tf.concat([vowels, consonants], axis=2)
     meter = tf.cast(meter, tf.float32)
-    # rhyme_meter = tf.concat([rhyme, meter], axis=2)
-    rhyme_meter = rhyme # ablation
+    rhyme_meter = tf.concat([rhyme, meter], axis=2)
     return rhyme_meter
 
 class BardModel(keras.Model):
@@ -199,8 +193,13 @@ class BardModel(keras.Model):
         self.transformer_pred = Dense(VOCAB_SIZE)
         self.rhyme_meter_pred = keras.Sequential([
             # input is context x rhyme/meter encoding
+            # Dense(RHYME_METER_DFF, activation='relu'), # context x dff
+            # Dense(RHYME_METER_DFF, activation='relu'), # context x dff
+            # Dense(RHYME_METER_DFF, activation='relu'), # context x dff
+            # Dense(RHYME_METER_DFF, activation='relu'), # context x dff
+            # Dense(RHYME_METER_DFF, activation='relu'), # context x dff
             Dense(RHYME_METER_DFF, activation='relu'), # context x dff
-            Dense(RHYME_METER_DFF, activation='relu'),
+            Dense(RHYME_METER_DFF, activation='tanh'), # context x dff
             Dense(VOCAB_SIZE) # context x vocab size (to match transformer output)
         ], name='rhyme_meter')
         self.add = Add()
@@ -301,16 +300,21 @@ if __name__ == '__main__':
 
     print("Compiling model")
     learning_rate = CustomSchedule(EMBED_DIM)
-    loss = sparse_loss
-    metric = sparse_perplexity
     model.compile(optimizer=keras.optimizers.Adam(learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
-                  loss=loss, metrics=[metric])
+                  loss=sparse_loss, metrics=[sparse_perplexity])
 
     print("Generating sample from baseline")
-    print(pretty_tokens(genTokens(model, 50, prompt=TEST_PROMPT)))
+    print(pretty_tokens(genTokens(model, 25, prompt=TEST_PROMPT)))
 
     print("Training model")
-    model.fit(train_x, train_y, batch_size=256, validation_split=0.2, epochs=1)
+    class TrainCallback(keras.callbacks.Callback):
+        def on_epoch_end(self, epoch, logs=None):
+            print("\nGenerating sample from model in training: epoch",
+                  epoch, "perplexity", round(logs['val_sparse_perplexity'], 2))
+            print(pretty_tokens(genTokens(model, 75, prompt=TEST_PROMPT)))
+    model.fit(train_x, train_y,
+              batch_size=256, validation_split=0.2, epochs=3,
+              callbacks=[TrainCallback()])
 
     print("Sample outputs")
 
