@@ -87,6 +87,8 @@ def pretty_tokens(tokens, mask=True):
                         this = this[:-1]
                     if tokens[i] == 'will':
                         this = 'wo'
+                    elif tokens[i] == 'shall':
+                        this = 'sha'
                     this = this+"n't"
                 else:
                     if tokens[i] in dicts[next]:
@@ -368,12 +370,13 @@ def rhymeMeterFromTokens(tokens, endl, tl, vocab=None):
     # used as input for model
     res = []
     start = endl
-    while start >= 0 and tokens[start] != tl:
-        start -= 1
+    if len(tokens) > endl:
+        while start >= 0 and tokens[start] != tl:
+            start -= 1
     lines = tokens[start:endl]
     while len(lines) < TRANSFORMER_N:
         lines.append(None)
-    input_lines = lines if vocab is None else [vocab.index(x) for x in lines]
+    input_lines = lines if vocab is None else [(vocab.index(x) if x in vocab else None) for x in lines]
     meter, rhymes = processRhymeMeter(input_lines)
     rhymes = rhymes[-TRANSFORMER_N:] # context x RHYME_STACK_SIZE x 2
     meter = meter[-TRANSFORMER_N:] # context x METER_STACK_SIZE
@@ -455,7 +458,6 @@ if __name__ == '__main__':
         rhymes_data = np.asarray(rhymes_data)
         rhymes_data = np.reshape(rhymes_data, (rhymes_data.shape[0], -1)) # flatten vowel/consonant axes into one
         rhyme_meter_data = np.concatenate([meter_data, rhymes_data], axis=1)
-        print(rhyme_meter_data.shape)
 
     print("Masking unknown tokens")
     tokens = [(words.index(x) if x in vocab else -1) for x in tokens]

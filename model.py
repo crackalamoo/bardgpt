@@ -166,6 +166,7 @@ class BardModel(keras.Model):
     def __init__(self, *, num_layers=TRANSFORMER_LAYERS, num_heads=TRANSFORMER_HEADS, dff=TRANSFORMER_DFF):
         super(BardModel, self).__init__()
         self.vocab = VOCAB
+        self.tl = VOCAB.index(TITLE.lower()[1:-1])
         self.embed = InputEmbedding()
         self.decoder = Decoder(num_layers=num_layers, num_heads=num_heads, dff=dff)
         self.rhyme_meter = Dense(16, activation='relu')
@@ -199,8 +200,8 @@ class BardModel(keras.Model):
         while len(context) < TRANSFORMER_N:
             context.append(0)
         context = np.asarray([context])+1
-        tl = VOCAB.index(TITLE.lower()[1:-1])
-        rm = rhymeMeterFromTokens(fullContext, len(fullContext), tl, VOCAB)
+        print("context", context)
+        rm = rhymeMeterFromTokens(fullContext, len(fullContext), self.tl, self.vocab)
         pred = self.call([context, rm])[0]
         pred = pred[lastToken]
         pred = sampleVocab(pred, temperature)
@@ -235,24 +236,40 @@ def sparse_perplexity(y_true, y_pred):
     return tf.math.exp(tf.math.reduce_mean(sparse_loss(y_true, y_pred)))
 
 if __name__ == '__main__':
-    fname = 'data/ngram_train.npz' if MODEL_TYPE == 'n' else 'data/transformer_train.npz'
+    fname = {'n': 'data/ngram_train.npz',
+        't': 'data/transformer_train.npz',
+        'b': 'data/bard_train.npz'
+    }[MODEL_TYPE]
     print("Loading data from", fname)
     loaded = np.load(fname)
     train_x = tf.one_hot(loaded['x'], VOCAB_SIZE) if MODEL_TYPE == 'n' else loaded['x']
     train_y = tf.one_hot(loaded['y'], VOCAB_SIZE) if MODEL_TYPE == 'n' else loaded['y']
     if MODEL_TYPE == 'b':
-        train_x = zip(train_x, loaded['rm']) # rhyme and syllables
+        train_x = [tf.convert_to_tensor(train_x), tf.convert_to_tensor(loaded['rm'])] # rhyme and syllables
     del loaded
-    print("X:", train_x[:4])
+    
+    if MODEL_TYPE != 'b':
+        print("X:", train_x[:4])
+    else:
+        print("X:", train_x[0][:4])
+        print("RM:", train_x[1][:4])
     print("Y:", train_y[:4])
-    print("X shape:", train_x.shape)
+    if MODEL_TYPE != 'b':
+        print("X shape:", train_x.shape)
     print("Y shape:", train_y.shape)
 
     print("Initializing model")
-    models = {'n': LinearModel, 't': TransformerModel}
+    models = {'n': LinearModel, 't': TransformerModel, 'b': BardModel}
     model = models[MODEL_TYPE]()
     print(model)
-    print(model(train_x[:1]))
+    if MODEL_TYPE != 'b':
+        print(model(train_x[:1]))
+    else:
+        x0 = train_x[0][:1]
+        x1 = train_x[1][:1]
+        print("x0:", x0.shape)
+        print("x1:", x1.shape)
+        print(model([x0, x1]))
     print(model.summary())
 
     print("Compiling model")
@@ -262,26 +279,13 @@ if __name__ == '__main__':
     model.compile(optimizer=keras.optimizers.Adam(learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                   loss=loss, metrics=[metric])
 
-    train_sample = np.random.choice(np.arange(0, train_x.shape[0]), 20)
-    #for sample in train_sample[:10]:
-    #    feed = np.array([train_x[sample,:]])
-    #    res = np.argmax(model(feed)[0])
-    #    print("sample:", pretty_tokens(list(map(lambda t: "<unk>" if t == 0 else VOCAB[t-1], train_x[sample]))),
-    #         "Truth:", train_y[sample], VOCAB[train_y[sample]], "Output:", res, VOCAB[res])
-
-    print("Evaluating baseline")
-    #model.evaluate(train_x, train_y, batch_size=1024)
+    print("Generating sample from baseline")
     print(pretty_tokens(genTokens(model, 50)))
 
     print("Training model")
     model.fit(train_x, train_y, batch_size=256, validation_split=0.2, epochs=1)
 
     print("Sample outputs")
-    #for sample in train_sample:
-    #    feed = np.array([train_x[sample,:]])
-    #    res = np.argmax(model(feed)[0])
-    #    print("sample:", pretty_tokens(list(map(lambda t: "<unk>" if t == 0 else VOCAB[t-1], train_x[sample]))),
-    #          "Truth:", train_y[sample], VOCAB[train_y[sample]], "Output:", res, VOCAB[res])
 
     print("Generating sample from trained model")
     print(pretty_tokens(genTokens(model, 1000)))
