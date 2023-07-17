@@ -9,12 +9,19 @@ from tokens import pretty_tokens, rhymeMeterFromTokens
 
 N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N
 EMBED_DIM = 512
-TRANSFORMER_LAYERS = 4
+TRANSFORMER_LAYERS = 1
 TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
 RHYME_METER_DFF = 32 # 128
 WARMUP_STEPS = 1 #800
 VOCAB = list(np.load('lemmas/lemmas.npy'))
+TEST_PROMPT = 'stop =ing by woods on a snowy evening <newline> '+\
+    'whose woods these are i think i know <newline> '
+TEST_PROMPT_TOKENS = [(VOCAB.index(x) if x in VOCAB else -1) for x in TEST_PROMPT.split(' ')]
+
+
+print(TEST_PROMPT)
+print(rhymeMeterFromTokens(TEST_PROMPT_TOKENS, len(TEST_PROMPT_TOKENS), TITLE.lower()[1:-1], VOCAB))
 
 def sampleVocab(dist, temperature):
     temperature = 1e-8 if temperature == 0 else temperature
@@ -23,10 +30,10 @@ def sampleVocab(dist, temperature):
     sample = np.random.choice(np.arange(VOCAB_SIZE), p=dist)
     return sample
 
-def genTokens(model, tokens, temperature=0.7, untitled=False):
+def genTokens(model, tokens, temperature=0.7, prompt=None):
     res = [VOCAB.index(TITLE.lower()[1:-1])]
-    if untitled:
-        res.append(VOCAB.index(NEWLINE.lower()[1:-1]))
+    if prompt is not None:
+        res = [(VOCAB.index(x) if x in VOCAB else -1) for x in prompt.split(' ')]
     for _ in range(tokens):
         pred = model.generate(res, temperature)
         res.append(pred)
@@ -169,15 +176,16 @@ def rhyme_meter_encoding(input):
     vowels = input[:,:,:RHYME_STACK_SIZE]
     consonants = input[:,:,RHYME_STACK_SIZE:RHYME_STACK_SIZE*2]
     meter = input[:,:,-METER_STACK_SIZE:]
-    print("v", vowels)
-    print("c", consonants)
+    print("v", vowels[:,-1,:])
+    print("c", consonants[:,-1,:])
     vowels = tf.one_hot(vowels, VOWEL_TYPES)
     consonants = tf.one_hot(consonants, CONSONANT_TYPES)
     vowels = tf.reshape(vowels, [tf.shape(vowels)[0], tf.shape(vowels)[1], -1])
     consonants = tf.reshape(consonants, [tf.shape(consonants)[0], tf.shape(consonants)[1], -1])
     rhyme = tf.concat([vowels, consonants], axis=2)
     meter = tf.cast(meter, tf.float32)
-    rhyme_meter = tf.concat([rhyme, meter], axis=2)
+    # rhyme_meter = tf.concat([rhyme, meter], axis=2)
+    rhyme_meter = rhyme # ablation
     return rhyme_meter
 
 class BardModel(keras.Model):
@@ -299,15 +307,15 @@ if __name__ == '__main__':
                   loss=loss, metrics=[metric])
 
     print("Generating sample from baseline")
-    print(pretty_tokens(genTokens(model, 50)))
+    print(pretty_tokens(genTokens(model, 50, prompt=TEST_PROMPT)))
 
     print("Training model")
-    model.fit(train_x, train_y, batch_size=256, validation_split=0.2, epochs=2)
+    model.fit(train_x, train_y, batch_size=256, validation_split=0.2, epochs=1)
 
     print("Sample outputs")
 
     print("Generating sample from trained model")
     for i in range(10):
-        print(pretty_tokens(genTokens(model, 100, untitled=True)))
-    print(pretty_tokens(genTokens(model, 500)))
-    print(pretty_tokens(genTokens(model, 500)))
+        print(pretty_tokens(genTokens(model, 100, prompt=TEST_PROMPT)))
+    print(pretty_tokens(genTokens(model, 500, prompt=TEST_PROMPT)))
+    print(pretty_tokens(genTokens(model, 500, prompt=TEST_PROMPT)))
