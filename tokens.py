@@ -123,7 +123,7 @@ def pretty_tokens(tokens, mask=True):
 def getRhyme(line):
     # rhyme format:
     # final vowel (short AEIO, schwa, long AEIOU, OW, OI, A/schwa before R; total 14)
-    # final consonant (R, L, N/M/NG, P/B, T/D, F/V, S/SH/Z/ZH/TH, K/G, CH/J; total 9)
+    # final consonant (R, L, N/M/NG, P/B, T/D, F/V, S/SH/Z/ZH, K/G, CH/J, TH; total 10)
     if line is None or len(line) == 0:
         return [-1, -1]
     nl = NEWLINE.lower()[1:-1]
@@ -150,7 +150,7 @@ def getRhyme(line):
     cons_map = {'r': 0, 'l': 1, 'n': 2, 'm': 2, 'ng': 2,
                 'p': 3, 'b': 3, 't': 4, 'd': 4, 'f': 5,
                 'v': 5, 's': 6, 'sh': 6, 'z': 6, 'zh': 6,
-                'th': 6, 'k': 7, 'ch': 8, 'j': 8}
+                'th': 9, 'k': 7, 'ch': 8, 'j': 8}
     # consonant type format:
     # 0: R, 1: L, 2: N/M/NG, 3: P/B, 4: T/D, 5: F/V, 6: S/SH/Z/ZH/TH, 7: K/G, 8: CH/J
     # total 9 consonant types
@@ -267,7 +267,7 @@ def getRhyme(line):
     return [vowel_type, consonant_type]
 def pretty_rhyme(rhyme):
     v_map = ['bat', 'bet', 'bit', 'bot', 'but', 'pout', 'boil', 'bait', 'beat', 'bite', 'boat', 'boot', 'bar', 'sir']
-    c_map = ['R', 'L', 'N/M/NG', 'P/B', 'T/D', 'F/V', 'S/SH/Z/ZH/TH', 'K/G', 'CH/J']
+    c_map = ['R', 'L', 'N/M/NG', 'P/B', 'T/D', 'F/V', 'S/SH/Z/ZH', 'K/G', 'CH/J', 'TH']
     return "Rhyme is " +\
         (v_map[rhyme[0]] if rhyme[0] != -1 else '--') + ' ' + (c_map[rhyme[1]] if rhyme[1] != -1 else 'ø')
 
@@ -334,22 +334,22 @@ def processRhymeMeter(split):
     in_title = False
     meter = []
     rhymes = []
-    meter_stack = np.zeros(METER_STACK_SIZE, np.short)
-    rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1
+    meter_stack = np.zeros(METER_STACK_SIZE, np.int8)
+    rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1
     tl = TITLE.lower()[1:-1]
     nl = NEWLINE.lower()[1:-1]
     for i in range(len(split)):
         if split[i] == tl:
             in_title = True
-            meter_stack = np.zeros(METER_STACK_SIZE, np.short)
-            rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1
-            meter.append(np.zeros(METER_STACK_SIZE, np.short))
-            rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1)
+            meter_stack = np.zeros(METER_STACK_SIZE, np.int8)
+            rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1
+            meter.append(np.zeros(METER_STACK_SIZE, np.int8))
+            rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1)
             continue
         elif in_title and split[i] == nl:
             in_title = False
-            meter.append(np.zeros(METER_STACK_SIZE, np.short))
-            rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.short) - 1)
+            meter.append(np.zeros(METER_STACK_SIZE, np.int8))
+            rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1)
             continue
         if not in_title and split[i] == nl:
             line = lastLine(split, 1, i, nl)[0]
@@ -357,7 +357,7 @@ def processRhymeMeter(split):
             meter.append(meter_stack.copy())
             if split[i-1] != nl:
                 rhyme_stack = np.roll(rhyme_stack, -1, axis=0)
-                rhyme_stack[-1] = np.array(getRhyme(line), np.short)
+                rhyme_stack[-1] = np.array(getRhyme(line), np.int8).T
                 meter_stack = np.roll(meter_stack, -1, axis=0)
                 meter_stack[-1] = getMeter(line)
         else:
@@ -486,7 +486,7 @@ if __name__ == '__main__':
     train_x = np.asarray(train_x)
     train_y = np.asarray(train_y)
     if MODEL_TYPE == 'b':
-        train_rm = np.asarray(train_rm, np.short)
+        train_rm = np.asarray(train_rm, np.int8)
     if MODEL_TYPE != 'n':
         train_x += 1 # x in [0, VOCAB_SIZE] since 0 is for <unk>
                      # y in [-1, VOCAB_SIZE-1] with VOCAB_SIZE tokens, one for each vocabulary item, and -1 for <unk>

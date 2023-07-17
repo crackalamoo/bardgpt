@@ -8,10 +8,11 @@ from constants import *
 from tokens import pretty_tokens, rhymeMeterFromTokens
 
 N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N
-EMBED_DIM = 256
-TRANSFORMER_LAYERS = 2
+EMBED_DIM = 512
+TRANSFORMER_LAYERS = 4
 TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
+RHYME_METER_DFF = 128
 WARMUP_STEPS = 800
 VOCAB = list(np.load('lemmas/lemmas.npy'))
 
@@ -25,7 +26,6 @@ def sampleVocab(dist, temperature):
 def genTokens(model, tokens, temperature=0.7):
     res = [VOCAB.index(TITLE.lower()[1:-1])]
     for _ in range(tokens):
-        # context = res[-(N-1):] if MODEL_TYPE == 'n' else res[-N:]
         pred = model.generate(res, temperature)
         res.append(pred)
     res = list(map(lambda token: model.vocab[token], res))
@@ -167,15 +167,16 @@ class BardModel(keras.Model):
         super(BardModel, self).__init__()
         self.vocab = VOCAB
         self.tl = VOCAB.index(TITLE.lower()[1:-1])
+        self.rhyme_types = max(VOWEL_TYPES, CONSONANT_TYPES)
         self.embed = InputEmbedding()
         self.decoder = Decoder(num_layers=num_layers, num_heads=num_heads, dff=dff)
-        self.rhyme_meter = Dense(16, activation='relu')
         self.transformer_pred = Dense(VOCAB_SIZE)
         self.rhyme_meter_pred = keras.Sequential([
             # input is context x rhyme/meter encoding
-            Dense(16, activation='relu'), # context x 16
+            Dense(RHYME_METER_DFF, activation='relu'), # context x 16
+            Dense(RHYME_METER_DFF, activation='tanh'),
             Dense(VOCAB_SIZE) # context x vocab size (to match transformer output)
-        ])
+        ], name='rhyme_meter')
         self.add = Add()
         self.softmax = Softmax()
     
@@ -187,7 +188,17 @@ class BardModel(keras.Model):
             del x._keras_mask
         except AttributeError:
             pass
-        rhyme_meter_x = self.rhyme_meter_pred(input[1])
+        vowels = input[1][:,:,:RHYME_STACK_SIZE]
+        consonants = input[1][:,:,RHYME_STACK_SIZE:RHYME_STACK_SIZE*2]
+        meter = input[1][:,:,-METER_STACK_SIZE:]
+        vowels = tf.one_hot(vowels, VOWEL_TYPES)
+        consonants = tf.one_hot(consonants, CONSONANT_TYPES)
+        vowels = tf.reshape(vowels, [tf.shape(vowels)[0], tf.shape(vowels)[1], -1])
+        consonants = tf.reshape(consonants, [tf.shape(consonants)[0], tf.shape(consonants)[1], -1])
+        rhyme = tf.concat([vowels, consonants], axis=2)
+        meter = tf.cast(meter, tf.float32)
+        rhyme_meter = tf.concat([rhyme, meter], axis=2)
+        rhyme_meter_x = self.rhyme_meter_pred(rhyme_meter)
         x = self.add([x, rhyme_meter_x])
         x = self.softmax(x)
         return x
@@ -200,8 +211,8 @@ class BardModel(keras.Model):
         while len(context) < TRANSFORMER_N:
             context.append(0)
         context = np.asarray([context])+1
-        print("context", context)
         rm = rhymeMeterFromTokens(fullContext, len(fullContext), self.tl, self.vocab)
+        rm = np.asarray([rm])
         pred = self.call([context, rm])[0]
         pred = pred[lastToken]
         pred = sampleVocab(pred, temperature)
@@ -249,11 +260,11 @@ if __name__ == '__main__':
     del loaded
     
     if MODEL_TYPE != 'b':
-        print("X:", train_x[:4])
+        print("X:", train_x[10:14])
     else:
-        print("X:", train_x[0][:4])
-        print("RM:", train_x[1][:4])
-    print("Y:", train_y[:4])
+        print("X:", train_x[0][10:14])
+        print("RM:", train_x[1][10:14][1])
+    print("Y:", train_y[10:14])
     if MODEL_TYPE != 'b':
         print("X shape:", train_x.shape)
     print("Y shape:", train_y.shape)
@@ -267,8 +278,6 @@ if __name__ == '__main__':
     else:
         x0 = train_x[0][:1]
         x1 = train_x[1][:1]
-        print("x0:", x0.shape)
-        print("x1:", x1.shape)
         print(model([x0, x1]))
     print(model.summary())
 
