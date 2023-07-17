@@ -100,6 +100,7 @@ y_est_set = set(['pry'])
 
 BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'r','d','f','p','agnes','eulalie','kate','niam','thel',
+                 'lenore','negro'
                  '+++++++++++++','c','j','h','4','5','6','7','8','9','10',
                  '11','12','*','x','b','/','k','g','ii','s','u','da','el',
                  'le','que','~','000','m','thu','thir','13','14','15','16','17',
@@ -139,10 +140,16 @@ DEFINED_RHYMES = {
     'behind': [9,4], 'none': [4,2], 'most': [10,4], 'ghost': [10,4], 'host': [10,4], 'post': [10,4],
     'travel': [4,1], 'broad': [3,4],'veil': [7,1],'tread': [1,4], 'bread': [1,4], 'ocean': [4,2],
     'truth': [11,10], 'human': [4,2], 'woman': [4,2], 'unto': [11,-1], 'worm': [13,4],
-    'instead': [1,4], 'spread': [1,4], 'ahead': [1,4], 'breadth': [1,10], 'breath': [1,10]
+    'instead': [1,4], 'spread': [1,4], 'ahead': [1,4], 'breadth': [1,10], 'breath': [1,10],
+    'valley': [8,-1], 'key': [8,-1], 'journey': [8,-1], 'honey': [8,-1], 'money': [8,-1],
+    'chimney': [8,-1], 'monkey': [8,-1], 'donkey': [8,-1], 'alley': [8,-1], 'trolley': [8,-1],
+    'galley': [8,-1], 'silly': [8,-1], 'lily': [8,-1], 'barley': [8,-1], 'quiet': [4,4],
+    'else': [1,1], 'christian': [4,2]
 }
 DEFINED_METERS = {
-    "'re": 0, "'ve": 0
+    "'re": 0, "'ve": 0, 'shakespeare': 2, 'every': 2, 'leaves': 1, 'evening': 2,
+    'tongue': 1, 'lovely': 2, 'quiet': 2, 'people': 2, 'something': 2,
+    'beautiful': 3
 }
 for word in BRITISH_OUR:
     DEFINED_RHYMES[word] = [4,0]

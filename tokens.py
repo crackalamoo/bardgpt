@@ -311,6 +311,8 @@ def getMeter(line):
         word = word.replace('ei','i').replace('ie','i')
         word = word.replace('oa','o').replace('ou','o')
         word = word.replace('oi','o').replace('oo','u')
+        if word.endswith('tion') or word.endswith('sion') or word.endswith('tian'):
+            word = word[:-4]+'shun'
         this_count = 0
         for vowel in VOWELS:
             this_count += word.count(vowel)
