@@ -386,7 +386,10 @@ def rhymeMeterFromTokens(tokens, endl, tl, vocab=None):
     meter = meter[-TRANSFORMER_N:] # context x METER_STACK_SIZE
     rhymes = np.array(rhymes)
     meter = np.array(meter)
-    rhymes = np.reshape(rhymes, (rhymes.shape[0], -1)) # context x (RHYME_STACK_SIZE*2)
+    rhymes = np.reshape(rhymes, (rhymes.shape[0], -1), order='F') # context x (RHYME_STACK_SIZE*2)
+                                                                  # order=F means consonants/vowels each stay together rather than
+                                                                  # the pairs staying together:
+                                                                  # [[4,5],[10,-1],[3,7]] -> [4,10,3,5,-1,7]
     res = np.concatenate((rhymes, meter), axis=1) # context x (RHYME_STACK_SIZE*2 + METER_STACK_SIZE)
     return res
 

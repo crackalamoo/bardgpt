@@ -23,8 +23,10 @@ def sampleVocab(dist, temperature):
     sample = np.random.choice(np.arange(VOCAB_SIZE), p=dist)
     return sample
 
-def genTokens(model, tokens, temperature=0.7):
+def genTokens(model, tokens, temperature=0.7, untitled=False):
     res = [VOCAB.index(TITLE.lower()[1:-1])]
+    if untitled:
+        res.append(VOCAB.index(NEWLINE.lower()[1:-1]))
     for _ in range(tokens):
         pred = model.generate(res, temperature)
         res.append(pred)
@@ -176,7 +178,6 @@ def rhyme_meter_encoding(input):
     rhyme = tf.concat([vowels, consonants], axis=2)
     meter = tf.cast(meter, tf.float32)
     rhyme_meter = tf.concat([rhyme, meter], axis=2)
-    print("rm", rhyme_meter)
     return rhyme_meter
 
 class BardModel(keras.Model):
@@ -301,12 +302,12 @@ if __name__ == '__main__':
     print(pretty_tokens(genTokens(model, 50)))
 
     print("Training model")
-    model.fit(train_x, train_y, batch_size=256, validation_split=0.2, epochs=1)
+    model.fit(train_x, train_y, batch_size=256, validation_split=0.2, epochs=2)
 
     print("Sample outputs")
 
     print("Generating sample from trained model")
     for i in range(10):
-        print(pretty_tokens(genTokens(model, 100)))
+        print(pretty_tokens(genTokens(model, 100, untitled=True)))
     print(pretty_tokens(genTokens(model, 500)))
     print(pretty_tokens(genTokens(model, 500)))
