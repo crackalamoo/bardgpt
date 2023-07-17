@@ -46,7 +46,8 @@ class LinearModel(keras.Model):
         ])
 
     def call(self, input):
-        x = self.seq(input)
+        x = tf.one_hot(input, VOCAB_SIZE)
+        x = self.seq(x)
         return x
 
     def generate(self, fullContext, temperature=0.7):
@@ -55,7 +56,7 @@ class LinearModel(keras.Model):
             context.pop(0)
         while len(context) < NGRAM_N-1:
             context.append(-1)
-        context = tf.one_hot([context], VOCAB_SIZE)
+        context = np.asarray([context])
         pred = self.call(context)[0]
         pred = sampleVocab(pred, temperature)
         return pred
@@ -236,8 +237,6 @@ class CustomSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
 
     return tf.math.rsqrt(self.d_model) * tf.math.minimum(arg1, arg2)
 
-def perplexity(y_true, y_pred):
-    return tf.math.exp(tf.math.reduce_mean(tf.keras.losses.categorical_crossentropy(y_true, y_pred)))
 
 def sparse_loss(y_true, y_pred):
     loss_obj = keras.losses.SparseCategoricalCrossentropy(ignore_class=-1, reduction='none')
@@ -253,10 +252,12 @@ if __name__ == '__main__':
     }[MODEL_TYPE]
     print("Loading data from", fname)
     loaded = np.load(fname)
-    train_x = tf.one_hot(loaded['x'], VOCAB_SIZE) if MODEL_TYPE == 'n' else loaded['x']
-    train_y = tf.one_hot(loaded['y'], VOCAB_SIZE) if MODEL_TYPE == 'n' else loaded['y']
+    train_x = loaded['x']
+    train_y = loaded['y']
     if MODEL_TYPE == 'b':
         train_x = [tf.convert_to_tensor(train_x), tf.convert_to_tensor(loaded['rm'])] # rhyme and syllables
+    if MODEL_TYPE == 'n':
+        train_x = tf.convert_to_tensor(train_x, tf.int32)
     del loaded
     
     if MODEL_TYPE != 'b':
@@ -283,8 +284,8 @@ if __name__ == '__main__':
 
     print("Compiling model")
     learning_rate = CustomSchedule(EMBED_DIM)
-    loss = keras.losses.CategoricalCrossentropy() if MODEL_TYPE == 'n' else sparse_loss
-    metric = perplexity if MODEL_TYPE == 'n' else sparse_perplexity
+    loss = sparse_loss
+    metric = sparse_perplexity
     model.compile(optimizer=keras.optimizers.Adam(learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
                   loss=loss, metrics=[metric])
 
