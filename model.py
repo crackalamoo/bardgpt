@@ -14,7 +14,7 @@ TRANSFORMER_LAYERS = 4
 TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
 RHYME_METER_DFF = 64
-WARMUP_STEPS = 800
+WARMUP_STEPS = 25
 VOCAB = list(np.load('lemmas/lemmas.npy'))
 TEST_PROMPT = '<title> stop =ing by woods on a snowy evening <newline> '+\
     'whose woods these are i think i know <newline> '+\
@@ -226,6 +226,7 @@ class BardModel(keras.Model):
 
         rhyme_meter_x = self.rhyme_meter_pred(input[1])
         x = self.add([x, rhyme_meter_x])
+        # x = rhyme_meter_x
         x = self.softmax(x)
         return x
     
@@ -338,6 +339,6 @@ if __name__ == '__main__':
     print("Generating sample from final model")
     for i in range(10):
         print(pretty_tokens(genTokens(model, 100)))
-    print(pretty_tokens(genTokens(model, 100, prompt=TEST_PROMPT)))
+    print(pretty_tokens(genTokens(model, 150, prompt=TEST_PROMPT)))
     print(pretty_tokens(genTokens(model, 500)))
     print(pretty_tokens(genTokens(model, 500)))

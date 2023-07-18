@@ -144,12 +144,15 @@ DEFINED_RHYMES = {
     'chimney': [8,-1], 'monkey': [8,-1], 'donkey': [8,-1], 'alley': [8,-1], 'trolley': [8,-1],
     'galley': [8,-1], 'silly': [8,-1], 'lily': [8,-1], 'barley': [8,-1], 'quiet': [4,4],
     'else': [1,1], 'christian': [4,2], 'shadow': [10,-1], 'meadow': [10,-1], 'mow': [10,-1],
-    'bestow': [10,-1], 'widow': [10,-1],
+    'bestow': [10,-1], 'widow': [10,-1], 'friend': [1,4], 'source': [10,6], 'course': [10,6],
+    'lyre': [9,0], 'curse': [13,6], 'rehearse': [13,6], 'are': [12,0], 'genuine': [2,2],
+    'fly': [9,-1], 'july': [9,-1], 'reply': [9,-1], 'butterfly': [9,-1], 'ply': [9,-1],
+    'supply': [9,-1]
 }
 DEFINED_METERS = {
     "'re": 0, "'ve": 0, 'shakespeare': 2, 'every': 2, 'leaves': 1, 'evening': 2,
     'tongue': 1, 'lovely': 2, 'quiet': 2, 'people': 2, 'something': 2,
-    'beautiful': 3
+    'beautiful': 3, 'lyre': 1, 'hymn': 1
 }
 for word in BRITISH_OUR:
     DEFINED_RHYMES[word] = [4,0]

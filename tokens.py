@@ -236,6 +236,10 @@ def getRhyme(line):
         return [4, 2 if lock_consonant == -1 else lock_consonant]
     if word.endswith('al') and len(word) > 3 and not word.endswith('eal'):
         return [4, 1 if lock_consonant == -1 else lock_consonant]
+    if word.endswith('ous'):
+        return [4, 6 if lock_consonant == -1 else lock_consonant]
+    if word.endswith('ly'):
+        return [8, -1 if lock_consonant == -1 else lock_consonant]
     
     if word.endswith('e'):
         long_vowel = True
@@ -374,9 +378,10 @@ def processRhymeMeter(split):
                 meter_stack[-1] = getMeter(line)
         else:
             meter_stack[-1] = getMeter(line)
+            rhyme_stack[-1] = getRhyme(line)
             rhymes.append(rhyme_stack.copy())
             meter.append(meter_stack.copy())
-    return [meter, rhymes]
+    return [rhymes, meter]
 
 def rhymeMeterFromTokens(tokens, endl, tl, vocab=None):
     # used as input for model
@@ -389,7 +394,7 @@ def rhymeMeterFromTokens(tokens, endl, tl, vocab=None):
     while len(lines) < TRANSFORMER_N:
         lines.append(None)
     input_lines = lines if vocab is None else [(vocab[x] if (x is not None and 0 <= x < VOCAB_SIZE) else None) for x in lines]
-    meter, rhymes = processRhymeMeter(input_lines)
+    rhymes, meter = processRhymeMeter(input_lines)
     rhymes = rhymes[-TRANSFORMER_N:] # context x RHYME_STACK_SIZE x 2
     meter = meter[-TRANSFORMER_N:] # context x METER_STACK_SIZE
     rhymes = np.array(rhymes)
@@ -465,14 +470,14 @@ if __name__ == '__main__':
             t.start()
         for i in range(N_THREADS):
             threads[i].join()
-            meter_data += rhyme_meter_res[i][0]
-            rhymes_data += rhyme_meter_res[i][1]
+            rhymes_data += rhyme_meter_res[i][0]
+            meter_data += rhyme_meter_res[i][1]
         
         print("Converting rhyme and meter information")
         meter_data = np.asarray(meter_data)
         rhymes_data = np.asarray(rhymes_data)
         rhymes_data = np.reshape(rhymes_data, (rhymes_data.shape[0], -1)) # flatten vowel/consonant axes into one
-        rhyme_meter_data = np.concatenate([meter_data, rhymes_data], axis=1)
+        rhyme_meter_data = np.concatenate([rhymes_data, meter_data], axis=1)
 
     print("Masking unknown tokens")
     tokens = [(words.index(x) if x in vocab else -1) for x in tokens]
