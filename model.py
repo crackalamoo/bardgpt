@@ -10,11 +10,11 @@ from tokens import pretty_tokens, rhymeMeterFromTokens
 
 N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N
 EMBED_DIM = 512
-TRANSFORMER_LAYERS = 1
+TRANSFORMER_LAYERS = 4
 TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
-RHYME_METER_DFF = 64 # 128
-WARMUP_STEPS = 25 #800
+RHYME_METER_DFF = 64
+WARMUP_STEPS = 800
 VOCAB = list(np.load('lemmas/lemmas.npy'))
 TEST_PROMPT = '<title> stop =ing by woods on a snowy evening <newline> '+\
     'whose woods these are i think i know <newline> '+\
@@ -180,7 +180,6 @@ def rhyme_meter_encoding(input):
     consonants = tf.reshape(consonants, [tf.shape(consonants)[0], tf.shape(consonants)[1], -1])
     rhyme = tf.concat([vowels, consonants], axis=2)
     meter = tf.cast(meter, tf.float32)
-    # rhyme_meter = tf.concat([rhyme, meter], axis=2)
     return rhyme, meter
 
 class RhymeMeterLayer(keras.layers.Layer):
@@ -224,10 +223,9 @@ class BardModel(keras.Model):
             del x._keras_mask
         except AttributeError:
             pass
-        # rhyme_meter = rhyme_meter_encoding(input[1])
+
         rhyme_meter_x = self.rhyme_meter_pred(input[1])
-        # x = self.add([x, rhyme_meter_x])
-        x = rhyme_meter_x # ablation
+        x = self.add([x, rhyme_meter_x])
         x = self.softmax(x)
         return x
     
@@ -315,7 +313,7 @@ if __name__ == '__main__':
                   loss=sparse_loss, metrics=[sparse_perplexity])
 
     print("Generating sample from baseline")
-    print(pretty_tokens(genTokens(model, 25, prompt=TEST_PROMPT)))
+    print(pretty_tokens(genTokens(model, 25)))
 
     print("Training model")
     min_perplexity = None
@@ -327,17 +325,19 @@ if __name__ == '__main__':
             val_perplexity = logs['val_sparse_perplexity']
             print("\rGenerating sample from model in training: "+
                   "epoch "+str(epoch+1)+", perplexity "+str(round(val_perplexity, 2)), end='')
-            print(pretty_tokens(genTokens(model, 75, prompt=TEST_PROMPT)))
+            print(pretty_tokens(genTokens(model, 75)))
             if min_perplexity is None or val_perplexity <= min_perplexity:
                 min_perplexity = val_perplexity
                 print("Saving model")
                 model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5') # no such file or directory right now
+
     model.fit(train_x, train_y,
               batch_size=256, validation_split=0.2, epochs=5,
               callbacks=[TrainCallback()])
 
     print("Generating sample from final model")
     for i in range(10):
-        print(pretty_tokens(genTokens(model, 100, prompt=TEST_PROMPT)))
-    print(pretty_tokens(genTokens(model, 500, prompt=TEST_PROMPT)))
-    print(pretty_tokens(genTokens(model, 500, prompt=TEST_PROMPT)))
+        print(pretty_tokens(genTokens(model, 100)))
+    print(pretty_tokens(genTokens(model, 100, prompt=TEST_PROMPT)))
+    print(pretty_tokens(genTokens(model, 500)))
+    print(pretty_tokens(genTokens(model, 500)))
