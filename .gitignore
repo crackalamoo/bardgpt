@@ -87,3 +87,4 @@ data/*
 inputs/*
 lemmas/*
 kaggle/*
+saved_models/*

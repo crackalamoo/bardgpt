@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -13,7 +14,7 @@ TRANSFORMER_LAYERS = 1
 TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
 RHYME_METER_DFF = 64 # 128
-WARMUP_STEPS = 23 #800
+WARMUP_STEPS = 25 #800
 VOCAB = list(np.load('lemmas/lemmas.npy'))
 TEST_PROMPT = '<title> stop =ing by woods on a snowy evening <newline> '+\
     'whose woods these are i think i know <newline> '+\
@@ -179,8 +180,30 @@ def rhyme_meter_encoding(input):
     consonants = tf.reshape(consonants, [tf.shape(consonants)[0], tf.shape(consonants)[1], -1])
     rhyme = tf.concat([vowels, consonants], axis=2)
     meter = tf.cast(meter, tf.float32)
-    rhyme_meter = tf.concat([rhyme, meter], axis=2)
-    return rhyme_meter
+    # rhyme_meter = tf.concat([rhyme, meter], axis=2)
+    return rhyme, meter
+
+class RhymeMeterLayer(keras.layers.Layer):
+    def __init__(self):
+        super().__init__()
+        self.dense_r1 = Dense(RHYME_METER_DFF, activation='relu')
+        self.dense_m1 = Dense(RHYME_METER_DFF, activation='relu')
+        self.dense_r2 = Dense(RHYME_METER_DFF, activation='relu')
+        self.dense_m2 = Dense(RHYME_METER_DFF, activation='relu')
+        self.dense_r3 = Dense(RHYME_METER_DFF, activation='relu')
+        self.dense_m3 = Dense(RHYME_METER_DFF, activation='relu')
+        self.dense_final = Dense(VOCAB_SIZE)
+    def call(self, input):
+        rhyme, meter = rhyme_meter_encoding(input)
+        rhyme = self.dense_r1(rhyme)
+        rhyme = self.dense_r2(rhyme)
+        rhyme = self.dense_r3(rhyme)
+        meter = self.dense_m1(meter)
+        meter = self.dense_m2(meter)
+        meter = self.dense_m3(meter)
+        x = tf.concat([rhyme, meter], axis=2)
+        x = self.dense_final(x)
+        return x
 
 class BardModel(keras.Model):
     def __init__(self, *, num_layers=TRANSFORMER_LAYERS, num_heads=TRANSFORMER_HEADS, dff=TRANSFORMER_DFF):
@@ -191,17 +214,7 @@ class BardModel(keras.Model):
         self.embed = InputEmbedding()
         self.decoder = Decoder(num_layers=num_layers, num_heads=num_heads, dff=dff)
         self.transformer_pred = Dense(VOCAB_SIZE)
-        self.rhyme_meter_pred = keras.Sequential([
-            # input is context x rhyme/meter encoding
-            # Dense(RHYME_METER_DFF, activation='relu'), # context x dff
-            # Dense(RHYME_METER_DFF, activation='relu'), # context x dff
-            # Dense(RHYME_METER_DFF, activation='relu'), # context x dff
-            # Dense(RHYME_METER_DFF, activation='relu'), # context x dff
-            # Dense(RHYME_METER_DFF, activation='relu'), # context x dff
-            Dense(RHYME_METER_DFF, activation='relu'), # context x dff
-            Dense(RHYME_METER_DFF, activation='tanh'), # context x dff
-            Dense(VOCAB_SIZE) # context x vocab size (to match transformer output)
-        ], name='rhyme_meter')
+        self.rhyme_meter_pred = RhymeMeterLayer()
         self.add = Add()
         self.softmax = Softmax()
     
@@ -213,8 +226,8 @@ class BardModel(keras.Model):
             del x._keras_mask
         except AttributeError:
             pass
-        rhyme_meter = rhyme_meter_encoding(input[1])
-        rhyme_meter_x = self.rhyme_meter_pred(rhyme_meter)
+        # rhyme_meter = rhyme_meter_encoding(input[1])
+        rhyme_meter_x = self.rhyme_meter_pred(input[1])
         # x = self.add([x, rhyme_meter_x])
         x = rhyme_meter_x # ablation
         x = self.softmax(x)
@@ -307,18 +320,25 @@ if __name__ == '__main__':
     print(pretty_tokens(genTokens(model, 25, prompt=TEST_PROMPT)))
 
     print("Training model")
+    min_perplexity = None
+    if not os.path.exists('saved_models'):
+        os.mkdir('saved_models')
     class TrainCallback(keras.callbacks.Callback):
         def on_epoch_end(self, epoch, logs=None):
-            print("\nGenerating sample from model in training: epoch",
-                  epoch, "perplexity", round(logs['val_sparse_perplexity'], 2))
+            global min_perplexity
+            val_perplexity = logs['val_sparse_perplexity']
+            print("\rGenerating sample from model in training: "+
+                  "epoch "+str(epoch+1)+", perplexity "+str(round(val_perplexity, 2)))
             print(pretty_tokens(genTokens(model, 75, prompt=TEST_PROMPT)))
+            if min_perplexity is None or val_perplexity <= min_perplexity:
+                min_perplexity = val_perplexity
+                print("Saving model")
+                model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5') # no such file or directory right now
     model.fit(train_x, train_y,
-              batch_size=256, validation_split=0.2, epochs=3,
+              batch_size=256, validation_split=0.2, epochs=5,
               callbacks=[TrainCallback()])
 
-    print("Sample outputs")
-
-    print("Generating sample from trained model")
+    print("Generating sample from final model")
     for i in range(10):
         print(pretty_tokens(genTokens(model, 100, prompt=TEST_PROMPT)))
     print(pretty_tokens(genTokens(model, 500, prompt=TEST_PROMPT)))
