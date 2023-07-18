@@ -323,20 +323,17 @@ def getMeter(line):
         res += this_count
     return res
 
-def lastLine(tokens, endl, nl, vocab=None):
+def lastLine(tokens, endl):
     res = []
+    nl = NEWLINE.lower()[1:-1]
     i = endl-1
-    while len(res) < 1 and i >= 0:
+    while i > 0:
         if tokens[i] == nl:
-            line = tokens[i+1:endl]
-            if vocab is not None:
-                line = [vocab.index(x) for x in line]
-            res.append(line)
-            endl = i
+            break
         i -= 1
+    res = tokens[i:endl]
     if len(res) == 0:
-        res.append(tokens[:endl])
-    res = res[::-1]
+        res = tokens[:endl]
     return res
 def processRhymeMeter(split):
     in_title = False
@@ -347,50 +344,60 @@ def processRhymeMeter(split):
     tl = TITLE.lower()[1:-1]
     nl = NEWLINE.lower()[1:-1]
     for i in range(len(split)):
+        line = lastLine(split, i)
         if split[i] == tl:
             in_title = True
             meter_stack = np.zeros(METER_STACK_SIZE, np.int8)
             rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1
-            meter.append(np.zeros(METER_STACK_SIZE, np.int8))
-            rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1)
+            meter.append(meter_stack.copy())
+            rhymes.append(rhyme_stack.copy())
             continue
         elif in_title and split[i] == nl:
             in_title = False
-            meter.append(np.zeros(METER_STACK_SIZE, np.int8))
-            rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1)
+            meter_stack = np.zeros(METER_STACK_SIZE, np.int8)
+            meter_stack[-1] = getMeter(line)
+            meter.append(meter_stack.copy())
+            rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1
+            rhyme_stack[-1] = np.array(getRhyme(line), np.int8)
+            rhymes.append(rhyme_stack.copy())
+            # rhymes.append(np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1)
+            meter_stack = np.zeros(METER_STACK_SIZE, np.int8)
+            rhyme_stack = np.zeros((RHYME_STACK_SIZE, 2), np.int8) - 1
             continue
         if not in_title and split[i] == nl:
-            line = lastLine(split, 1, i, nl)[0]
             rhymes.append(rhyme_stack.copy())
             meter.append(meter_stack.copy())
             if split[i-1] != nl:
                 rhyme_stack = np.roll(rhyme_stack, -1, axis=0)
-                rhyme_stack[-1] = np.array(getRhyme(line), np.int8).T
+                rhyme_stack[-1] = np.array(getRhyme(line), np.int8)
                 meter_stack = np.roll(meter_stack, -1, axis=0)
                 meter_stack[-1] = getMeter(line)
         else:
-            line = lastLine(split, 1, i, nl)[0]
             meter_stack[-1] = getMeter(line)
             rhymes.append(rhyme_stack.copy())
             meter.append(meter_stack.copy())
     return [meter, rhymes]
+
 def rhymeMeterFromTokens(tokens, endl, tl, vocab=None):
     # used as input for model
     res = []
-    start = endl
-    if len(tokens) > endl:
-        while start >= 0 and tokens[start] != tl:
+    start = endl-1
+    if len(tokens) >= endl:
+        while start > 0 and tokens[start] != tl:
             start -= 1
     lines = tokens[start:endl]
     while len(lines) < TRANSFORMER_N:
         lines.append(None)
-    input_lines = lines if vocab is None else [(vocab.index(x) if x in vocab else None) for x in lines]
+    input_lines = lines if vocab is None else [(vocab[x] if (x is not None and 0 <= x < VOCAB_SIZE) else None) for x in lines]
     meter, rhymes = processRhymeMeter(input_lines)
     rhymes = rhymes[-TRANSFORMER_N:] # context x RHYME_STACK_SIZE x 2
     meter = meter[-TRANSFORMER_N:] # context x METER_STACK_SIZE
     rhymes = np.array(rhymes)
     meter = np.array(meter)
-    rhymes = np.reshape(rhymes, (rhymes.shape[0], -1)) # context x (RHYME_STACK_SIZE*2)
+    rhymes = np.reshape(rhymes, (rhymes.shape[0], -1), order='F') # context x (RHYME_STACK_SIZE*2)
+                                                                  # order=F means consonants/vowels each stay together rather than
+                                                                  # the pairs staying together:
+                                                                  # [[4,5],[10,-1],[3,7]] -> [4,10,3,5,-1,7]
     res = np.concatenate((rhymes, meter), axis=1) # context x (RHYME_STACK_SIZE*2 + METER_STACK_SIZE)
     return res
 

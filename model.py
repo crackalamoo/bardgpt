@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
@@ -12,9 +13,12 @@ EMBED_DIM = 512
 TRANSFORMER_LAYERS = 4
 TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
-RHYME_METER_DFF = 128
+RHYME_METER_DFF = 64
 WARMUP_STEPS = 800
 VOCAB = list(np.load('lemmas/lemmas.npy'))
+TEST_PROMPT = '<title> stop =ing by woods on a snowy evening <newline> '+\
+    'whose woods these are i think i know <newline> '+\
+    'his house is in the village though <newline> he'
 
 def sampleVocab(dist, temperature):
     temperature = 1e-8 if temperature == 0 else temperature
@@ -23,10 +27,13 @@ def sampleVocab(dist, temperature):
     sample = np.random.choice(np.arange(VOCAB_SIZE), p=dist)
     return sample
 
-def genTokens(model, tokens, temperature=0.7):
-    res = [VOCAB.index(TITLE.lower()[1:-1])]
+def genTokens(model, tokens, temperature=0.7, prompt=None):
+    res = [model.vocab.index(TITLE.lower()[1:-1])]
+    if prompt is not None:
+        res = [(model.vocab.index(x) if x in model.vocab else -1) for x in prompt.split(' ')]
     for _ in range(tokens):
         pred = model.generate(res, temperature)
+        assert pred is not None
         res.append(pred)
     res = list(map(lambda token: model.vocab[token], res))
     return res
@@ -155,7 +162,7 @@ class TransformerModel(keras.Model):
         while len(context) > TRANSFORMER_N:
             context.pop(0)
         while len(context) < TRANSFORMER_N:
-            context.append(0)
+            context.append(-1)
         context = np.asarray([context])+1
         pred = self.call(context)[0]
         pred = pred[lastToken]
@@ -173,8 +180,27 @@ def rhyme_meter_encoding(input):
     consonants = tf.reshape(consonants, [tf.shape(consonants)[0], tf.shape(consonants)[1], -1])
     rhyme = tf.concat([vowels, consonants], axis=2)
     meter = tf.cast(meter, tf.float32)
-    rhyme_meter = tf.concat([rhyme, meter], axis=2)
-    return rhyme_meter
+    return rhyme, meter
+
+class RhymeMeterLayer(keras.layers.Layer):
+    def __init__(self):
+        super().__init__()
+        self.dense_r1 = Dense(RHYME_METER_DFF, activation='relu')
+        self.dense_m1 = Dense(RHYME_METER_DFF//2, activation='relu')
+        self.dense_r2 = Dense(RHYME_METER_DFF, activation='relu')
+        self.dense_m2 = Dense(RHYME_METER_DFF//2, activation='relu')
+        self.dense_3 = Dense(RHYME_METER_DFF, activation='relu')
+        self.dense_final = Dense(VOCAB_SIZE)
+    def call(self, input):
+        rhyme, meter = rhyme_meter_encoding(input)
+        rhyme = self.dense_r1(rhyme)
+        rhyme = self.dense_r2(rhyme)
+        meter = self.dense_m1(meter)
+        meter = self.dense_m2(meter)
+        x = tf.concat([rhyme, meter], axis=2)
+        x = self.dense_3(x)
+        x = self.dense_final(x)
+        return x
 
 class BardModel(keras.Model):
     def __init__(self, *, num_layers=TRANSFORMER_LAYERS, num_heads=TRANSFORMER_HEADS, dff=TRANSFORMER_DFF):
@@ -185,12 +211,7 @@ class BardModel(keras.Model):
         self.embed = InputEmbedding()
         self.decoder = Decoder(num_layers=num_layers, num_heads=num_heads, dff=dff)
         self.transformer_pred = Dense(VOCAB_SIZE)
-        self.rhyme_meter_pred = keras.Sequential([
-            # input is context x rhyme/meter encoding
-            Dense(RHYME_METER_DFF, activation='relu'), # context x dff
-            Dense(RHYME_METER_DFF),
-            Dense(VOCAB_SIZE) # context x vocab size (to match transformer output)
-        ], name='rhyme_meter')
+        self.rhyme_meter_pred = RhymeMeterLayer()
         self.add = Add()
         self.softmax = Softmax()
     
@@ -202,8 +223,8 @@ class BardModel(keras.Model):
             del x._keras_mask
         except AttributeError:
             pass
-        rhyme_meter = rhyme_meter_encoding(input[1])
-        rhyme_meter_x = self.rhyme_meter_pred(rhyme_meter)
+
+        rhyme_meter_x = self.rhyme_meter_pred(input[1])
         x = self.add([x, rhyme_meter_x])
         x = self.softmax(x)
         return x
@@ -214,7 +235,7 @@ class BardModel(keras.Model):
         while len(context) > TRANSFORMER_N:
             context.pop(0)
         while len(context) < TRANSFORMER_N:
-            context.append(0)
+            context.append(-1)
         context = np.asarray([context])+1
         rm = rhymeMeterFromTokens(fullContext, len(fullContext), self.tl, self.vocab)
         rm = np.asarray([rm])
@@ -288,21 +309,35 @@ if __name__ == '__main__':
 
     print("Compiling model")
     learning_rate = CustomSchedule(EMBED_DIM)
-    loss = sparse_loss
-    metric = sparse_perplexity
     model.compile(optimizer=keras.optimizers.Adam(learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
-                  loss=loss, metrics=[metric])
+                  loss=sparse_loss, metrics=[sparse_perplexity])
 
     print("Generating sample from baseline")
-    print(pretty_tokens(genTokens(model, 50)))
+    print(pretty_tokens(genTokens(model, 25)))
 
     print("Training model")
-    model.fit(train_x, train_y, batch_size=128, validation_split=0.2, epochs=1)
+    min_perplexity = None
+    if not os.path.exists('saved_models'):
+        os.mkdir('saved_models')
+    class TrainCallback(keras.callbacks.Callback):
+        def on_epoch_end(self, epoch, logs=None):
+            global min_perplexity
+            val_perplexity = logs['val_sparse_perplexity']
+            print("\rGenerating sample from model in training: "+
+                  "epoch "+str(epoch+1)+", perplexity "+str(round(val_perplexity, 2)), end='')
+            print(pretty_tokens(genTokens(model, 75)))
+            if min_perplexity is None or val_perplexity <= min_perplexity:
+                min_perplexity = val_perplexity
+                print("Saving model")
+                model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5') # no such file or directory right now
 
-    print("Sample outputs")
+    model.fit(train_x, train_y,
+              batch_size=256, validation_split=0.2, epochs=5,
+              callbacks=[TrainCallback()])
 
-    print("Generating sample from trained model")
-    print(pretty_tokens(genTokens(model, 1000)))
-    print(pretty_tokens(genTokens(model, 1000)))
+    print("Generating sample from final model")
     for i in range(10):
         print(pretty_tokens(genTokens(model, 100)))
+    print(pretty_tokens(genTokens(model, 100, prompt=TEST_PROMPT)))
+    print(pretty_tokens(genTokens(model, 500)))
+    print(pretty_tokens(genTokens(model, 500)))
