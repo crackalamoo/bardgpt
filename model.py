@@ -171,15 +171,21 @@ class TransformerModel(keras.Model):
 
 
 def rhyme_meter_encoding(input):
-    vowels = input[:,:,:RHYME_STACK_SIZE]
-    consonants = input[:,:,RHYME_STACK_SIZE:RHYME_STACK_SIZE*2]
+    vowels = input[:,:,:RHYME_STACK_SIZE-1]
+    consonants = input[:,:,RHYME_STACK_SIZE-1:(RHYME_STACK_SIZE-1)*2]
+    rhyme_match = input[:,:,(RHYME_STACK_SIZE-1)*2:(RHYME_STACK_SIZE-1)*3]
+    vowels = tf.cast(vowels, tf.int8)
+    consonants = tf.cast(consonants, tf.int8)
+    vowels = tf.one_hot(vowels, depth=VOWEL_TYPES)
+    consonants = tf.one_hot(consonants, depth=CONSONANT_TYPES)
+    vowels = tf.reshape(vowels, shape=(tf.shape(vowels)[0], tf.shape(vowels)[1], -1))
+    consonants = tf.reshape(consonants, shape=(tf.shape(consonants)[0], tf.shape(consonants)[1], -1))
     meter = input[:,:,-METER_STACK_SIZE:]
-    vowels = tf.one_hot(vowels, VOWEL_TYPES)
-    consonants = tf.one_hot(consonants, CONSONANT_TYPES)
-    vowels = tf.reshape(vowels, [tf.shape(vowels)[0], tf.shape(vowels)[1], -1])
-    consonants = tf.reshape(consonants, [tf.shape(consonants)[0], tf.shape(consonants)[1], -1])
-    rhyme = tf.concat([vowels, consonants], axis=2)
+    vowels = tf.cast(vowels, tf.float32)
+    consonants = tf.cast(consonants, tf.float32)
+    rhyme_match = tf.cast(rhyme_match, tf.float32)
     meter = tf.cast(meter, tf.float32)
+    rhyme = tf.concat([vowels, consonants, rhyme_match], axis=2)
     return rhyme, meter
 
 class RhymeMeterLayer(keras.layers.Layer):
@@ -188,15 +194,15 @@ class RhymeMeterLayer(keras.layers.Layer):
         self.dense_r1 = Dense(RHYME_METER_DFF, activation='relu')
         self.dense_m1 = Dense(RHYME_METER_DFF//2, activation='relu')
         self.dense_r2 = Dense(RHYME_METER_DFF, activation='relu')
-        self.dense_m2 = Dense(RHYME_METER_DFF//2, activation='relu')
-        self.dense_3 = Dense(RHYME_METER_DFF, activation='relu')
+        # self.dense_m2 = Dense(RHYME_METER_DFF//2, activation='relu')
+        self.dense_3 = Dense(RHYME_METER_DFF*2, activation='relu')
         self.dense_final = Dense(VOCAB_SIZE)
     def call(self, input):
         rhyme, meter = rhyme_meter_encoding(input)
         rhyme = self.dense_r1(rhyme)
         rhyme = self.dense_r2(rhyme)
         meter = self.dense_m1(meter)
-        meter = self.dense_m2(meter)
+        # meter = self.dense_m2(meter)
         x = tf.concat([rhyme, meter], axis=2)
         x = self.dense_3(x)
         x = self.dense_final(x)
@@ -324,7 +330,7 @@ if __name__ == '__main__':
         def on_epoch_end(self, epoch, logs=None):
             global min_perplexity
             val_perplexity = logs['val_sparse_perplexity']
-            print("\rGenerating sample from model in training: "+
+            print("\r\rGenerating sample from model in training: "+
                   "epoch "+str(epoch+1)+", perplexity "+str(round(val_perplexity, 2)), end='')
             print(pretty_tokens(genTokens(model, 75)))
             if min_perplexity is None or val_perplexity <= min_perplexity:
