@@ -187,21 +187,19 @@ class RhymeMeterLayer(keras.layers.Layer):
     def __init__(self):
         super().__init__()
         self.dense_r1 = Dense(RHYME_METER_DFF, activation='relu')
-        self.dense_m1 = Dense(RHYME_METER_DFF, activation='relu')
+        self.dense_m1 = Dense(RHYME_METER_DFF//2, activation='relu')
         self.dense_r2 = Dense(RHYME_METER_DFF, activation='relu')
-        self.dense_m2 = Dense(RHYME_METER_DFF, activation='relu')
-        self.dense_r3 = Dense(RHYME_METER_DFF, activation='relu')
-        self.dense_m3 = Dense(RHYME_METER_DFF, activation='relu')
+        self.dense_m2 = Dense(RHYME_METER_DFF//2, activation='relu')
+        self.dense_3 = Dense(RHYME_METER_DFF, activation='relu')
         self.dense_final = Dense(VOCAB_SIZE)
     def call(self, input):
         rhyme, meter = rhyme_meter_encoding(input)
         rhyme = self.dense_r1(rhyme)
         rhyme = self.dense_r2(rhyme)
-        rhyme = self.dense_r3(rhyme)
         meter = self.dense_m1(meter)
         meter = self.dense_m2(meter)
-        meter = self.dense_m3(meter)
         x = tf.concat([rhyme, meter], axis=2)
+        x = self.dense_3(x)
         x = self.dense_final(x)
         return x
 
@@ -328,7 +326,7 @@ if __name__ == '__main__':
             global min_perplexity
             val_perplexity = logs['val_sparse_perplexity']
             print("\rGenerating sample from model in training: "+
-                  "epoch "+str(epoch+1)+", perplexity "+str(round(val_perplexity, 2)))
+                  "epoch "+str(epoch+1)+", perplexity "+str(round(val_perplexity, 2)), end='')
             print(pretty_tokens(genTokens(model, 75, prompt=TEST_PROMPT)))
             if min_perplexity is None or val_perplexity <= min_perplexity:
                 min_perplexity = val_perplexity
