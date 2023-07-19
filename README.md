@@ -6,7 +6,7 @@ Data sources:
 * John Keats ([Plain Text](https://www.gutenberg.org/cache/epub/23684/pg23684.txt))
 * Edgar Allan Poe ([Plain Text](https://www.gutenberg.org/files/50852/50852-0.txt))
 * Percy Bysshe Shelley ([Plain Text](https://www.gutenberg.org/cache/epub/4800/pg4800.txt))
-* Lord Byron ([Plain Text](https://www.gutenberg.org/cache/epub/8861/pg8861.txt))
+* Lord Byron ([Plain Text](https://www.gutenberg.org/cache/epub/8861/pg8861.txt), [Childe Harold's Pilgrimage Plain Text](https://www.gutenberg.org/cache/epub/5131/pg5131.txt), [Don Juan Plain Text])
 * *Lyrical Ballads* by William Wordsworth and Samuel Taylor Coleridge ([Plain Text](https://www.gutenberg.org/files/9622/9622-0.txt))
 * Alfred Tennyson ([Plain Text](https://www.gutenberg.org/files/56913/56913-0.txt))
 * Ralph Waldo Emerson ([Plain Text](https://www.gutenberg.org/cache/epub/12843/pg12843.txt))

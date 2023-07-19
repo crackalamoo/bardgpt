@@ -281,6 +281,12 @@ def shelley():
     out.close()
 def byron():
     text = getContents("data/byron-raw.txt")
+    text += getContents("data/byron-raw-harold.txt")
+    don_juan = getContents("data/byron-raw-juan.txt")
+    don_juan = don_juan.replace("CANTO THE FIRST","DON JUAN CANTO THE FIRST")
+    don_juan = don_juan.replace("CANTO THE SECOND","DON JUAN CANTO THE SECOND")
+    don_juan = don_juan.replace("CANTO THE THIRD","DON JUAN CANTO THE THIRD")
+    text += don_juan
     text = text.replace('\x0a','\n').replace('\x0d','')
     text = text.replace(' [', '[')
     text = text.replace('\n[', '[')
@@ -290,7 +296,6 @@ def byron():
     text = text.replace('\n[', '[')
     text = removeBrackets(text)
     index = getContents("data/byron-index.txt").upper().split('\n')
-    # print(index)
     out = open("data/byron.txt", "w+")
     for heading in index:
         this = text.find(heading+'.')
@@ -301,6 +306,8 @@ def byron():
         endtitle = this+len(heading+'.')
         while text[endtitle] == '\n' or text[endtitle] == ' ':
             endtitle += 1
+        if endtitle >= next:
+            next = text.find('\n'*4, endtitle+1)
         poem = text[endtitle:next]
         poem = poem.replace('_','')
         poem = poem.split('\n')
@@ -339,6 +346,7 @@ def byron():
             poem = poem[:poem.rfind("notes:")]
         if poem.rfind("\nnote:") != -1:
             poem = poem[:poem.rfind("\nnote:")]
+        poem = poem.replace("childe", "child")
         out.write(poem)
         print("title:",title)
         # print(poem)
@@ -358,7 +366,10 @@ def ballads():
               "lines left upon a seat in a yew-tree which stands near the lake": "a yew tree",
               "the rime of the ancyent marinere": "the rhyme of the ancient mariner",
               "simon lee, the old huntsman": "the old huntsman",
-              "anecdote for fathers": "anecdote for fathers"}
+              "anecdote for fathers": "anecdote for fathers",
+              "don juan canto the first": "canto the first",
+              "don juan canto the second": "canto the second",
+              "don juan canto the third": "canto the third"}
     for heading in index:
         this = text.find(heading.upper())
         next = text.find('\n'*4, this+1)

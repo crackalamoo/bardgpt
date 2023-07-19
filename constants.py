@@ -99,7 +99,7 @@ y_est_set = set(['pry'])
 
 BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'r','d','f','p','agnes','eulalie','kate','niam','thel',
-                 'lenore','negro'
+                 'lenore','negro','juan','harold','etc',
                  '+++++++++++++','c','j','h','4','5','6','7','8','9','10',
                  '11','12','*','x','b','/','k','g','ii','s','u','da','el',
                  'le','que','~','000','m','thu','thir','13','14','15','16','17',
@@ -147,7 +147,7 @@ DEFINED_RHYMES = {
     'bestow': [10,-1], 'widow': [10,-1], 'friend': [1,4], 'source': [10,6], 'course': [10,6],
     'lyre': [9,0], 'curse': [13,6], 'rehearse': [13,6], 'are': [12,0], 'genuine': [2,2],
     'fly': [9,-1], 'july': [9,-1], 'reply': [9,-1], 'butterfly': [9,-1], 'ply': [9,-1],
-    'supply': [9,-1], 'folk': [10,7], 'welcome': [4,2], 'wash': [3,6]
+    'supply': [9,-1], 'folk': [10,7], 'welcome': [4,2], 'wash': [3,6], 'child': [9,4]
 }
 DEFINED_METERS = {
     "'re": 0, "'ve": 0, 'shakespeare': 2, 'every': 2, 'leaves': 1, 'evening': 2,
