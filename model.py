@@ -14,7 +14,7 @@ TRANSFORMER_LAYERS = 4
 TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
 RHYME_METER_DFF = 64
-WARMUP_STEPS = 25
+WARMUP_STEPS = 800
 VOCAB = list(np.load('lemmas/lemmas.npy'))
 TEST_PROMPT = '<title> stop =ing by woods on a snowy evening <newline> '+\
     'whose woods these are i think i know <newline> '+\
