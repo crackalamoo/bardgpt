@@ -21,4 +21,5 @@ Data sources:
 * William Shakespeare's Sonnets ([Plain Text](https://www.gutenberg.org/cache/epub/1041/pg1041.txt))
 * William Cullen Bryant ([Plain Text](https://www.gutenberg.org/cache/epub/16341/pg16341.txt))
 * John Greenleaf Whittier ([Plain Text](https://www.gutenberg.org/cache/epub/9580/pg9580.txt))
+* Homer ([Iliad Plain Text](https://www.gutenberg.org/cache/epub/6130/pg6130.txt))
 * ~~Poetry Foundation dataset from Kaggle~~ ([Kaggle link; CSV](https://www.kaggle.com/datasets/tgdivy/poetry-foundation-poems))

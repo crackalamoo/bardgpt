@@ -99,7 +99,7 @@ y_est_set = set(['pry'])
 
 BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'r','d','f','p','agnes','eulalie','kate','niam','thel',
-                 'lenore','negro','juan','harold','etc',
+                 'lenore','à','negro','juan','harold','etc',
                  '+++++++++++++','c','j','h','4','5','6','7','8','9','10',
                  '11','12','*','x','b','/','k','g','ii','s','u','da','el',
                  'le','que','~','000','m','thu','thir','13','14','15','16','17',

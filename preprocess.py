@@ -865,12 +865,17 @@ def et_al():
     bryant = bryant[bryant.find("THE AGES."):]
     whittier = getContents("data/whittier-raw.txt")
     whittier = whittier[whittier.find("NOTES"):]
+    iliad = getContents("data/iliad-raw.txt")
+    iliad_illustrations = getContents("data/iliad-illustrations.txt")
+    for illustration in iliad_illustrations.split('\n'):
+        iliad = iliad.replace(illustration+'\n','')
 
     main_processing(browning, "data/browning-index.txt", use_second=True)
     main_processing(yeats, "data/yeats-index.txt", use_second=True)
     main_processing(modern, "data/modern-index.txt", ending_newlines=4)
     main_processing(bryant, "data/bryant-index.txt", ending_newlines=4)
     main_processing(whittier, "data/whittier-index.txt", remove_last=True)
+    main_processing(iliad, "data/iliad-index.txt", ending_newlines=4)
     out.close()
 def tagore():
     gitanjali = getContents("data/tagore-raw-gitanjali.txt")
@@ -984,6 +989,7 @@ def join(kaggle=False):
             counts[word] += 1
         words = list(counts.keys())
         words.sort(key=lambda word: counts[word], reverse=True)
+        print("Counted", len(words), "words")
         s_dict = {}
         ed_dict = {}
         er_dict = {}
