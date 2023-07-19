@@ -7,7 +7,7 @@ if not os.path.exists("inputs"):
     os.mkdir("inputs")
 
 AUTHOR_LIST = ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
-                   'longfellow', 'holmes', 'wilde', 'et_al', 'tagore']
+                   'longfellow', 'holmes', 'wilde', 'tagore', 'et_al']
 
 def getContents(fname):
     file = open(fname, "r")
@@ -283,9 +283,9 @@ def byron():
     text = getContents("data/byron-raw.txt")
     text += getContents("data/byron-raw-harold.txt")
     don_juan = getContents("data/byron-raw-juan.txt")
-    don_juan = don_juan.replace("CANTO THE FIRST","DON JUAN CANTO THE FIRST")
-    don_juan = don_juan.replace("CANTO THE SECOND","DON JUAN CANTO THE SECOND")
-    don_juan = don_juan.replace("CANTO THE THIRD","DON JUAN CANTO THE THIRD")
+    don_juan = don_juan.replace("CANTO THE FIRST.","DON JUAN CANTO THE FIRST.")
+    don_juan = don_juan.replace("CANTO THE SECOND.","DON JUAN CANTO THE SECOND.")
+    don_juan = don_juan.replace("CANTO THE THIRD.","DON JUAN CANTO THE THIRD.")
     text += don_juan
     text = text.replace('\x0a','\n').replace('\x0d','')
     text = text.replace(' [', '[')
@@ -366,10 +366,7 @@ def ballads():
               "lines left upon a seat in a yew-tree which stands near the lake": "a yew tree",
               "the rime of the ancyent marinere": "the rhyme of the ancient mariner",
               "simon lee, the old huntsman": "the old huntsman",
-              "anecdote for fathers": "anecdote for fathers",
-              "don juan canto the first": "canto the first",
-              "don juan canto the second": "canto the second",
-              "don juan canto the third": "canto the third"}
+              "anecdote for fathers": "anecdote for fathers"}
     for heading in index:
         this = text.find(heading.upper())
         next = text.find('\n'*4, this+1)
@@ -886,7 +883,9 @@ def tagore():
     out = open("data/tagore.txt", "w+")
     def writePoem(text, start, end):
         nonlocal out
-        poem = text[start:end].replace('\n',NEWLINE).replace('_','').lower()
+        poem = text[start:end].replace('\n',NEWLINE).replace('_','')
+        poem = TITLE + NEWLINE + poem
+        poem = poem.lower()
         out.write(poem)
     for i in range(2, 85):
         this = gardener.find(str(i)+"\n\n\n")
@@ -987,9 +986,10 @@ def join(kaggle=False):
             if not word in counts:
                 counts[word] = 0
             counts[word] += 1
+        print("Counted", len(words), "words")
         words = list(counts.keys())
         words.sort(key=lambda word: counts[word], reverse=True)
-        print("Counted", len(words), "words")
+        print("Counted", len(words), "unique words")
         s_dict = {}
         ed_dict = {}
         er_dict = {}
