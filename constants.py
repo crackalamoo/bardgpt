@@ -3,7 +3,7 @@ NGRAM_N = 4
 TRANSFORMER_N = 32
 MODEL_TYPE = 'b' # n: ngram, t: transformer, b: bard
 KAGGLE = False
-TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else 15
+TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else 31
 RHYME_STACK_SIZE = 4
 METER_STACK_SIZE = 3
 VOWEL_TYPES = 14
@@ -99,7 +99,8 @@ y_est_set = set(['pry'])
 
 BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'r','d','f','p','agnes','eulalie','kate','niam','thel',
-                 'lenore','à','negro','juan','harold','etc','allan',
+                 'saadi','\\\\','juanna','johnson','dudù','moore',
+                 'lenore','à','negro','juan','harold','etc','allan','adeline',
                  '+++++++++++++','c','j','h','4','5','6','7','8','9','10',
                  '11','12','*','x','b','/','k','g','ii','s','u','da','el',
                  'le','que','~','000','m','thu','thir','13','14','15','16','17',
@@ -147,7 +148,8 @@ DEFINED_RHYMES = {
     'bestow': [10,-1], 'widow': [10,-1], 'friend': [1,4], 'source': [10,6], 'course': [10,6],
     'lyre': [9,0], 'curse': [13,6], 'rehearse': [13,6], 'are': [12,0], 'genuine': [2,2],
     'fly': [9,-1], 'july': [9,-1], 'reply': [9,-1], 'butterfly': [9,-1], 'ply': [9,-1],
-    'supply': [9,-1], 'folk': [10,7], 'welcome': [4,2], 'wash': [3,6], 'child': [9,4]
+    'supply': [9,-1], 'folk': [10,7], 'welcome': [4,2], 'wash': [3,6], 'child': [9,4],
+    'deaf': [1,4],
 }
 DEFINED_METERS = {
     "'re": 0, "'ve": 0, 'shakespeare': 2, 'every': 2, 'leaves': 1, 'evening': 2,

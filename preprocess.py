@@ -281,7 +281,7 @@ def shelley():
     out.close()
 def byron():
     text = getContents("data/byron-raw.txt")
-    text += getContents("data/byron-raw-harold.txt")
+    # text += getContents("data/byron-raw-harold.txt")
     don_juan = getContents("data/byron-raw-juan.txt")
     don_juan = don_juan.replace("CANTO THE FIRST.","DON JUAN CANTO THE FIRST.")
     don_juan = don_juan.replace("CANTO THE SECOND.","DON JUAN CANTO THE SECOND.")
@@ -784,7 +784,8 @@ def wilde():
     out.close()
 def et_al():
     out = open("data/et_al.txt", "w+")
-    def main_processing(text, index_file, skipindex=1, use_second=False, ending_newlines=3, remove_last=False):
+    def main_processing(text, index_file, skipindex=1, use_second=False,
+                        ending_newlines=3, remove_last=False, one_stanza=False):
         text = text.replace('\x0a','\n').replace('\x0d','')
         text = text.replace('\n\n[Illustration:','[')
         text = removeBrackets(text)
@@ -839,6 +840,8 @@ def et_al():
                 poem = poem[1:]
             while poem.endswith('\n') or poem.endswith(' '):
                 poem = poem[:-1]
+            if one_stanza:
+                poem = poem[:poem.rfind('\n\n')]
             print("title: " + title.upper())
             # print("poem: "+poem)
             poem = TITLE + title + NEWLINE + poem
@@ -866,6 +869,9 @@ def et_al():
     iliad_illustrations = getContents("data/iliad-illustrations.txt")
     for illustration in iliad_illustrations.split('\n'):
         iliad = iliad.replace(illustration+'\n','')
+    odyssey = getContents("data/odyssey-raw.txt")
+    rumi = getContents("data/rumi-raw.txt")
+    rumi = rumi[rumi.find("EDWARD ROBESON TAYLOR of San Francisco."):]
 
     main_processing(browning, "data/browning-index.txt", use_second=True)
     main_processing(yeats, "data/yeats-index.txt", use_second=True)
@@ -873,6 +879,8 @@ def et_al():
     main_processing(bryant, "data/bryant-index.txt", ending_newlines=4)
     main_processing(whittier, "data/whittier-index.txt", remove_last=True)
     main_processing(iliad, "data/iliad-index.txt", ending_newlines=4)
+    main_processing(odyssey, "data/odyssey-index.txt", ending_newlines=4)
+    main_processing(rumi, "data/rumi-index.txt", one_stanza=True)
     out.close()
 def tagore():
     gitanjali = getContents("data/tagore-raw-gitanjali.txt")
