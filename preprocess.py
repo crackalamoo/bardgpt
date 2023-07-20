@@ -872,6 +872,7 @@ def et_al():
     odyssey = getContents("data/odyssey-raw.txt")
     rumi = getContents("data/rumi-raw.txt")
     rumi = rumi[rumi.find("EDWARD ROBESON TAYLOR of San Francisco."):]
+    milton = getContents("data/milton-raw.txt")
 
     main_processing(browning, "data/browning-index.txt", use_second=True)
     main_processing(yeats, "data/yeats-index.txt", use_second=True)
@@ -881,6 +882,7 @@ def et_al():
     main_processing(iliad, "data/iliad-index.txt", ending_newlines=4)
     main_processing(odyssey, "data/odyssey-index.txt", ending_newlines=4)
     main_processing(rumi, "data/rumi-index.txt", one_stanza=True)
+    main_processing(milton, "data/milton-index.txt", ending_newlines=4)
     out.close()
 def tagore():
     gitanjali = getContents("data/tagore-raw-gitanjali.txt")
