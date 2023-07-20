@@ -14,10 +14,10 @@ def getContents(fname):
     text = file.read()
     file.close()
     return text
-def removeBrackets(text):
-    while text.find('[') != -1:
-        begin = text.find('[')
-        end = text.find(']', begin+1)
+def removeBrackets(text, open='[', close=']'):
+    while text.find(open) != -1:
+        begin = text.find(open)
+        end = text.find(close, begin+1)
         if end == -1:
             break
         else:
@@ -281,7 +281,6 @@ def shelley():
     out.close()
 def byron():
     text = getContents("data/byron-raw.txt")
-    # text += getContents("data/byron-raw-harold.txt")
     don_juan = getContents("data/byron-raw-juan.txt")
     don_juan = don_juan.replace("CANTO THE FIRST.","DON JUAN CANTO THE FIRST.")
     don_juan = don_juan.replace("CANTO THE SECOND.","DON JUAN CANTO THE SECOND.")
@@ -873,6 +872,7 @@ def et_al():
     rumi = getContents("data/rumi-raw.txt")
     rumi = rumi[rumi.find("EDWARD ROBESON TAYLOR of San Francisco."):]
     milton = getContents("data/milton-raw.txt")
+    mahabharata = getContents("data/mahabharata-raw.txt")
 
     main_processing(browning, "data/browning-index.txt", use_second=True)
     main_processing(yeats, "data/yeats-index.txt", use_second=True)
@@ -883,6 +883,7 @@ def et_al():
     main_processing(odyssey, "data/odyssey-index.txt", ending_newlines=4)
     main_processing(rumi, "data/rumi-index.txt", one_stanza=True)
     main_processing(milton, "data/milton-index.txt", ending_newlines=4)
+    main_processing(mahabharata, "data/mahabharata-index.txt", ending_newlines=4)
     out.close()
 def tagore():
     gitanjali = getContents("data/tagore-raw-gitanjali.txt")
@@ -969,7 +970,7 @@ def join(kaggle=False):
         text = text.replace(" is't "," is it ").replace(" 'twill "," it will ")
         text = text.replace(" 'twas ", " it was ").replace(" 'twere ", " it were ").replace(" 'twould "," it would ")
         text = text.replace(" twas "," it was ").replace(" twere "," it were ").replace(" twould "," it would ").replace(" twill "," it will ")
-        text = text.replace("èd ","ed ").replace("alarum","alarm")
+        text = text.replace("èd ","ed ").replace("alarum","alarm").replace("éd ","ed ")
         text = text.replace(" i'll "," i LL ").replace(" thou'lt "," thou LT ").replace(" we'll "," we LL ")
         text = text.replace(" he'll "," he LL ").replace(" she'll "," she LL ").replace(" it'll "," it LL ")
         text = text.replace(" they'll "," they LL ").replace(" you'll "," you LL ").replace(" who'll "," who LL ")

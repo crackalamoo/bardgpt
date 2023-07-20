@@ -99,7 +99,16 @@ y_est_set = set(['pry'])
 
 BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'r','d','f','p','agnes','eulalie','kate','niam','thel',
-                 'saadi','\\\\','juanna','johnson','dudù','moore',
+                 'saadi','\\\\','juanna','johnson','dudù','moore','xanthus',
+                 'arjun','pandav','draupadi','bhishma','karna','pandu','bhima',
+                 'duryodhan','drona','abhimanyu','yudhisthir','agamemnon','narad',
+                 'antilochus','diomed','helen','ulysses','achilles','nestor',
+                 'menelaus','patroclus','hector','aeneas','laertes','priam',
+                 'penelope','eumaeus','telemachus','euryclea','sarpedon','peleus',
+                 'polydamas','glaucus','antenor','idomeneus','rishi','boreas',
+                 'phaeacian','savitri','kuru','diana','panchala','ida','ithaca',
+                 'matsya','pritha','salya','kripa','hastina','sisupala','vidura',
+                 'dhrita','rashtra','jayadratha','lamia','medon','highth','haydée',
                  'lenore','à','negro','juan','harold','etc','allan','adeline',
                  '+++++++++++++','c','j','h','4','5','6','7','8','9','10',
                  '11','12','*','x','b','/','k','g','ii','s','u','da','el',
@@ -149,7 +158,7 @@ DEFINED_RHYMES = {
     'lyre': [9,0], 'curse': [13,6], 'rehearse': [13,6], 'are': [12,0], 'genuine': [2,2],
     'fly': [9,-1], 'july': [9,-1], 'reply': [9,-1], 'butterfly': [9,-1], 'ply': [9,-1],
     'supply': [9,-1], 'folk': [10,7], 'welcome': [4,2], 'wash': [3,6], 'child': [9,4],
-    'deaf': [1,4],
+    'deaf': [1,4], 'league': [8,7], 'plague': [7,7], 'vague': [7,7]
 }
 DEFINED_METERS = {
     "'re": 0, "'ve": 0, 'shakespeare': 2, 'every': 2, 'leaves': 1, 'evening': 2,

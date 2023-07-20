@@ -24,4 +24,5 @@ Data sources:
 * Homer, translated by Alexander Pope ([Iliad Plain Text](https://www.gutenberg.org/cache/epub/6130/pg6130.txt), [Odyssey Plain Text](https://www.gutenberg.org/files/3160/3160-0.txt))
 * Rumi, translated by William Hastie ([Plain Text](https://www.gutenberg.org/files/57068/57068-0.txt))
 * John Milton ([Paradise Lost Plain Text](https://www.gutenberg.org/cache/epub/26/pg26.txt))
+* *Mahabharata*, translated and condensed by Romesh Chunder Dutt ([Plain Text](https://www.gutenberg.org/ebooks/19630))
 * ~~Poetry Foundation dataset from Kaggle~~ ([Kaggle link; CSV](https://www.kaggle.com/datasets/tgdivy/poetry-foundation-poems))
