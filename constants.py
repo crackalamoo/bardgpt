@@ -1,11 +1,37 @@
-VOCAB_SIZE = 4096
-NGRAM_N = 4
-TRANSFORMER_N = 32
-MODEL_TYPE = 'b' # n: ngram, t: transformer, b: bard
-KAGGLE = False
-TOKEN_SKIP = 1 if MODEL_TYPE == 'n' else 31
-RHYME_STACK_SIZE = 4
-METER_STACK_SIZE = 3
+import sys
+def parseArgv(argv):
+    data = {
+        '--model_type': 'b',
+        '--vocab_size': 4096,
+        '--ngram_n': 4,
+        '--transformer_n': 32,
+        '--kaggle': False,
+        '--rhyme_stack_size': 4,
+        '--meter_stack_size': 3,
+    }
+    startParse = 1
+    if len(argv) > 1 and argv[1] in ['n','t','b']:
+        data['--model_type'] = argv[1]
+        startParse = 2
+    for i in range(startParse, len(argv)):
+        if argv[i] in data:
+            if argv[i] == '--kaggle':
+                data[argv[i]] = True
+            elif argv[i] == '--model_type':
+                data[argv[i]] = argv[i+1]
+            else:
+                data[argv[i]] = int(argv[i+1])
+    return data
+sysArgs = parseArgv(sys.argv)
+
+VOCAB_SIZE = sysArgs['--vocab_size']
+NGRAM_N = sysArgs['--ngram_n']
+TRANSFORMER_N = sysArgs['--transformer_n']
+MODEL_TYPE = sysArgs['--model_type'] # n: ngram, t: transformer, b: bard
+KAGGLE = sysArgs['--kaggle']
+TOKEN_SKIP = 2 if MODEL_TYPE == 'n' else TRANSFORMER_N-1
+RHYME_STACK_SIZE = sysArgs['--rhyme_stack_size']
+METER_STACK_SIZE = sysArgs['--meter_stack_size']
 VOWEL_TYPES = 14
 CONSONANT_TYPES = 10
 
@@ -98,7 +124,7 @@ y_er_set = set(['by'])
 y_est_set = set(['pry'])
 
 BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
-                 'r','d','f','p','agnes','eulalie','kate','niam','thel',
+                 'r','d','f','p','agnes','eulalie','kate','niam','thel','asius',
                  'saadi','\\\\','juanna','johnson','dudù','moore','xanthus',
                  'arjun','pandav','draupadi','bhishma','karna','pandu','bhima',
                  'duryodhan','drona','abhimanyu','yudhisthir','agamemnon','narad',
@@ -109,6 +135,7 @@ BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'phaeacian','savitri','kuru','diana','panchala','ida','ithaca',
                  'matsya','pritha','salya','kripa','hastina','sisupala','vidura',
                  'dhrita','rashtra','jayadratha','lamia','medon','highth','haydée',
+                 'haidée',
                  'lenore','à','negro','juan','harold','etc','allan','adeline',
                  '+++++++++++++','c','j','h','4','5','6','7','8','9','10',
                  '11','12','*','x','b','/','k','g','ii','s','u','da','el',
@@ -158,7 +185,7 @@ DEFINED_RHYMES = {
     'lyre': [9,0], 'curse': [13,6], 'rehearse': [13,6], 'are': [12,0], 'genuine': [2,2],
     'fly': [9,-1], 'july': [9,-1], 'reply': [9,-1], 'butterfly': [9,-1], 'ply': [9,-1],
     'supply': [9,-1], 'folk': [10,7], 'welcome': [4,2], 'wash': [3,6], 'child': [9,4],
-    'deaf': [1,4], 'league': [8,7], 'plague': [7,7], 'vague': [7,7]
+    'deaf': [1,4], 'league': [8,7], 'plague': [7,7], 'vague': [7,7], 'overhead': [1,4],
 }
 DEFINED_METERS = {
     "'re": 0, "'ve": 0, 'shakespeare': 2, 'every': 2, 'leaves': 1, 'evening': 2,

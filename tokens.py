@@ -181,7 +181,7 @@ def getRhyme(line):
     if len(line) > 1:
         if word == '=ed':
             if line[-2].endswith('t') or line[-2].endswith('d'):
-                return [0, 4]
+                return [4, 4]
             lock_consonant = 4
             word = line[-2]
         if word == '=s' or word == "'s":
@@ -240,6 +240,8 @@ def getRhyme(line):
         return [4, 6 if lock_consonant == -1 else lock_consonant]
     if word.endswith('ly'):
         return [8, -1 if lock_consonant == -1 else lock_consonant]
+    if word.endswith('ward'):
+        return [13, 4 if lock_consonant == -1 else lock_consonant]
     
     if word.endswith('e'):
         long_vowel = True

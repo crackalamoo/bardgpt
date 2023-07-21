@@ -10,11 +10,14 @@ from tokens import pretty_tokens, rhymeMeterFromTokens
 
 N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N
 EMBED_DIM = 512
-TRANSFORMER_LAYERS = 4
+TRANSFORMER_LAYERS = 6
 TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
 RHYME_METER_DFF = 64
 WARMUP_STEPS = 800
+EPOCHS = 10
+VAL_SPLIT = 0.2
+SAVE_AT_END = False
 VOCAB = list(np.load('lemmas/lemmas.npy'))
 TEST_PROMPT = '<title> stop =ing by woods on a snowy evening <newline> '+\
     'whose woods these are i think i know <newline> '+\
@@ -339,9 +342,12 @@ if __name__ == '__main__':
                 model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5') # no such file or directory right now
 
     model.fit(train_x, train_y,
-              batch_size=256, validation_split=0.2, epochs=5,
+              batch_size=256, validation_split=VAL_SPLIT, epochs=EPOCHS,
               callbacks=[TrainCallback()])
 
+    if SAVE_AT_END:
+        print("Saving final model")
+        model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5')
     print("Generating sample from final model")
     for i in range(10):
         print(pretty_tokens(genTokens(model, 100)))
