@@ -1,10 +1,13 @@
 import numpy as np
 import os
+import sys
 from constants import *
 if __name__ == '__main__':
     from threading import Thread
 
 N_THREADS = 32
+if '--n_threads' in sys.argv:
+    N_THREADS = int(sys.argv[sys.argv.index('--n_threads')+1])
 
 if __name__ == '__main__':
     if not os.path.exists('lemmas'):

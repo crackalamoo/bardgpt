@@ -4,20 +4,44 @@ import tensorflow as tf
 from tensorflow import keras
 from keras.layers import Dense, Flatten, Dropout, Embedding,\
     Add, MultiHeadAttention, LayerNormalization, Input, Softmax
+import sys
 
 from constants import *
 from tokens import pretty_tokens, rhymeMeterFromTokens
 
-N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N
+EPOCHS = 10
+WARMUP_STEPS = 800
 EMBED_DIM = 512
 TRANSFORMER_LAYERS = 6
-TRANSFORMER_HEADS = 4
 TRANSFORMER_DFF = 1024
 RHYME_METER_DFF = 64
-WARMUP_STEPS = 800
-EPOCHS = 10
+TRANSFORMER_HEADS = 4
 VAL_SPLIT = 0.2
 SAVE_AT_END = False
+VERBOSE = False
+
+if '--epochs' in sys.argv:
+    EPOCHS = int(sys.argv[sys.argv.index('--epochs')+1])
+if '--warmup_steps' in sys.argv:
+    WARMUP_STEPS = int(sys.argv[sys.argv.index('--warmup_steps')+1])
+if '--embed_dim' in sys.argv:
+    EMBED_DIM = int(sys.argv[sys.argv.index('--embed_dim')+1])
+if '--transformer_layers' in sys.argv:
+    TRANSFORMER_LAYERS = int(sys.argv[sys.argv.index('--transformer_layers')+1])
+if '--transformer_dff' in sys.argv:
+    TRANSFORMER_DFF = int(sys.argv[sys.argv.index('--transformer_dff')+1])
+if '--rhyme_meter_dff' in sys.argv:
+    RHYME_METER_DFF = int(sys.argv[sys.argv.index('--rhyme_meter_dff')+1])
+if '--transformer_heads' in sys.argv:
+    TRANSFORMER_HEADS = int(sys.argv[sys.argv.index('--transformer_heads')+1])
+if '--val_split' in sys.argv:
+    VAL_SPLIT = float(sys.argv[sys.argv.index('--val_split')+1])
+if '--save_at_end' in sys.argv:
+    SAVE_AT_END = True
+if '--verbose' in sys.argv:
+    VERBOSE = True
+
+N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N
 VOCAB = list(np.load('lemmas/lemmas.npy'))
 TEST_PROMPT = '<title> stop =ing by woods on a snowy evening <newline> '+\
     'whose woods these are i think i know <newline> '+\
@@ -295,27 +319,29 @@ if __name__ == '__main__':
         train_x = tf.convert_to_tensor(train_x, tf.int32)
     del loaded
     
-    if MODEL_TYPE != 'b':
-        print("X:", train_x[10:14])
-    else:
-        print("X:", train_x[0][10:14])
-        print("RM:", train_x[1][10:14][1])
-    print("Y:", train_y[10:14])
-    if MODEL_TYPE != 'b':
-        print("X shape:", train_x.shape)
-    print("Y shape:", train_y.shape)
+    if VERBOSE:
+        if MODEL_TYPE != 'b':
+            print("X:", train_x[10:14])
+        else:
+            print("X:", train_x[0][10:14])
+            print("RM:", train_x[1][10:14][1])
+        print("Y:", train_y[10:14])
+        if MODEL_TYPE != 'b':
+            print("X shape:", train_x.shape)
+        print("Y shape:", train_y.shape)
 
     print("Initializing model")
     models = {'n': LinearModel, 't': TransformerModel, 'b': BardModel}
     model = models[MODEL_TYPE]()
-    print(model)
-    if MODEL_TYPE != 'b':
-        print(model(train_x[:1]))
-    else:
-        x0 = train_x[0][:1]
-        x1 = train_x[1][:1]
-        print(model([x0, x1]))
-    print(model.summary())
+    if VERBOSE:
+        print(model)
+        if MODEL_TYPE != 'b':
+            print(model(train_x[:1]))
+        else:
+            x0 = train_x[0][:1]
+            x1 = train_x[1][:1]
+            print(model([x0, x1]))
+        print(model.summary())
 
     print("Compiling model")
     learning_rate = CustomSchedule(EMBED_DIM)
@@ -333,7 +359,7 @@ if __name__ == '__main__':
         def on_epoch_end(self, epoch, logs=None):
             global min_perplexity
             val_perplexity = logs['val_sparse_perplexity']
-            print("\r\rGenerating sample from model in training: "+
+            print("\rGenerating sample from model in training: "+
                   "epoch "+str(epoch+1)+", perplexity "+str(round(val_perplexity, 2)), end='')
             print(pretty_tokens(genTokens(model, 75)))
             if min_perplexity is None or val_perplexity <= min_perplexity:
@@ -348,9 +374,11 @@ if __name__ == '__main__':
     if SAVE_AT_END:
         print("Saving final model")
         model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5')
+    
     print("Generating sample from final model")
-    for i in range(10):
-        print(pretty_tokens(genTokens(model, 100)))
-    print(pretty_tokens(genTokens(model, 150, prompt=TEST_PROMPT)))
-    print(pretty_tokens(genTokens(model, 500)))
+    if VERBOSE:
+        for i in range(10):
+            print(pretty_tokens(genTokens(model, 100)))
+        print(pretty_tokens(genTokens(model, 150, prompt=TEST_PROMPT)))
+        print(pretty_tokens(genTokens(model, 500)))
     print(pretty_tokens(genTokens(model, 500)))
