@@ -40,7 +40,7 @@ def stripTitle(s):
 def dickinson():
     text = getContents("data/dickinson-raw.txt")
     text = removeBrackets(text)
-    index = getContents("data/dickinson-index.txt").split('\n')
+    index = getContents("index/dickinson-index.txt").split('\n')
     out = open("data/dickinson.txt", "w+")
     for i in range(len(index)):
         this = text.find(index[i])
@@ -67,7 +67,7 @@ def dickinson():
 def frost():
     text = getContents("data/frost-raw.txt")
     text = removeBrackets(text)
-    index = getContents("data/frost-index.txt").split('\n')
+    index = getContents("index/frost-index.txt").split('\n')
     # print(index)
     out = open("data/frost.txt", "w+")
     skipindex = text.find("CONTENTS")
@@ -89,7 +89,7 @@ def frost():
 def keats():
     text = getContents("data/keats-raw.txt")
     text = removeBrackets(text)
-    index = getContents("data/keats-index.txt").split('\n')
+    index = getContents("index/keats-index.txt").split('\n')
     # print(index)
     out = open("data/keats.txt", "w+")
     for heading in index:
@@ -163,7 +163,7 @@ def poe():
     text = text.replace('\n[Illustration:', '[Illustration:')
     text = removeBrackets(text)
     text = text.replace("TAMERLANE", "_TAMERLANE_")
-    index = getContents("data/poe-index.txt").upper().split('\n')
+    index = getContents("index/poe-index.txt").upper().split('\n')
     # print(index)
     out = open("data/poe.txt", "w+")
     for i in range(len(index)):
@@ -217,7 +217,7 @@ def shelley():
     text = getContents("data/shelley-raw.txt")
     text = removeBrackets(text)
     text = text.replace('\x0a','\n').replace('\x0d','')
-    index = getContents("data/shelley-index.txt").split('\n')
+    index = getContents("index/shelley-index.txt").split('\n')
     # print(index)
     out = open("data/shelley.txt", "w+")
     for heading in index:
@@ -294,7 +294,7 @@ def byron():
     text = text.replace('\n[', '[')
     text = text.replace('\n[', '[')
     text = removeBrackets(text)
-    index = getContents("data/byron-index.txt").upper().split('\n')
+    index = getContents("index/byron-index.txt").upper().split('\n')
     out = open("data/byron.txt", "w+")
     for heading in index:
         this = text.find(heading+'.')
@@ -353,7 +353,7 @@ def byron():
 def ballads():
     text = getContents("data/ballads-raw.txt")
     text = text.replace('\x0a','\n').replace('\x0d','')
-    index = getContents("data/ballads-index.txt").replace('  ','').split('\n')
+    index = getContents("index/ballads-index.txt").replace('  ','').split('\n')
     out = open("data/ballads.txt", "w+")
     titles = {"a conversational poem": "the nightingale",
               "the tables turned; an evening scene, on the same subject": "the tables turned",
@@ -428,7 +428,7 @@ def ballads():
 def tennyson():
     text = getContents("data/tennyson-raw.txt")
     text = text.replace('\x0a','\n').replace('\x0d','')
-    index = getContents("data/tennyson-index.txt").split('\n')
+    index = getContents("index/tennyson-index.txt").split('\n')
     out = open("data/tennyson.txt", "w+")
     titles = {"AN IDYL": "THE BROOK",
               "THE DUKE OF WELLINGTON": "ODE ON THE DEATH OF THE DUKE OF WELLINGTON",
@@ -484,7 +484,7 @@ def tennyson():
 def emerson():
     text = getContents("data/emerson-raw.txt")
     text = text.replace('\x0a','\n').replace('\x0d','')
-    index = getContents("data/emerson-index.txt").split('\n')
+    index = getContents("index/emerson-index.txt").split('\n')
     index.append("\nBEAUTY\n")
     index.append("\nNATURE\nI")
     out = open("data/emerson.txt", "w+")
@@ -547,7 +547,7 @@ def emerson():
 def blake():
     text = getContents("data/blake-raw.txt")
     text = text.replace('\x0a','\n').replace('\x0d','')
-    index = getContents("data/blake-index.txt").split('\n')
+    index = getContents("index/blake-index.txt").split('\n')
     index.append("THEL\n\n  I")
     out = open("data/blake.txt", "w+")
     for heading in index:
@@ -585,7 +585,7 @@ def blake():
     out.close()
 def longfellow():
     text = getContents("data/longfellow-raw.txt")
-    index = getContents("data/longfellow-index.txt").split('\n')
+    index = getContents("index/longfellow-index.txt").split('\n')
     text = text.replace('\x0a','\n').replace('\x0d','')
     index.append("INTERLUDE 2")
     index.append("INTERLUDE 3")
@@ -649,7 +649,7 @@ def holmes():
     text = getContents("data/holmes-raw.txt")
     text = text.replace('\x0a','\n').replace('\x0d','')
     text = removeBrackets(text)
-    index = getContents("data/holmes-index.txt").split('\n')
+    index = getContents("index/holmes-index.txt").split('\n')
     out = open("data/holmes.txt", "w+")
     text = text.replace("AT THE SATURDAY CLUB\nTHIS", "AT THE SATURDAY CLUB\n\nTHIS")
     text = text.replace("ALONE! no climber","Alone! no climber")
@@ -712,7 +712,7 @@ def wilde():
     text = getContents("data/wilde-raw.txt")
     text = text.replace('\x0a','\n').replace('\x0d','')
     text = removeBrackets(text)
-    index = getContents("data/wilde-index.txt").split('\n')
+    index = getContents("index/wilde-index.txt").split('\n')
     out = open("data/wilde.txt", "w+")
     skipindex = text.find("HÉLAS!")-5
     index.append("THE BALLAD OF READING GAOL\n\n\n                                      I")
@@ -865,7 +865,7 @@ def et_al():
     whittier = getContents("data/whittier-raw.txt")
     whittier = whittier[whittier.find("NOTES"):]
     iliad = getContents("data/iliad-raw.txt")
-    iliad_illustrations = getContents("data/iliad-illustrations.txt")
+    iliad_illustrations = getContents("index/iliad-illustrations.txt")
     for illustration in iliad_illustrations.split('\n'):
         iliad = iliad.replace(illustration+'\n','')
     odyssey = getContents("data/odyssey-raw.txt")
@@ -874,16 +874,16 @@ def et_al():
     milton = getContents("data/milton-raw.txt")
     mahabharata = getContents("data/mahabharata-raw.txt")
 
-    main_processing(browning, "data/browning-index.txt", use_second=True)
-    main_processing(yeats, "data/yeats-index.txt", use_second=True)
-    main_processing(modern, "data/modern-index.txt", ending_newlines=4)
-    main_processing(bryant, "data/bryant-index.txt", ending_newlines=4)
-    main_processing(whittier, "data/whittier-index.txt", remove_last=True)
-    main_processing(iliad, "data/iliad-index.txt", ending_newlines=4)
-    main_processing(odyssey, "data/odyssey-index.txt", ending_newlines=4)
-    main_processing(rumi, "data/rumi-index.txt", one_stanza=True)
-    main_processing(milton, "data/milton-index.txt", ending_newlines=4)
-    main_processing(mahabharata, "data/mahabharata-index.txt", ending_newlines=4)
+    main_processing(browning, "index/browning-index.txt", use_second=True)
+    main_processing(yeats, "index/yeats-index.txt", use_second=True)
+    main_processing(modern, "index/modern-index.txt", ending_newlines=4)
+    main_processing(bryant, "index/bryant-index.txt", ending_newlines=4)
+    main_processing(whittier, "index/whittier-index.txt", remove_last=True)
+    main_processing(iliad, "index/iliad-index.txt", ending_newlines=4)
+    main_processing(odyssey, "index/odyssey-index.txt", ending_newlines=4)
+    main_processing(rumi, "index/rumi-index.txt", one_stanza=True)
+    main_processing(milton, "index/milton-index.txt", ending_newlines=4)
+    main_processing(mahabharata, "index/mahabharata-index.txt", ending_newlines=4)
     out.close()
 def tagore():
     gitanjali = getContents("data/tagore-raw-gitanjali.txt")
