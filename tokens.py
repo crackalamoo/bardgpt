@@ -394,7 +394,7 @@ def processRhymeMeter(split):
                 meter_stack[-1] = getMeter(line)
         else:
             meter_stack[-1] = getMeter(line)
-            rhyme_stack[-1] = getRhyme(line)
+            rhyme_stack[-1] = np.array(getRhyme(line), np.int8)
             rhymes.append(processRhymeStack(rhyme_stack))
             meter.append(meter_stack.copy())
     return [rhymes, meter]

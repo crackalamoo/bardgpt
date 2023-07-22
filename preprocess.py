@@ -947,7 +947,7 @@ def join(kaggle=False):
     text = text.replace("&"," and ")
     print("Processing specific morphemes")
     text = text.replace("o'er","over").replace("e'er","ever").replace("thro'","through").replace("e'en","even")
-    text = text.replace("ev'n","even").replace("fall'n","fallen").replace("heav'n","heaven")
+    text = text.replace("ev'n","even").replace("fall'n","fallen").replace("heav'n","heaven").replace("wh'r ","whether ")
     text = text.replace("deep'ning","deepening").replace("stol'n","stolen").replace("revery","reverie")
     text = text.replace(" tho' ", " though ").replace(" altho' "," although ").replace(" 'mid "," amid ")
     text = text.replace("ev'ry","every").replace("wond'rous","wonderous").replace("fev'rous","feverous")
