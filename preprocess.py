@@ -7,10 +7,10 @@ if not os.path.exists("inputs"):
     os.mkdir("inputs")
 
 AUTHOR_LIST = ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
-                   'longfellow', 'holmes', 'wilde', 'tagore', 'et_al']
+                   'longfellow', 'holmes', 'wilde', 'tagore', 'shakespeare', 'et_al']
 
 def getContents(fname):
-    file = open(fname, "r")
+    file = open(fname, "r", encoding="utf-8", errors="ignore")
     text = file.read()
     file.close()
     return text
@@ -68,7 +68,6 @@ def frost():
     text = getContents("data/frost-raw.txt")
     text = removeBrackets(text)
     index = getContents("index/frost-index.txt").split('\n')
-    # print(index)
     out = open("data/frost.txt", "w+")
     skipindex = text.find("CONTENTS")
     skipindex = text.find("SELECTED POEMS", skipindex+1)
@@ -90,7 +89,6 @@ def keats():
     text = getContents("data/keats-raw.txt")
     text = removeBrackets(text)
     index = getContents("index/keats-index.txt").split('\n')
-    # print(index)
     out = open("data/keats.txt", "w+")
     for heading in index:
         this = text.find(heading+".")
@@ -164,7 +162,6 @@ def poe():
     text = removeBrackets(text)
     text = text.replace("TAMERLANE", "_TAMERLANE_")
     index = getContents("index/poe-index.txt").upper().split('\n')
-    # print(index)
     out = open("data/poe.txt", "w+")
     for i in range(len(index)):
         this = text.find(index[i])
@@ -218,7 +215,6 @@ def shelley():
     text = removeBrackets(text)
     text = text.replace('\x0a','\n').replace('\x0d','')
     index = getContents("index/shelley-index.txt").split('\n')
-    # print(index)
     out = open("data/shelley.txt", "w+")
     for heading in index:
         this = text.find(heading)
@@ -282,9 +278,7 @@ def shelley():
 def byron():
     text = getContents("data/byron-raw.txt")
     don_juan = getContents("data/byron-raw-juan.txt")
-    don_juan = don_juan.replace("CANTO THE FIRST.","DON JUAN CANTO THE FIRST.")
-    don_juan = don_juan.replace("CANTO THE SECOND.","DON JUAN CANTO THE SECOND.")
-    don_juan = don_juan.replace("CANTO THE THIRD.","DON JUAN CANTO THE THIRD.")
+    don_juan = don_juan[don_juan.find("Herculean Is it not so, my Tory, ultra-Julian?"):]
     text += don_juan
     text = text.replace('\x0a','\n').replace('\x0d','')
     text = text.replace(' [', '[')
@@ -345,7 +339,6 @@ def byron():
             poem = poem[:poem.rfind("notes:")]
         if poem.rfind("\nnote:") != -1:
             poem = poem[:poem.rfind("\nnote:")]
-        poem = poem.replace("childe", "child")
         out.write(poem)
         print("title:",title)
         # print(poem)
@@ -1106,6 +1099,9 @@ def join(kaggle=False):
     out = open("inputs/join.txt" if not kaggle else "inputs/join-kaggle.txt", "w+")
     out.write(text)
     out.close()
+    print("Deleting unneeded files")
+    for author in (AUTHOR_LIST):
+        os.remove("data/"+author+".txt")
 
 if __name__ == '__main__':
     shakespeare()

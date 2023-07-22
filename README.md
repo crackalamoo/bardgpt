@@ -2,7 +2,7 @@
 
 Data sources:
 * Emily Dickinson ([Plain Text](https://www.gutenberg.org/cache/epub/12242/pg12242.txt))
-* Robert Frost ([Plain Text](https://www.gutenberg.org/cache/epub/59824/pg59824-images.html))
+* Robert Frost ([Plain Text](https://www.gutenberg.org/files/59824/59824-0.txt))
 * John Keats ([Plain Text](https://www.gutenberg.org/cache/epub/23684/pg23684.txt))
 * Edgar Allan Poe ([Plain Text](https://www.gutenberg.org/files/50852/50852-0.txt))
 * Percy Bysshe Shelley ([Plain Text](https://www.gutenberg.org/cache/epub/4800/pg4800.txt))
@@ -16,8 +16,8 @@ Data sources:
 * Oscar Wilde ([Plain Text](https://www.gutenberg.org/files/1057/1057-0.txt))
 * Elizabeth Barrett Browning ([Volume II Plain Text](https://www.gutenberg.org/cache/epub/33363/pg33363.txt), [Volume IV Plain Text](https://www.gutenberg.org/cache/epub/31015/pg31015.txt))
 * W. B. Yeats ([Plain Text](https://www.gutenberg.org/cache/epub/38877/pg38877.txt))
-* Rabindranath Tagore ([Gitanjali Plain Text](https://www.gutenberg.org/cache/epub/7164/pg7164.txt), [The Gardener Plain Text](https://www.gutenberg.org/ebooks/6686))
-* Selections from Modern Poets ([Plain Text](https://www.gutenberg.org/ebooks/53206))
+* Rabindranath Tagore ([Gitanjali Plain Text](https://www.gutenberg.org/cache/epub/7164/pg7164.txt), [The Gardener Plain Text](https://www.gutenberg.org/cache/epub/6686/pg6686.txt))
+* Selections from Modern Poets ([Plain Text](https://www.gutenberg.org/files/53206/53206-0.txt))
 * William Shakespeare's Sonnets ([Plain Text](https://www.gutenberg.org/cache/epub/1041/pg1041.txt))
 * William Cullen Bryant ([Plain Text](https://www.gutenberg.org/cache/epub/16341/pg16341.txt))
 * John Greenleaf Whittier ([Plain Text](https://www.gutenberg.org/cache/epub/9580/pg9580.txt))
