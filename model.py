@@ -12,13 +12,14 @@ from tokens import pretty_tokens, rhymeMeterFromTokens
 EPOCHS = 10
 WARMUP_STEPS = 800
 EMBED_DIM = 512
-TRANSFORMER_LAYERS = 6
+TRANSFORMER_LAYERS = 8
 TRANSFORMER_DFF = 1024
 RHYME_METER_DFF = 64
 TRANSFORMER_HEADS = 4
 VAL_SPLIT = 0.2
 SAVE_AT_END = False
 VERBOSE = False
+TRAINING = True
 
 if '--epochs' in sys.argv:
     EPOCHS = int(sys.argv[sys.argv.index('--epochs')+1])
@@ -40,6 +41,8 @@ if '--save_at_end' in sys.argv:
     SAVE_AT_END = True
 if '--verbose' in sys.argv:
     VERBOSE = True
+if '--load' in sys.argv:
+    TRAINING = False
 
 N = NGRAM_N if MODEL_TYPE == 'n' else TRANSFORMER_N
 VOCAB = list(np.load('lemmas/lemmas.npy'))
@@ -57,7 +60,7 @@ def sampleVocab(dist, temperature):
 def genTokens(model, tokens, temperature=0.7, prompt=None):
     res = [model.vocab.index(TITLE.lower()[1:-1])]
     if prompt is not None:
-        res = [(model.vocab.index(x) if x in model.vocab else -1) for x in prompt.split(' ')]
+        res = [model.vocab.index(x) for x in prompt.split(' ') if x in model.vocab]
     for _ in range(tokens):
         pred = model.generate(res, temperature)
         assert pred is not None
@@ -319,7 +322,7 @@ if __name__ == '__main__':
         train_x = tf.convert_to_tensor(train_x, tf.int32)
     del loaded
     
-    if VERBOSE:
+    if TRAINING and VERBOSE:
         if MODEL_TYPE != 'b':
             print("X:", train_x[10:14])
         else:
@@ -333,52 +336,96 @@ if __name__ == '__main__':
     print("Initializing model")
     models = {'n': LinearModel, 't': TransformerModel, 'b': BardModel}
     model = models[MODEL_TYPE]()
+    if MODEL_TYPE != 'b':
+        res = model(train_x[:1])
+    else:
+        x0 = train_x[0][:1]
+        x1 = train_x[1][:1]
+        res = model([x0, x1])
     if VERBOSE:
         print(model)
-        if MODEL_TYPE != 'b':
-            print(model(train_x[:1]))
-        else:
-            x0 = train_x[0][:1]
-            x1 = train_x[1][:1]
-            print(model([x0, x1]))
-        print(model.summary())
+        print(res)
+    print(model.summary())
 
-    print("Compiling model")
-    learning_rate = CustomSchedule(EMBED_DIM)
-    model.compile(optimizer=keras.optimizers.Adam(learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
-                  loss=sparse_loss, metrics=[sparse_perplexity])
+    if TRAINING:
+        print("Compiling model")
+        learning_rate = CustomSchedule(EMBED_DIM)
+        model.compile(optimizer=keras.optimizers.Adam(learning_rate, beta_1=0.9, beta_2=0.98, epsilon=1e-9),
+                    loss=sparse_loss, metrics=[sparse_perplexity])
 
-    print("Generating sample from baseline")
-    print(pretty_tokens(genTokens(model, 25)))
+        print("Generating sample from baseline")
+        print(pretty_tokens(genTokens(model, 25)))
 
-    print("Training model")
-    min_perplexity = None
-    if not os.path.exists('saved_models'):
-        os.mkdir('saved_models')
-    class TrainCallback(keras.callbacks.Callback):
-        def on_epoch_end(self, epoch, logs=None):
-            global min_perplexity
-            val_perplexity = logs['val_sparse_perplexity']
-            print("\rGenerating sample from model in training: "+
-                  "epoch "+str(epoch+1)+", perplexity "+str(round(val_perplexity, 2)), end='')
-            print(pretty_tokens(genTokens(model, 75)))
-            if min_perplexity is None or val_perplexity <= min_perplexity:
-                min_perplexity = val_perplexity
-                print("Saving model")
-                model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5') # no such file or directory right now
+        print("Training model")
+        min_perplexity = None
+        if not os.path.exists('saved_models'):
+            os.mkdir('saved_models')
+        class TrainCallback(keras.callbacks.Callback):
+            def on_epoch_end(self, epoch, logs=None):
+                global min_perplexity
+                val_perplexity = logs['val_sparse_perplexity']
+                print("\rGenerating sample from model in training: "+
+                    "epoch "+str(epoch+1)+", perplexity "+str(round(val_perplexity, 2)), end='')
+                print(pretty_tokens(genTokens(model, 75)))
+                if min_perplexity is None or val_perplexity <= min_perplexity:
+                    min_perplexity = val_perplexity
+                    print("Saving model")
+                    model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5') # no such file or directory right now
 
-    model.fit(train_x, train_y,
-              batch_size=256, validation_split=VAL_SPLIT, epochs=EPOCHS,
-              callbacks=[TrainCallback()])
+        model.fit(train_x, train_y,
+                batch_size=256, validation_split=VAL_SPLIT, epochs=EPOCHS,
+                callbacks=[TrainCallback()])
 
-    if SAVE_AT_END:
-        print("Saving final model")
-        model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5')
-    
-    print("Generating sample from final model")
-    if VERBOSE:
-        for i in range(10):
-            print(pretty_tokens(genTokens(model, 100)))
-        print(pretty_tokens(genTokens(model, 150, prompt=TEST_PROMPT)))
+        if SAVE_AT_END:
+            print("Saving final model")
+            model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5')
+        
+        print("Generating samples from final model")
+        if VERBOSE:
+            for i in range(10):
+                print(pretty_tokens(genTokens(model, 100)))
+            print(pretty_tokens(genTokens(model, 150, prompt=TEST_PROMPT)))
+            print(pretty_tokens(genTokens(model, 500)))
         print(pretty_tokens(genTokens(model, 500)))
-    print(pretty_tokens(genTokens(model, 500)))
+    
+    else:
+        del train_x
+        del train_y
+        print("Loading weights")
+        model.load_weights('saved_models/'+MODEL_TYPE+'_model.h5')
+
+        while True:
+            temp = 0.7
+            print("Commands:\ng: generate sample with 250 tokens\nl: generate sample with custom length\np: generate sample with prompt\nt: set temperature\nq: quit")
+            cmd = input("Enter command: ")
+            try:
+                if cmd == 'g':
+                    print("Generating sample...")
+                    print(pretty_tokens(genTokens(model, 250, temperature=temp)))
+                if cmd == 'l':
+                    length = int(input("Enter length: "))
+                    print("Generating sample...")
+                    print(pretty_tokens(genTokens(model, length, temperature=temp)))
+                if cmd == 'p':
+                    prompt = ""
+                    print("Enter prompt as tokens separated by spaces and newlines.")
+                    print("Example: <title> stop =ing by woods on a snowy evening\nwhose woods these are i think i know")
+                    print("All tokens not in the vocabulary will be ignored.")
+                    while not prompt.endswith('\n\n\n'):
+                        prompt += input("")+'\n'
+                    while prompt.startswith(' ') or prompt.startswith('\n'):
+                        prompt = prompt[1:]
+                    while prompt.endswith(' ') or prompt.endswith('\n'):
+                        prompt = prompt[:-1]
+                    prompt = prompt.replace('\n', NEWLINE.lower())
+                    length = int(input("Enter length: "))
+                    print("Generating sample...")
+                    print(pretty_tokens(genTokens(model, length, temperature=temp, prompt=prompt)))
+                if cmd == 't':
+                    print("Current temperature:", temp)
+                    temp = float(input("New temperature: "))
+                    print("Temperature set to", temp)
+                if cmd == 'q':
+                    sys.exit(0)
+            except Exception as e:
+                print("Error:", e)

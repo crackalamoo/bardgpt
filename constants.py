@@ -127,7 +127,7 @@ BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'r','d','f','p','agnes','eulalie','kate','niam','thel','asius',
                  'saadi','\\\\','juanna','johnson','dudù','moore','xanthus',
                  'arjun','pandav','draupadi','bhishma','karna','pandu','bhima',
-                 'duryodhan','drona','abhimanyu','yudhisthir','agamemnon','narad',
+                 'duryodhan','drona','abhimanyu','yudhishthir','agamemnon','narad',
                  'antilochus','diomed','helen','ulysses','achilles','nestor',
                  'menelaus','patroclus','hector','aeneas','laertes','priam',
                  'penelope','eumaeus','telemachus','euryclea','sarpedon','peleus',
@@ -135,7 +135,7 @@ BANNED_TOKENS = ['1','2','3','y','e','l','maud','olaf','lorenzo','de','oscar',
                  'phaeacian','savitri','kuru','diana','panchala','ida','ithaca',
                  'matsya','pritha','salya','kripa','hastina','sisupala','vidura',
                  'dhrita','rashtra','jayadratha','lamia','medon','highth','haydée',
-                 'haidée',
+                 'haidée', 'edward',
                  'lenore','à','negro','juan','harold','etc','allan','adeline',
                  '+++++++++++++','c','j','h','4','5','6','7','8','9','10',
                  '11','12','*','x','b','/','k','g','ii','s','u','da','el',
@@ -160,7 +160,7 @@ DEFINED_RHYMES = {
     'won': [4,2], 'what': [4,4], 'who': [11,-1], 'whose': [11,6], 'where': [7,0], 'there': [7,0],
     'their': [7,0], 'theirs': [7,6], 'bear': [7,0], 'wear': [7,0], 'show': [10,-1], 'tow': [10,-1],
     'sow': [10,-1], 'brow': [5,-1], 'prow': [5,-1], 'allow': [5,-1], 'laugh': [0,5],
-    'elbow': [10,-1], 'window': [10,-1], 'rainbow': [10,-1], 'shadow': [10,-1],
+    'elbow': [10,-1], 'window': [10,-1], 'rainbow': [10,-1], 'shadow': [10,-1], 'ancient': [1,4],
     'meant': [1,4], 'dreamt': [1,4], 'learnt': [13,4], 'hymn': [2,2], 'could': [11,4], 'should': [11,4],
     'to': [11,-1], 'was': [4,6], 'were': [13,0], 'love': [4,5], 'eye': [9,-1], 'bury': [8,-1],
     'your': [11,0], 'heart': [12,4], 'some': [4,2], 'come': [4,2], 'from': [4,2], 'become': [4,2],
@@ -175,7 +175,7 @@ DEFINED_RHYMES = {
     'prove': [11,5], 'have': [0,5], 'whom': [11,2], 'warm': [10,2], 'done': [4,2], 'gone': [3,2],
     'behind': [9,4], 'none': [4,2], 'most': [10,4], 'ghost': [10,4], 'host': [10,4], 'post': [10,4],
     'travel': [4,1], 'broad': [3,4],'veil': [7,1],'tread': [1,4], 'bread': [1,4], 'ocean': [4,2],
-    'truth': [11,10], 'human': [4,2], 'woman': [4,2], 'unto': [11,-1], 'worm': [13,4],
+    'truth': [11,10], 'human': [4,2], 'woman': [4,2], 'unto': [11,-1], 'worm': [13,4], 'blood': [4,4],
     'instead': [1,4], 'spread': [1,4], 'ahead': [1,4], 'breadth': [1,10], 'breath': [1,10],
     'valley': [8,-1], 'key': [8,-1], 'journey': [8,-1], 'honey': [8,-1], 'money': [8,-1],
     'chimney': [8,-1], 'monkey': [8,-1], 'donkey': [8,-1], 'alley': [8,-1], 'trolley': [8,-1],
@@ -185,12 +185,13 @@ DEFINED_RHYMES = {
     'lyre': [9,0], 'curse': [13,6], 'rehearse': [13,6], 'are': [12,0], 'genuine': [2,2],
     'fly': [9,-1], 'july': [9,-1], 'reply': [9,-1], 'butterfly': [9,-1], 'ply': [9,-1],
     'supply': [9,-1], 'folk': [10,7], 'welcome': [4,2], 'wash': [3,6], 'child': [9,4],
-    'deaf': [1,4], 'league': [8,7], 'plague': [7,7], 'vague': [7,7], 'overhead': [1,4],
+    'deaf': [1,4], 'league': [8,7], 'plague': [7,7], 'vague': [7,7], 'overhead': [1,4]
 }
 DEFINED_METERS = {
     "'re": 0, "'ve": 0, 'shakespeare': 2, 'every': 2, 'leaves': 1, 'evening': 2,
     'tongue': 1, 'lovely': 2, 'quiet': 2, 'people': 2, 'something': 2,
-    'beautiful': 3, 'lyre': 1, 'hymn': 1
+    'beautiful': 3, 'lyre': 1, 'hymn': 1, 'forego': 2, 'therefore': 2,
+    'somewhere': 2
 }
 for word in BRITISH_OUR:
     DEFINED_RHYMES[word] = [4,0]
