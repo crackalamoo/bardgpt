@@ -24,23 +24,23 @@ TRAINING = True
 
 if '--epochs' in sys.argv:
     EPOCHS = int(sys.argv[sys.argv.index('--epochs')+1])
-if '--warmup_steps' in sys.argv:
-    WARMUP_STEPS = int(sys.argv[sys.argv.index('--warmup_steps')+1])
-if '--embed_dim' in sys.argv:
-    EMBED_DIM = int(sys.argv[sys.argv.index('--embed_dim')+1])
-if '--transformer_layers' in sys.argv:
-    TRANSFORMER_LAYERS = int(sys.argv[sys.argv.index('--transformer_layers')+1])
-if '--transformer_dff' in sys.argv:
-    TRANSFORMER_DFF = int(sys.argv[sys.argv.index('--transformer_dff')+1])
-if '--rhyme_meter_dff' in sys.argv:
-    RHYME_METER_DFF = int(sys.argv[sys.argv.index('--rhyme_meter_dff')+1])
-if '--transformer_heads' in sys.argv:
-    TRANSFORMER_HEADS = int(sys.argv[sys.argv.index('--transformer_heads')+1])
-if '--val_split' in sys.argv:
-    VAL_SPLIT = float(sys.argv[sys.argv.index('--val_split')+1])
-if '--batch_size' in sys.argv:
+if '--warmup-steps' in sys.argv:
+    WARMUP_STEPS = int(sys.argv[sys.argv.index('--warmup-steps')+1])
+if '--embed-dim' in sys.argv:
+    EMBED_DIM = int(sys.argv[sys.argv.index('--embed-dim')+1])
+if '--transformer-layers' in sys.argv:
+    TRANSFORMER_LAYERS = int(sys.argv[sys.argv.index('--transformer-layers')+1])
+if '--transformer-dff' in sys.argv:
+    TRANSFORMER_DFF = int(sys.argv[sys.argv.index('--transformer-dff')+1])
+if '--rhyme-meter-dff' in sys.argv:
+    RHYME_METER_DFF = int(sys.argv[sys.argv.index('--rhyme-meter-dff')+1])
+if '--transformer-heads' in sys.argv:
+    TRANSFORMER_HEADS = int(sys.argv[sys.argv.index('--transformer-heads')+1])
+if '--val-split' in sys.argv:
+    VAL_SPLIT = float(sys.argv[sys.argv.index('--val-split')+1])
+if '--batch-size' in sys.argv:
     BATCH_SIZE = int(sys.argv[sys.argv.index('--batch-size')+1])
-if '--save_at_end' in sys.argv:
+if '--save-at-end' in sys.argv:
     SAVE_AT_END = True
 if '--verbose' in sys.argv:
     VERBOSE = True
@@ -161,7 +161,7 @@ class Decoder(keras.layers.Layer):
     def __init__(self, *, num_layers, num_heads, dff):
         super(Decoder, self).__init__()
         attention = []
-        for i in range(num_layers):
+        for _ in range(num_layers):
             attention.append(AttentionBlock(num_heads=num_heads, key_dim=EMBED_DIM, dropout=0.1))
         self.attn_seq = keras.Sequential(attention)
         self.ffn = FeedForward(dff)
@@ -265,7 +265,6 @@ class BardModel(keras.Model):
 
         rhyme_meter_x = self.rhyme_meter_pred(input[1])
         x = self.add([x, rhyme_meter_x])
-        # x = rhyme_meter_x
         x = self.softmax(x)
         return x
     

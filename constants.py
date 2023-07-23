@@ -1,37 +1,37 @@
 import sys
 def parseArgv(argv):
     data = {
-        '--model_type': 'b',
-        '--vocab_size': 4096,
-        '--ngram_n': 4,
-        '--transformer_n': 32,
+        '--model-type': 'b',
+        '--vocab-size': 4096,
+        '--ngram-n': 4,
+        '--transformer-n': 32,
         '--kaggle': False,
-        '--rhyme_stack_size': 4,
-        '--meter_stack_size': 3,
+        '--rhyme-size': 4,
+        '--meter-size': 3,
     }
     startParse = 1
     if len(argv) > 1 and argv[1] in ['n','t','b']:
-        data['--model_type'] = argv[1]
+        data['--model-type'] = argv[1]
         startParse = 2
     for i in range(startParse, len(argv)):
         if argv[i] in data:
             if argv[i] == '--kaggle':
                 data[argv[i]] = True
-            elif argv[i] == '--model_type':
+            elif argv[i] == '--model-type':
                 data[argv[i]] = argv[i+1]
             else:
                 data[argv[i]] = int(argv[i+1])
     return data
 sysArgs = parseArgv(sys.argv)
 
-VOCAB_SIZE = sysArgs['--vocab_size']
-NGRAM_N = sysArgs['--ngram_n']
-TRANSFORMER_N = sysArgs['--transformer_n']
-MODEL_TYPE = sysArgs['--model_type'] # n: ngram, t: transformer, b: bard
+VOCAB_SIZE = sysArgs['--vocab-size']
+NGRAM_N = sysArgs['--ngram-n']
+TRANSFORMER_N = sysArgs['--transformer-n']
+MODEL_TYPE = sysArgs['--model-type'] # n: ngram, t: transformer, b: bard
 KAGGLE = sysArgs['--kaggle']
 TOKEN_SKIP = 2 if MODEL_TYPE == 'n' else TRANSFORMER_N-1
-RHYME_STACK_SIZE = sysArgs['--rhyme_stack_size']
-METER_STACK_SIZE = sysArgs['--meter_stack_size']
+RHYME_STACK_SIZE = sysArgs['--rhyme-size']
+METER_STACK_SIZE = sysArgs['--meter-size']
 VOWEL_TYPES = 14
 CONSONANT_TYPES = 10
 
