@@ -17,6 +17,7 @@ TRANSFORMER_DFF = 1024
 RHYME_METER_DFF = 64
 TRANSFORMER_HEADS = 4
 VAL_SPLIT = 0.2
+BATCH_SIZE = 256
 SAVE_AT_END = False
 VERBOSE = False
 TRAINING = True
@@ -37,6 +38,8 @@ if '--transformer_heads' in sys.argv:
     TRANSFORMER_HEADS = int(sys.argv[sys.argv.index('--transformer_heads')+1])
 if '--val_split' in sys.argv:
     VAL_SPLIT = float(sys.argv[sys.argv.index('--val_split')+1])
+if '--batch_size' in sys.argv:
+    BATCH_SIZE = int(sys.argv[sys.argv.index('--batch-size')+1])
 if '--save_at_end' in sys.argv:
     SAVE_AT_END = True
 if '--verbose' in sys.argv:
@@ -363,17 +366,17 @@ if __name__ == '__main__':
         class TrainCallback(keras.callbacks.Callback):
             def on_epoch_end(self, epoch, logs=None):
                 global min_perplexity
-                val_perplexity = logs['val_sparse_perplexity']
+                perplexity = logs['val_sparse_perplexity'] if VAL_SPLIT > 0 else logs['sparse_perplexity']
                 print("\rGenerating sample from model in training: "+
-                    "epoch "+str(epoch+1)+", perplexity "+str(round(val_perplexity, 2)), end='')
+                    "epoch "+str(epoch+1)+", perplexity "+str(round(perplexity, 2)), end='')
                 print(pretty_tokens(genTokens(model, 75)))
-                if min_perplexity is None or val_perplexity <= min_perplexity:
-                    min_perplexity = val_perplexity
+                if (min_perplexity is None or perplexity <= min_perplexity) and not SAVE_AT_END:
+                    min_perplexity = perplexity
                     print("Saving model")
                     model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5') # no such file or directory right now
 
         model.fit(train_x, train_y,
-                batch_size=256, validation_split=VAL_SPLIT, epochs=EPOCHS,
+                batch_size=BATCH_SIZE, validation_split=VAL_SPLIT, epochs=EPOCHS,
                 callbacks=[TrainCallback()])
 
         if SAVE_AT_END:
