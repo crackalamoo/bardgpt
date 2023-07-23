@@ -5,6 +5,8 @@ from constants import *
 
 if not os.path.exists("inputs"):
     os.mkdir("inputs")
+if not os.path.exists("lemmas"):
+    os.mkdir("lemmas")
 
 AUTHOR_LIST = ['dickinson', 'frost', 'keats', 'poe', 'shelley', 'byron', 'ballads', 'tennyson', 'emerson', 'blake',
                    'longfellow', 'holmes', 'wilde', 'tagore', 'shakespeare', 'et_al']
@@ -984,16 +986,14 @@ def join(kaggle=False):
     text = text.replace("dying","die =ing").replace(" lying"," lie =ing")
     text = text.replace(" ings "," =ing =s ").replace(" NT "," =nt ")
     words = text.split(' ')
-    print("Counting words")
+    print("Counting raw tokens")
     counts = {}
     for word in words:
         if not word in counts:
             counts[word] = 0
         counts[word] += 1
-    print("Counted", len(words), "words")
     words = list(counts.keys())
     words.sort(key=lambda word: counts[word], reverse=True)
-    print("Counted", len(words), "unique words")
     s_dict = {}
     ed_dict = {}
     er_dict = {}
