@@ -1,6 +1,18 @@
 # BardGPT
 BardGPT is a miniature GPT model for generating poetry coded from scratch in TensorFlow. To run it, you will need numpy, tensorflow, and builtin Python libraries.
 
+Sample poem (bard model, 39M parameters, perplexity 40.05):
+>  ༄༅༅  the frozen pang  
+o thou life! returning now to open suns, ascend  
+to find unseen she dwelt! thy gleam thy bright loom act girl  
+to ransom radiant order crown the righteous speed.  
+loss of many whose gifts fail! string thou further,  
+bring to spy my anguish ajax, king heir!  
+thy elder burial hand must heart abhor,  
+think me canst thou then time these cared forbear,  
+thine sister here posterity, she need,  
+and my loosened passion stoops in vain.
+
 ## Instructions
 
 ### Quick Start
@@ -51,7 +63,7 @@ This repository contains **three model types**: a naive n-gram model, a transfor
     * `--transformer_heads`: number of attention heads used in the transformer. Not used for n-gram model. Default: `4`.
     * `--val_split`: proportion of data to use for validation. Default: `0.2`.
     * `--save_at_end`: a flag indicating to save the final model after all epochs regardless of whether it had the lowest validation loss. The default behavior is to save the model with the lowest validation loss.
-    * `--verbose`: a flag used to print extra information about the input data and a model summary.
+    * `--verbose`: a flag used to print extra information about the input data, a model summary, and additional sample outputs after training.
 
     Example: `python model.py t --vocab_size 2048 --transformer_layers 4 --verbose --save_at_end`.
 
