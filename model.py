@@ -314,35 +314,37 @@ if __name__ == '__main__':
         't': 'inputs/transformer_train.npz',
         'b': 'inputs/bard_train.npz'
     }[MODEL_TYPE]
-    print("Loading data from", fname)
-    loaded = np.load(fname)
-    train_x = loaded['x']
-    train_y = loaded['y']
-    if MODEL_TYPE == 'b':
-        train_x = [tf.convert_to_tensor(train_x), tf.convert_to_tensor(loaded['rm'])] # rhyme and syllables
-    if MODEL_TYPE == 'n':
-        train_x = tf.convert_to_tensor(train_x, tf.int32)
-    del loaded
+    if TRAINING:
+        print("Loading data from", fname)
+        loaded = np.load(fname)
+        train_x = loaded['x']
+        train_y = loaded['y']
+        if MODEL_TYPE == 'b':
+            train_x = [tf.convert_to_tensor(train_x), tf.convert_to_tensor(loaded['rm'])] # rhyme and syllables
+        if MODEL_TYPE == 'n':
+            train_x = tf.convert_to_tensor(train_x, tf.int32)
+        del loaded
     
-    if TRAINING and VERBOSE:
-        if MODEL_TYPE != 'b':
-            print("X:", train_x[10:14])
-        else:
-            print("X:", train_x[0][10:14])
-            print("RM:", train_x[1][10:14][1])
-        print("Y:", train_y[10:14])
-        if MODEL_TYPE != 'b':
-            print("X shape:", train_x.shape)
-        print("Y shape:", train_y.shape)
+        if VERBOSE:
+            if MODEL_TYPE != 'b':
+                print("X:", train_x[10:14])
+            else:
+                print("X:", train_x[0][10:14])
+                print("RM:", train_x[1][10:14][1])
+            print("Y:", train_y[10:14])
+            if MODEL_TYPE != 'b':
+                print("X shape:", train_x.shape)
+            print("Y shape:", train_y.shape)
 
     print("Initializing model")
     models = {'n': LinearModel, 't': TransformerModel, 'b': BardModel}
     model = models[MODEL_TYPE]()
     if MODEL_TYPE != 'b':
-        res = model(train_x[:1])
+        x0 = np.zeros((1,NGRAM_N-1 if MODEL_TYPE=='n' else TRANSFORMER_N))
+        res = model(x0)
     else:
-        x0 = train_x[0][:1]
-        x1 = train_x[1][:1]
+        x0 = np.zeros((1,TRANSFORMER_N))
+        x1 = np.zeros((1,TRANSFORMER_N,RHYME_STACK_SIZE*2+METER_STACK_SIZE))
         res = model([x0, x1])
     if VERBOSE:
         print(model)
@@ -371,7 +373,7 @@ if __name__ == '__main__':
                 print(pretty_tokens(genTokens(model, 75)))
                 if (min_perplexity is None or perplexity <= min_perplexity) and not SAVE_AT_END:
                     min_perplexity = perplexity
-                    print("Saving model")
+                    print("Saving model weights")
                     model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5') # no such file or directory right now
 
         model.fit(train_x, train_y,
@@ -379,7 +381,7 @@ if __name__ == '__main__':
                 callbacks=[TrainCallback()])
 
         if SAVE_AT_END:
-            print("Saving final model")
+            print("Saving final model weights")
             model.save_weights('saved_models/'+MODEL_TYPE+'_model.h5')
         
         print("Generating samples from final model")
@@ -391,8 +393,6 @@ if __name__ == '__main__':
         print(pretty_tokens(genTokens(model, 500)))
     
     else:
-        del train_x
-        del train_y
         print("Loading weights")
         model.load_weights('saved_models/'+MODEL_TYPE+'_model.h5')
 

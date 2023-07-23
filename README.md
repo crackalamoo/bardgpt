@@ -1,5 +1,5 @@
 # BardGPT
-BardGPT is a miniature GPT model for generating poetry coded from scratch in TensorFlow. To run it, you will need numpy, tensorflow, and builtin Python libraries.
+BardGPT is a miniature GPT model for generating poetry coded from scratch in TensorFlow. To run it, you will need numpy and tensorflow.
 
 Sample poem (bard model, 39M parameters, perplexity 40.05):
 >  ༄༅༅  the frozen pang  
@@ -12,6 +12,8 @@ thy elder burial hand must heart abhor,
 think me canst thou then time these cared forbear,  
 thine sister here posterity, she need,  
 and my loosened passion stoops in vain.
+
+In addition to the GPT-style technology, BardGPT has a layer of poetry-specific data processing incorporated into the model. This consists of the rhymes and syllable counts of the poem passed through linear layers and then joined with the transformer's prediction to generate the final outputs.
 
 ## Instructions
 
