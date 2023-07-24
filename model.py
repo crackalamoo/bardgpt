@@ -344,7 +344,7 @@ if __name__ == '__main__':
         res = model(x0)
     else:
         x0 = np.zeros((1,TRANSFORMER_N))
-        x1 = np.zeros((1,TRANSFORMER_N,RHYME_STACK_SIZE*2+METER_STACK_SIZE))
+        x1 = np.zeros((1,TRANSFORMER_N,(RHYME_STACK_SIZE-1)*2+(RHYME_STACK_SIZE-1)+METER_STACK_SIZE))
         res = model([x0, x1])
     if VERBOSE:
         print(model)
