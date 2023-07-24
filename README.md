@@ -75,9 +75,10 @@ This repository contains **three model types**: a naive n-gram model, a transfor
     In addition, `model.py` takes all the arguments of `tokens.py` except `--kaggle`, and if you used custom values for any, make sure to use the same values in `model.py`.
 
 ## Model Description
-Here is a schematic of the bard model:
+Here is a schematic of the bard model, made with [draw.io](https://www.drawio.com):
 
-![Made with draw.io](model.svg)
+![Made with draw.io](model.svg#gh-light-mode-only)
+![Made with draw.io](model-dark.svg#gh-dark-mode-only)
 
 By default, the following hyperparameters are used:
 * 800 warmup steps
@@ -100,7 +101,7 @@ The transformer model is identical but without the rhyme/meter layers and encodi
 While the full bard model (39M parameters) achieves a perplexity of 80.18 on the validation set, the transformer-only model (39M parameters) achieves a perplexity of 83.23 and the n-gram model (24M parameters) achieves a perplexity of 119.18.
 
 ### Tokenization
-All models use a fine-grained subword tokenization scheme, including suffixes such as `=ing` and `=s` (`run =ing -> running`, `run =s -> runs`, `half =s -> halves`). Rules to handle these are saved in the `lemmas` folder upon running `preprocess.py`. There are also special `<title>` and `<newline>` tokens.
+All models use a fine-grained subword tokenization scheme, including suffixes such as `=ing` and `=s` (`run =ing -> running`, `run =s -> runs`, `half =s -> halves`). Rules to handle these are saved in the `lemmas` folder upon running `preprocess.py`. There are also special `<title>` and `<newline>` tokens. The `VOCAB_SIZE` (number of tokens the model is able to predict) is 4096 by default.
 
 ### Rhyme and Meter Encodings
 The rhyme encoding is as follows. As an example, we will consider the encoding of the word &ldquo;snow&rdquo; in Robert Frost&rsquo;s &ldquo;Stopping by Woods on a Snowy Evening&rdquo;:
@@ -114,14 +115,14 @@ To watch his woods fill up with **snow**.
 |---|---|---|---|---|---|---|---|---|
 |OH|OH|EE|None|None|R|2|2|0|
 
-The &ldquo;match&rdquo; signifies how closely the current word rhymes with the end of a given line. `1` if the vowels match, `2` if both the vowel and consonant match, `0` otherwise. Note that all of these properties are converted into numbers, and that a simplified representation is used: T/D are considered the same consonant for example, as are the schwa /ə/ and the /ʌ/ in bun.
+The &ldquo;match&rdquo; signifies how closely the current word rhymes with the end of a given line. `1` if the vowels match, `2` if both the vowels and final consonants match, `0` otherwise. Note that all of these properties are converted into numbers, and that a simplified representation is used: T/D are considered the same consonant for example, while the schwa /ə/ and the /ʌ/ in bun are combined into one vowel.
 
 Using the same example, the meter encoding is as follows:
 |Line 2 syllables|Line 3 syllables|Current line syllables|
 |---|---|---|
 |8|8|7|
 
-The current line syllables is only 7 because when the model should predict the word `snow`, it will have access only to what comes before that word in the line. Since `METER_STACK_SIZE` is set to `3` and `RHYME_STACK_SIZE` is set to `4`, the rhyme encoding considers four lines at a time while the meter encoding considers only three.
+The current line syllables are only 7 because when the model should predict the word `snow`, it will have access only to what comes before that word in the line. Since `METER_STACK_SIZE` is set to `3` and `RHYME_STACK_SIZE` is set to `4`, the rhyme encoding considers four lines at a time while the meter encoding considers only three.
 ## Data Sources
 * Emily Dickinson ([Plain Text](https://www.gutenberg.org/cache/epub/12242/pg12242.txt))
 * Robert Frost ([Plain Text](https://www.gutenberg.org/files/59824/59824-0.txt))
