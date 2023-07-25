@@ -15,6 +15,10 @@ and my loosened passion stoops in vain.
 
 In addition to the GPT-style technology, BardGPT has a layer of poetry-specific data processing incorporated into the model. This consists of the rhymes and syllable counts of the poem passed through linear layers and then joined with the transformer's prediction to generate the final outputs.
 
+To learn more about my process and thoughts on this model, visit [BardGPT](http://harysdalvi.com/bardgpt) on my website.
+To access the dataset, visit [Project Gutenberg Poems](https://www.kaggle.com/datasets/crackalamoo/project-gutenberg-poems)
+on Kaggle.
+
 ## Instructions
 
 ### Quick Start
