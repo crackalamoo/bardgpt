@@ -340,7 +340,7 @@ if __name__ == '__main__':
     models = {'n': LinearModel, 't': TransformerModel, 'b': BardModel}
     model = models[MODEL_TYPE]()
     if MODEL_TYPE != 'b':
-        x0 = np.zeros((1,NGRAM_N-1 if MODEL_TYPE=='n' else TRANSFORMER_N))
+        x0 = np.zeros((1,NGRAM_N-1 if MODEL_TYPE=='n' else TRANSFORMER_N), np.int32)
         res = model(x0)
     else:
         x0 = np.zeros((1,TRANSFORMER_N))

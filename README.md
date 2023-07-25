@@ -1,5 +1,5 @@
 # BardGPT
-BardGPT is a miniature GPT model for generating poetry coded from scratch in TensorFlow. To run it, you will need numpy and tensorflow.
+BardGPT is a miniature GPT model for generating poetry, coded from scratch in TensorFlow. To run it, you will need numpy and TensorFlow.
 
 Sample poem (bard model, 39M parameters, perplexity 40.05):
 >  ༄༅༅  the frozen pang  
@@ -62,7 +62,7 @@ This repository contains **three model types**: a naive n-gram model, a transfor
     * `--load`: a flag to load a pretrained model in the `saved_models` folder rather than training a new model from scratch.
     * `--epochs`: number of epochs to train for. Default: `10`.
     * `--batch-size`: batch size for training and validation. Default: `256`.
-    * `--warmup-steps`: number of initial steps during which the learning rate increase from zero before it begins to decrease.
+    * `--warmup-steps`: number of initial steps during which the learning rate increases from zero before it begins to decrease.
     * `--embed-dim`: vector size of embeddings. Not used for n-gram model. Default: `512`.
     * `--transformer-layers`: number of layers used in the transformer. Not used for n-gram model. Default: `8`.
     * `--transformer-heads`: number of attention heads used in the transformer. Not used for n-gram model. Default: `4`.
@@ -98,7 +98,7 @@ The transformer model is identical but without the rhyme/meter layers and encodi
 7. Linear layer with `VOCAB_SIZE` neurons
 8. Softmax
 
-While the full bard model (39M parameters) achieves a perplexity of 80.18 on the validation set, the transformer-only model (39M parameters) achieves a perplexity of 83.23 and the n-gram model (24M parameters) achieves a perplexity of 119.18.
+While the full bard model (39.4M parameters) achieves a perplexity of 80.18 on the validation set, the transformer-only model (38.9M parameters) achieves a perplexity of 83.23 and the n-gram model (24.1M parameters) achieves a perplexity of 119.18.
 
 ### Tokenization
 All models use a fine-grained subword tokenization scheme, including suffixes such as `=ing` and `=s` (`run =ing -> running`, `run =s -> runs`, `half =s -> halves`). Rules to handle these are saved in the `lemmas` folder upon running `preprocess.py`. There are also special `<title>` and `<newline>` tokens. The `VOCAB_SIZE` (number of tokens the model is able to predict) is 4096 by default.
@@ -108,7 +108,7 @@ The rhyme encoding is as follows. As an example, we will consider the encoding o
 > Whose woods these are I think I know.  
 His house is in the village though;  
 He will not see me stopping here  
-To watch his woods fill up with **snow**.
+To watch his woods fill up with ***snow***.
 
 
 |Line 1 vowel|Line 2 vowel|Line 3 vowel|Line 1 consonant|Line 2 consonant|Line 3 consonant|Line 1 match|Line 2 match|Line 3 match|
