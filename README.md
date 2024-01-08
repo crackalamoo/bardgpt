@@ -1,5 +1,5 @@
 # BardGPT
-BardGPT is a miniature GPT model for generating poetry, coded from scratch in TensorFlow. To run it, you will need numpy and TensorFlow.
+BardGPT is a miniature GPT-style model for generating poetry, coded from scratch in TensorFlow. To run it, you will need NumPy and TensorFlow.
 
 Sample poem (bard model, 39M parameters, perplexity 40.05):
 >  ༄༅༅  the frozen pang  
@@ -49,7 +49,7 @@ This repository contains **three model types**: a naive n-gram model, a transfor
     
     In the end, `preprocess.py` saves its result in an `inputs` folder.
 
-3. `tokens.py` should be run third. It converts the tokens into groups of formatted numpy arrays that can be fed directly into the model as training data. In the case of the bard model, it also computes data related to rhyme and meter. `tokens.py` saves its results in the `inputs` folder. It takes the following arguments:
+3. `tokens.py` should be run third. It converts the tokens into groups of formatted NumPy arrays that can be fed directly into the model as training data. In the case of the bard model, it also computes data related to rhyme and meter. `tokens.py` saves its results in the `inputs` folder. It takes the following arguments:
     * `--model-type`: one of `n` (for the n-gram model), `t` (for the transformer model), or `b` (for the bard model). Default: `b`.
     * `--vocab-size`: vocab size for the model. Default: `4096`.
     * `--ngram-n`: $n$ for the n-gram model. Default: `4`.
@@ -105,7 +105,7 @@ The transformer model is identical but without the rhyme/meter layers and encodi
 While the full bard model (39.4M parameters) achieves a perplexity of 80.18 on the validation set, the transformer-only model (38.9M parameters) achieves a perplexity of 83.23 and the n-gram model (24.1M parameters) achieves a perplexity of 119.18.
 
 ### Tokenization
-All models use a fine-grained subword tokenization scheme, including suffixes such as `=ing` and `=s` (`run =ing -> running`, `run =s -> runs`, `half =s -> halves`). Rules to handle these are saved in the `lemmas` folder upon running `preprocess.py`. There are also special `<title>` and `<newline>` tokens. The `VOCAB_SIZE` (number of tokens the model is able to predict) is 4096 by default.
+All models use a fine-grained subword tokenization scheme, including suffixes such as `=ing` and `=s` (`run =ing -> running`, `run =s -> runs`, `half =s -> halves`). Rules to handle these are saved in the `lemmas` folder upon running `preprocess.py`. There are also special `<title>` and `<newline>` tokens. The `VOCAB_SIZE` (number of unique tokens the model is able to predict) is 4096 by default.
 
 ### Rhyme and Meter Encodings
 The rhyme encoding is as follows. As an example, we will consider the encoding of the word &ldquo;snow&rdquo; in Robert Frost&rsquo;s &ldquo;Stopping by Woods on a Snowy Evening&rdquo;:
@@ -119,7 +119,7 @@ To watch his woods fill up with ***snow***.
 |---|---|---|---|---|---|---|---|---|
 |OH|OH|EE|None|None|R|2|2|0|
 
-The &ldquo;match&rdquo; signifies how closely the current word rhymes with the end of a given line. `1` if the vowels match, `2` if both the vowels and final consonants match, `0` otherwise. Note that all of these properties are converted into numbers, and that a simplified representation is used: T/D are considered the same consonant for example, while the schwa /ə/ and the /ʌ/ in bun are combined into one vowel.
+The &ldquo;match&rdquo; signifies how closely the current word rhymes with the end of a given line. `1` if the vowels match, `2` if the vowels and final consonants both match, `0` otherwise. Note that all of these properties are converted into numbers, and that a simplified representation is used: T/D are considered the same consonant for example, while the schwa /ə/ and the /ʌ/ in bun are combined into one vowel.
 
 Using the same example, the meter encoding is as follows:
 |Line 2 syllables|Line 3 syllables|Current line syllables|
@@ -127,6 +127,7 @@ Using the same example, the meter encoding is as follows:
 |8|8|7|
 
 The current line syllables are only 7 because when the model should predict the word `snow`, it will have access only to what comes before that word in the line. Since `METER_STACK_SIZE` is set to `3` and `RHYME_STACK_SIZE` is set to `4`, the rhyme encoding considers four lines at a time while the meter encoding considers only three.
+
 ## Data Sources
 * Emily Dickinson ([Plain Text](https://www.gutenberg.org/cache/epub/12242/pg12242.txt))
 * Robert Frost ([Plain Text](https://www.gutenberg.org/files/59824/59824-0.txt))
